@@ -172,6 +172,7 @@ func (c *Scheme) initPrimitives() {
 	c.addPrimitive("+", 0, true, primAdd)
 	c.addPrimitive("-", 1, true, primSub)
 	c.addPrimitive("<", 2, true, primLess)
+	c.addPrimitive("=", 2, true, primEqual)
 }
 
 func (c *Scheme) eval(expr Code, env *LexEnv) Val {
@@ -392,6 +393,10 @@ func primSub(_ *Scheme, args []Val) Val {
 
 func primLess(_ *Scheme, args []Val) Val {
 	return primCompare(args, "'<'", -1)
+}
+
+func primEqual(_ *Scheme, args []Val) Val {
+	return primCompare(args, "'='", 0)
 }
 
 func primCompare(args []Val, name string, expected int) Val {

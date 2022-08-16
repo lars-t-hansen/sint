@@ -37,5 +37,7 @@ func TestFib(t *testing.T) {
 		&Setglobal{c.intern("fib"), lam},
 		call1(glob(c, "fib"), exact(10))}}
 	v := c.eval(prog, nil)
-	// assert v is a big.Int with value 55, otherwise t.Fatalf()
+	if !isTruthy(primEqual(c, []Val{v, exact(55)})) {
+		t.Fatal("Wrong answer from fib")
+	}
 }
