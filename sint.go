@@ -12,7 +12,8 @@ import (
 //   *Symbol,
 //   *Procedure,
 //   *Null,
-//   *bool,			// true or false
+//   *True
+//   *False
 //   *Unspecified,
 //   *Undefined
 //   *big.Int,      // exact integer
@@ -20,16 +21,26 @@ import (
 //   *string		// read-only, which violates the spec, but OK for now
 // }
 
-type Val interface{}
+type Val interface {
+	fmt.Stringer
+}
 
 type Cons struct {
 	car Val
 	cdr Val
 }
 
+func (c *Cons) String() string {
+	return "cons"
+}
+
 type Symbol struct {
 	name  string
 	value Val // if the symbol is a global variable, otherwise c.undefined
+}
+
+func (c *Symbol) String() string {
+	return "symbol"
 }
 
 type Procedure struct {
@@ -38,9 +49,41 @@ type Procedure struct {
 	primop func(*Scheme, []Val) Val // nil for non-primitives
 }
 
+func (c *Procedure) String() string {
+	return "procedure"
+}
+
+// These are singletons!
+
 type Null struct{}
+
+func (c *Null) String() string {
+	return "null"
+}
+
+type True struct{}
+
+func (c *True) String() string {
+	return "true"
+}
+
+type False struct{}
+
+func (c *False) String() string {
+	return "false"
+}
+
 type Unspecified struct{}
+
+func (c *Unspecified) String() string {
+	return "unspecified"
+}
+
 type Undefined struct{}
+
+func (c *Undefined) String() string {
+	return "undefined"
+}
 
 // Code and evaluation.
 //
@@ -185,14 +228,12 @@ type Scheme struct {
 }
 
 func NewScheme() *Scheme {
-	t := true
-	f := false
 	c := &Scheme{
 		unspecified: &Unspecified{},
 		undefined:   &Undefined{},
 		null:        &Null{},
-		trueVal:     &t,
-		falseVal:    &f,
+		trueVal:     &True{},
+		falseVal:    &False{},
 		zero:        big.NewInt(0),
 		fzero:       big.NewFloat(0),
 		oblist:      map[string]*Symbol{},
@@ -216,7 +257,7 @@ again:
 	case *Quote:
 		return e.value
 	case *If:
-		if isTruthy(c.eval(e.test, env)) {
+		if c.eval(e.test, env) != c.falseVal {
 			expr = e.consequent
 		} else {
 			expr = e.alternate
@@ -333,11 +374,4 @@ func (c *Scheme) evalExprs(es []Code, env *LexEnv) []Val {
 		vs = append(vs, c.eval(e, env))
 	}
 	return vs
-}
-
-func isTruthy(v Val) bool {
-	if b, ok := v.(bool); ok {
-		return b
-	}
-	return true
 }

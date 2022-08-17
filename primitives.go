@@ -19,6 +19,32 @@ func (c *Scheme) initPrimitives() {
 	c.addPrimitive("-", 1, true, primSub)
 	c.addPrimitive("<", 2, true, primLess)
 	c.addPrimitive("=", 2, true, primEqual)
+
+	// eqv?
+	// eq?
+	// *
+	// /
+	// quotient
+	// (other numerics as required)
+	// integer?
+	// real?
+	// exact?
+	// inexact?
+	// <=
+	// >
+	// >=
+	// exact->inexact
+	// inexact->exact
+	// not
+	// boolean?
+	// pair?
+	// string?
+	// symbol?
+	// symbol->string
+	// string->symbol
+	// (Anything to do with characters, which we don't have yet but must have)
+	// (Many string functions)
+	// procedure?
 }
 
 func checkCons(v Val, fn string) *Cons {
@@ -65,7 +91,7 @@ func primAdd(c *Scheme, args []Val) Val {
 		return checkNumber(args[0], "+")
 	}
 	r := add2(args[0], args[1])
-	for v := range args[2:] {
+	for _, v := range args[2:] {
 		r = add2(r, v)
 	}
 	return r
@@ -87,7 +113,7 @@ func primSub(_ *Scheme, args []Val) Val {
 		}
 	}
 	r := sub2(args[0], args[1])
-	for v := range args[2:] {
+	for _, v := range args[2:] {
 		r = sub2(r, v)
 	}
 	return r
@@ -111,36 +137,36 @@ func primEqual(c *Scheme, args []Val) Val {
 	return c.trueVal
 }
 
-func cmp2(a Val, b Val, name string) int {
-	if ia, ib, ok := bothInt(a, b); ok {
-		return ia.Cmp(ib)
-	}
-	fa, fb := bothFloat(a, b, name)
-	return fa.Cmp(fb)
-}
-
 func add2(a Val, b Val) Val {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
 		z.Add(ia, ib)
-		return z
+		return &z
 	}
 	fa, fb := bothFloat(a, b, "+")
 	var z big.Float
 	z.Add(fa, fb)
-	return z
+	return &z
 }
 
 func sub2(a Val, b Val) Val {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
 		z.Sub(ia, ib)
-		return z
+		return &z
 	}
 	fa, fb := bothFloat(a, b, "+")
 	var z big.Float
 	z.Sub(fa, fb)
-	return z
+	return &z
+}
+
+func cmp2(a Val, b Val, name string) int {
+	if ia, ib, ok := bothInt(a, b); ok {
+		return ia.Cmp(ib)
+	}
+	fa, fb := bothFloat(a, b, name)
+	return fa.Cmp(fb)
 }
 
 func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
