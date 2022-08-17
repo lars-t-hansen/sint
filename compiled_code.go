@@ -3,7 +3,7 @@
 package sint
 
 func (c *Scheme) gcall1(s string, e1 Code) Code {
-	return &Call{[]Code{c.intern(s), e1}}
+	return &Call{[]Code{&Global{c.intern(s)}, e1}}
 }
 
 func (c *Scheme) initCompiled() {

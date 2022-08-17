@@ -1,5 +1,10 @@
 package sint
 
+import (
+	"fmt"
+	"math/big"
+)
+
 // Values
 //
 // type Val union {
@@ -55,10 +60,15 @@ type Undefined struct{}
 
 type Code interface {
 	// Documentation: each expression should carry its source location
+	fmt.Stringer
 }
 
 type Quote struct {
 	value Val
+}
+
+func (c *Quote) String() string {
+	return "quote"
 }
 
 type If struct {
@@ -67,12 +77,24 @@ type If struct {
 	alternate  Code
 }
 
+func (c *If) String() string {
+	return "if"
+}
+
 type Begin struct {
 	exprs []Code
 }
 
+func (c *Begin) String() string {
+	return "begin"
+}
+
 type Call struct {
 	exprs []Code
+}
+
+func (c *Call) String() string {
+	return "call"
 }
 
 type Lambda struct {
@@ -83,10 +105,18 @@ type Lambda struct {
 	// Documentation: This should carry the names of locals in the rib
 }
 
+func (c *Lambda) String() string {
+	return "lambda"
+}
+
 type Let struct {
 	exprs []Code
 	body  Code
 	// Documentation: This should carry the names of locals in the rib
+}
+
+func (c *Let) String() string {
+	return "let"
 }
 
 type Letrec struct {
@@ -95,10 +125,18 @@ type Letrec struct {
 	// Documentation: This should carry the names of locals in the rib
 }
 
+func (c *Letrec) String() string {
+	return "letrec"
+}
+
 type Lexical struct {
 	levels int
 	offset int
 	// Documentation: This should carry the name of the variable
+}
+
+func (c *Lexical) String() string {
+	return "lexical"
 }
 
 type Setlex struct {
@@ -108,13 +146,25 @@ type Setlex struct {
 	// Documentation: This should carry the name of the variable
 }
 
+func (c *Setlex) String() string {
+	return "setlex"
+}
+
 type Global struct {
 	name *Symbol
+}
+
+func (c *Global) String() string {
+	return "global"
 }
 
 type Setglobal struct {
 	name *Symbol
 	rhs  Code
+}
+
+func (c *Setglobal) String() string {
+	return "setglobal"
 }
 
 type LexEnv struct {
@@ -129,6 +179,8 @@ type Scheme struct {
 	null        Val
 	trueVal     Val
 	falseVal    Val
+	zero        *big.Int
+	fzero       *big.Float
 	oblist      map[string]*Symbol
 }
 
@@ -141,6 +193,8 @@ func NewScheme() *Scheme {
 		null:        &Null{},
 		trueVal:     &t,
 		falseVal:    &f,
+		zero:        big.NewInt(0),
+		fzero:       big.NewFloat(0),
 		oblist:      map[string]*Symbol{},
 	}
 	c.initPrimitives()
@@ -269,13 +323,13 @@ again:
 		e.name.value = rhs
 		return c.unspecified
 	default:
-		panic("Unknown AST type")
+		panic(expr)
 	}
 }
 
 func (c *Scheme) evalExprs(es []Code, env *LexEnv) []Val {
 	vs := []Val{}
-	for e := range es {
+	for _, e := range es {
 		vs = append(vs, c.eval(e, env))
 	}
 	return vs

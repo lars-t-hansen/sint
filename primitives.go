@@ -57,28 +57,18 @@ func primNullp(ctx *Scheme, args []Val) Val {
 	return ctx.falseVal
 }
 
-func primAdd(_ *Scheme, args []Val) Val {
+func primAdd(c *Scheme, args []Val) Val {
 	if len(args) == 0 {
-		return big.NewInt(0)
+		return c.zero
 	}
 	if len(args) == 1 {
-		assertNumeric(args[0], "unary '+'")
-		return args[0]
+		return checkNumber(args[0], "+")
 	}
-	intVals, floatVals := checkAndCoerceNumbers(args, "'+'")
-	if intVals != nil {
-		var r big.Int = *intVals[0]
-		for _, v := range intVals[1:] {
-			r.Add(&r, v)
-		}
-		return &r
-	} else {
-		var r big.Float = *floatVals[0]
-		for _, v := range floatVals[1:] {
-			r.Add(&r, v)
-		}
-		return &r
+	r := add2(args[0], args[1])
+	for v := range args[2:] {
+		r = add2(r, v)
 	}
+	return r
 }
 
 func primSub(_ *Scheme, args []Val) Val {
@@ -93,66 +83,110 @@ func primSub(_ *Scheme, args []Val) Val {
 			r.Neg(v)
 			return &r
 		default:
-			panic("Bad operand to unary '-'")
+			panic("'-': Not a number")
 		}
 	}
-	intVals, floatVals := checkAndCoerceNumbers(args, "'-'")
-	if intVals != nil {
-		var r big.Int = *intVals[0]
-		for _, v := range intVals[1:] {
-			r.Sub(&r, v)
-		}
-		return &r
-	} else {
-		var r big.Float = *floatVals[0]
-		for _, v := range floatVals[1:] {
-			r.Sub(&r, v)
-		}
-		return &r
+	r := sub2(args[0], args[1])
+	for v := range args[2:] {
+		r = sub2(r, v)
 	}
+	return r
 }
 
-func primLess(_ *Scheme, args []Val) Val {
-	return primCompare(args, "'<'", -1)
-}
-
-func primEqual(_ *Scheme, args []Val) Val {
-	return primCompare(args, "'='", 0)
-}
-
-func primCompare(args []Val, name string, expected int) Val {
-	intVals, floatVals := checkAndCoerceNumbers(args, name)
-	r := true
-	if intVals != nil {
-		prev := intVals[0]
-		for _, v := range intVals[1:] {
-			if prev.Cmp(v) != expected {
-				r = false
-				break
-			}
-		}
-	} else {
-		prev := floatVals[0]
-		for _, v := range floatVals[1:] {
-			if prev.Cmp(v) != expected {
-				r = false
-				break
-			}
+func primLess(c *Scheme, args []Val) Val {
+	for i := 1; i < len(args); i++ {
+		if cmp2(args[i-1], args[i], "<") != -1 {
+			return c.falseVal
 		}
 	}
-	return &r
+	return c.trueVal
 }
 
-func checkAndCoerceNumbers(vals []Val, irritant string) ([]*big.Int, []*big.Float) {
-	// FIXME
+func primEqual(c *Scheme, args []Val) Val {
+	for i := 1; i < len(args); i++ {
+		if cmp2(args[i-1], args[i], "=") != 0 {
+			return c.falseVal
+		}
+	}
+	return c.trueVal
 }
 
-func assertNumeric(v Val, s string) {
+func cmp2(a Val, b Val, name string) int {
+	if ia, ib, ok := bothInt(a, b); ok {
+		return ia.Cmp(ib)
+	}
+	fa, fb := bothFloat(a, b, name)
+	return fa.Cmp(fb)
+}
+
+func add2(a Val, b Val) Val {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Add(ia, ib)
+		return z
+	}
+	fa, fb := bothFloat(a, b, "+")
+	var z big.Float
+	z.Add(fa, fb)
+	return z
+}
+
+func sub2(a Val, b Val) Val {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Sub(ia, ib)
+		return z
+	}
+	fa, fb := bothFloat(a, b, "+")
+	var z big.Float
+	z.Sub(fa, fb)
+	return z
+}
+
+func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
+	if ia, ok := a.(*big.Int); ok {
+		if ib, ok := a.(*big.Int); ok {
+			return ia, ib, true
+		}
+	}
+	return nil, nil, false
+}
+
+// Coerce both values to float and return them
+func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
+	if fa, ok := a.(*big.Float); ok {
+		if fb, ok := b.(*big.Float); ok {
+			return fa, fb
+		}
+		if ib, ok := b.(*big.Int); ok {
+			var fb big.Float
+			fb.SetInt(ib)
+			return fa, &fb
+		}
+		panic("'" + name + "': Not a number") // b
+	}
+	if ia, ok := a.(*big.Int); ok {
+		var fa big.Float
+		fa.SetInt(ia)
+		if fb, ok := b.(*big.Float); ok {
+			return &fa, fb
+		}
+		if ib, ok := b.(*big.Int); ok {
+			var fb big.Float
+			fb.SetInt(ib)
+			return &fa, &fb
+		}
+		panic("'" + name + "': Not a number") // b
+	}
+	panic("'" + name + "': Not a number") // a
+}
+
+func checkNumber(v Val, s string) Val {
 	if _, ok := v.(*big.Int); ok {
-		return
+		return v
 	}
 	if _, ok := v.(*big.Float); ok {
-		return
+		return v
 	}
 	panic("Bad operand to " + s)
 }
