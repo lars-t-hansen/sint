@@ -171,7 +171,7 @@ func cmp2(a Val, b Val, name string) int {
 
 func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
 	if ia, ok := a.(*big.Int); ok {
-		if ib, ok := a.(*big.Int); ok {
+		if ib, ok := b.(*big.Int); ok {
 			return ia, ib, true
 		}
 	}
@@ -189,7 +189,7 @@ func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
 			fb.SetInt(ib)
 			return fa, &fb
 		}
-		panic("'" + name + "': Not a number") // b
+		panic("'" + name + "': Not a number: " + b.String())
 	}
 	if ia, ok := a.(*big.Int); ok {
 		var fa big.Float
@@ -202,9 +202,9 @@ func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
 			fb.SetInt(ib)
 			return &fa, &fb
 		}
-		panic("'" + name + "': Not a number") // b
+		panic("'" + name + "': Not a number: " + b.String())
 	}
-	panic("'" + name + "': Not a number") // a
+	panic("'" + name + "': Not a number: " + a.String())
 }
 
 func checkNumber(v Val, s string) Val {

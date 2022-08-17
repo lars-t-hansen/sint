@@ -37,7 +37,7 @@ func TestFib(t *testing.T) {
 		&Setglobal{c.intern("fib"), lam},
 		call1(glob(c, "fib"), exact(10))}}
 	v := c.eval(prog, nil)
-	if primEqual(c, []Val{v, exact(55)}) == c.falseVal {
+	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
 	}
 	t.Log(v)
