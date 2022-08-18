@@ -58,7 +58,7 @@ func checkCons(v Val, fn string) *Cons {
 }
 
 func primCons(_ *Scheme, args []Val) Val {
-	return &Cons{args[0], args[1]}
+	return &Cons{Car: args[0], Cdr: args[1]}
 }
 
 func primCar(_ *Scheme, args []Val) Val {
