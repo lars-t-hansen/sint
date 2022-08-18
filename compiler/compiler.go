@@ -10,7 +10,7 @@ package compiler
 
 import (
 	"math/big"
-	. "sint"
+	. "sint/core"
 )
 
 type Compiler struct {

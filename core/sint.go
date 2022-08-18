@@ -1,6 +1,6 @@
 // Interpreter core - definitions of values and program nodes; evaluation.
 
-package sint
+package core
 
 import (
 	"fmt"
@@ -221,25 +221,22 @@ type Scheme struct {
 	NullVal        Val
 	TrueVal        Val
 	FalseVal       Val
-	zero           *big.Int
-	fzero          *big.Float
+	Zero           *big.Int
+	FZero          *big.Float
 	oblist         map[string]*Symbol
 }
 
 func NewScheme() *Scheme {
-	c := &Scheme{
+	return &Scheme{
 		UnspecifiedVal: &Unspecified{},
 		UndefinedVal:   &Undefined{},
 		NullVal:        &Null{},
 		TrueVal:        &True{},
 		FalseVal:       &False{},
-		zero:           big.NewInt(0),
-		fzero:          big.NewFloat(0),
+		Zero:           big.NewInt(0),
+		FZero:          big.NewFloat(0),
 		oblist:         map[string]*Symbol{},
 	}
-	c.initPrimitives()
-	c.initCompiled()
-	return c
 }
 func (c *Scheme) Intern(s string) *Symbol {
 	if v, ok := c.oblist[s]; ok {

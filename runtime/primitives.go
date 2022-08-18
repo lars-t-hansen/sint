@@ -1,24 +1,27 @@
-package sint
+package runtime
 
-import "math/big"
+import (
+	"math/big"
+	. "sint/core"
+)
 
-func (c *Scheme) addPrimitive(name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
+func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
 	sym := c.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
-func (c *Scheme) initPrimitives() {
+func InitPrimitives(c *Scheme) {
 	// TODO: These could go in a table, it doesn't have to be code
-	c.addPrimitive("cons", 2, false, primCons)
-	c.addPrimitive("car", 1, false, primCar)
-	c.addPrimitive("cdr", 1, false, primCdr)
-	c.addPrimitive("set-car!", 2, false, primSetcar)
-	c.addPrimitive("set-cdr!", 2, false, primSetcdr)
-	c.addPrimitive("null?", 1, false, primNullp)
-	c.addPrimitive("+", 0, true, primAdd)
-	c.addPrimitive("-", 1, true, primSub)
-	c.addPrimitive("<", 2, true, primLess)
-	c.addPrimitive("=", 2, true, primEqual)
+	addPrimitive(c, "cons", 2, false, primCons)
+	addPrimitive(c, "car", 1, false, primCar)
+	addPrimitive(c, "cdr", 1, false, primCdr)
+	addPrimitive(c, "set-car!", 2, false, primSetcar)
+	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
+	addPrimitive(c, "null?", 1, false, primNullp)
+	addPrimitive(c, "+", 0, true, primAdd)
+	addPrimitive(c, "-", 1, true, primSub)
+	addPrimitive(c, "<", 2, true, primLess)
+	addPrimitive(c, "=", 2, true, primEqual)
 
 	// eqv?
 	// eq?
@@ -85,7 +88,7 @@ func primNullp(ctx *Scheme, args []Val) Val {
 
 func primAdd(c *Scheme, args []Val) Val {
 	if len(args) == 0 {
-		return c.zero
+		return c.Zero
 	}
 	if len(args) == 1 {
 		return checkNumber(args[0], "+")
