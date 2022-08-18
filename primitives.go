@@ -51,7 +51,7 @@ func checkCons(v Val, fn string) *Cons {
 	if c, ok := v.(*Cons); ok {
 		return c
 	}
-	panic(fn + ": Not a pair")
+	panic(fn + ": Not a pair: " + v.String())
 }
 
 func primCons(_ *Scheme, args []Val) Val {
@@ -59,20 +59,20 @@ func primCons(_ *Scheme, args []Val) Val {
 }
 
 func primCar(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "CAR").car
+	return checkCons(args[0], "car").car
 }
 
 func primCdr(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "CDR").cdr
+	return checkCons(args[0], "cdr").cdr
 }
 
 func primSetcar(ctx *Scheme, args []Val) Val {
-	checkCons(args[0], "SET-CAR!").car = args[1]
+	checkCons(args[0], "set-car!").car = args[1]
 	return ctx.unspecified
 }
 
 func primSetcdr(ctx *Scheme, args []Val) Val {
-	checkCons(args[0], "SET-CDR!").cdr = args[1]
+	checkCons(args[0], "set-cdr!").cdr = args[1]
 	return ctx.unspecified
 }
 
@@ -109,7 +109,7 @@ func primSub(_ *Scheme, args []Val) Val {
 			r.Neg(v)
 			return &r
 		default:
-			panic("'-': Not a number")
+			panic("'-': Not a number: " + args[0].String())
 		}
 	}
 	r := sub2(args[0], args[1])
@@ -214,5 +214,5 @@ func checkNumber(v Val, s string) Val {
 	if _, ok := v.(*big.Float); ok {
 		return v
 	}
-	panic("Bad operand to " + s)
+	panic("'" + s + ": Not a number: " + v.String())
 }

@@ -1,3 +1,5 @@
+// Interpreter core - definitions of values and program nodes; evaluation.
+
 package sint
 
 import (
@@ -11,14 +13,14 @@ import (
 //   *Cons,
 //   *Symbol,
 //   *Procedure,
-//   *Null,
-//   *True
-//   *False
-//   *Unspecified,
-//   *Undefined
-//   *big.Int,      // exact integer
-//   *big.Float,    // inexact real (rational?)
-//   *string		// read-only, which violates the spec, but OK for now
+//   *Null,			// Singleton
+//   *True			// Singleton
+//   *False			// Singleton
+//   *Unspecified,	// Singleton
+//   *Undefined		// Singleton
+//   *big.Int,      // Exact integer
+//   *big.Float,    // Inexact real (rational?)
+//   *string		// String, immutable for now
 // }
 
 type Val interface {
@@ -52,8 +54,6 @@ type Procedure struct {
 func (c *Procedure) String() string {
 	return "procedure"
 }
-
-// These are singletons!
 
 type Null struct{}
 
@@ -100,6 +100,9 @@ func (c *Undefined) String() string {
 //   *Global,
 //   *Setglobal
 // }
+//
+// TODO: Probably want a let*, at least, to cut down on the number of
+// ribs being allocated and the number of eval steps.
 
 type Code interface {
 	// Documentation: each expression should carry its source location
@@ -276,22 +279,26 @@ again:
 		args := vals[1:]
 		if p, ok := maybeProc.(*Procedure); ok {
 			if len(args) < p.lambda.fixed {
-				panic("Not enough arguments")
+				panic("Not enough arguments") // FIXME msg
 			}
 			if len(args) > p.lambda.fixed && !p.lambda.rest {
-				panic("Too many arguments")
+				panic("Too many arguments") // FIXME msg
 			}
 			if p.lambda.body == nil {
 				return p.primop(c, args)
 			}
 			var newEnv *LexEnv = nil
+			// args (really the underlying vals) is freshly allocated,
+			// so it's OK to use that storage here.
 			if !p.lambda.rest {
 				newEnv = &LexEnv{args, env}
 			} else {
-				newSlots := []Val{}
-				for i := 0; i < p.lambda.fixed; i++ {
-					newSlots = append(newSlots, args[i])
-				}
+				// TODO: I think we can do better than this.  Since the storage
+				// is fresh, we can store the rest argument in the slot after the
+				// slice, if it exists, in which case we avoid copying the
+				// array in the append() below.  If there is no extra slot then there's
+				// at least a chance that the append() will use capacity that is there.
+				newSlots := args[:p.lambda.fixed]
 				var l *Cons
 				var last *Cons
 				for i := p.lambda.fixed; i < len(args); i++ {
@@ -315,7 +322,7 @@ again:
 			env = newEnv
 			goto again
 		} else {
-			panic("Not a procedure")
+			panic("Not a procedure") // FIXME msg
 		}
 	case *Lambda:
 		return &Procedure{e, env, nil}
@@ -326,7 +333,9 @@ again:
 		env = newEnv
 		goto again
 	case *Letrec:
-		// TODO: Probably a more efficient way to do this?
+		// TODO: Probably there's a more efficient way to do this?  Note we need
+		// fresh storage, so at a minimum we need to copy out of a master slice of
+		// undefined values.
 		slotvals := []Val{}
 		for i := 0; i < len(e.exprs); i++ {
 			slotvals = append(slotvals, c.unspecified)
@@ -356,7 +365,7 @@ again:
 	case *Global:
 		val := e.name.value
 		if val == c.undefined {
-			panic("Attempting to read undefined global variable")
+			panic("Undefined global variable '" + e.name.name + "'")
 		}
 		return val
 	case *Setglobal:
@@ -364,7 +373,7 @@ again:
 		e.name.value = rhs
 		return c.unspecified
 	default:
-		panic(expr)
+		panic("Bad expression: " + expr.String())
 	}
 }
 
