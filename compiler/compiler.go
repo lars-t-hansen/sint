@@ -2,13 +2,9 @@
 //
 // Built-in syntax (macros) have reserved names, which is not very "Scheme"
 // but is just fine in practice.  There are no user-defined macros here.
-
-// This takes an expression encoded as a list and both macro-expands and compiles.
-// But this is not the only way to
-// encode it: instead, the code reader could return a proper syntax-checked AST.
-// In full Scheme that's hard because lexical bindings can shadow macros and there
-// can also be local macros; compilation and macro expansion are intertwined.
-// For a simple system it's more viable.
+//
+// A more sophisticated compiler would take an AST form that also carries source
+// location information, or at least a map of such information on the side.
 
 package compiler
 
@@ -18,9 +14,8 @@ import (
 )
 
 type Compiler struct {
-	s *Scheme
-
-	// REMEMBER to update isKeyword when this list is extended
+	s         *Scheme
+	keywords  map[*Symbol]bool
 	andSym    *Symbol
 	beginSym  *Symbol
 	caseSym   *Symbol
@@ -36,12 +31,54 @@ type Compiler struct {
 	setSym    *Symbol
 }
 
-type CEnv struct {
-	link  *CEnv
+func NewCompiler(s *Scheme) *Compiler {
+	c := &Compiler{
+		s:         s,
+		keywords:  make(map[*Symbol]bool),
+		andSym:    s.Intern("and"),
+		beginSym:  s.Intern("begin"),
+		caseSym:   s.Intern("case"),
+		condSym:   s.Intern("cond"),
+		defineSym: s.Intern("define"),
+		elseSym:   s.Intern("else"),
+		ifSym:     s.Intern("if"),
+		lambdaSym: s.Intern("lambda"),
+		letSym:    s.Intern("let"),
+		letrecSym: s.Intern("letrec"),
+		orSym:     s.Intern("or"),
+		quoteSym:  s.Intern("quote"),
+		setSym:    s.Intern("set!"),
+	}
+	c.keywords[c.andSym] = true
+	c.keywords[c.beginSym] = true
+	c.keywords[c.caseSym] = true
+	c.keywords[c.condSym] = true
+	c.keywords[c.defineSym] = true
+	c.keywords[c.elseSym] = true
+	c.keywords[c.ifSym] = true
+	c.keywords[c.lambdaSym] = true
+	c.keywords[c.letSym] = true
+	c.keywords[c.letrecSym] = true
+	c.keywords[c.orSym] = true
+	c.keywords[c.quoteSym] = true
+	c.keywords[c.setSym] = true
+	return c
+}
+
+func (c *Compiler) CompileToplevel(v Val) Code {
+	length, exprIsList := c.checkProperList(v)
+	if exprIsList && length >= 3 && car(v) == c.defineSym {
+		return c.compileToplevelDefinition(v)
+	}
+	return c.compileExpr(v, nil)
+}
+
+type cenv struct {
+	link  *cenv
 	names []*Symbol
 }
 
-func lookup(env *CEnv, s *Symbol) (int, int, bool) {
+func lookup(env *cenv, s *Symbol) (int, int, bool) {
 	levels := 0
 	for env != nil {
 		for offset := 0; offset < len(env.names); offset++ {
@@ -54,38 +91,37 @@ func lookup(env *CEnv, s *Symbol) (int, int, bool) {
 	return 0, 0, false
 }
 
-func (c *Compiler) compileToplevel(v Val) Code {
-	length, exprIsList := c.checkProperList(v)
-	if exprIsList && length >= 3 && car(v) == c.defineSym {
-		return c.compileToplevelDefinition(v)
-	}
-	return c.compileExpr(v, nil)
-}
-
 func (c *Compiler) compileToplevelDefinition(v Val) Code {
 	nameOrSignature := cadr(v)
-	if s, ok := nameOrSignature.(*Symbol); ok {
+	// (define x v)
+	if globName, ok := nameOrSignature.(*Symbol); ok {
 		return &Setglobal{
-			Name: s,
+			Name: globName,
 			Rhs:  c.compileExpr(caddr(v), nil),
 		}
 	}
-	if len, improper, ok := c.checkPossiblyImproperList(cdadr(v)); ok && len > 0 || improper {
-		if s, ok := car(cadr(v)).(*Symbol); ok {
-			// check that remaining elements are distinct symbols
-			// create a lambda expression and compile it
-			var body Code
-			lam := &Lambda{Fixed: len, Rest: improper, Body: body}
-			return &Setglobal{
-				Name: s,
-				Rhs:  c.compileExpr(lam, nil),
-			}
+	// (define (f arg ... . arg) body ...)
+	if fixed, rest, globName, formals, ok := c.checkDefinitionSignature(nameOrSignature); ok {
+		bodyList := cdr(cdr(v))
+		var body Code
+		if cdr(bodyList) != c.s.NullVal {
+			body = &Cons{Car: c.beginSym, Cdr: bodyList}
+		} else {
+			body = car(bodyList)
+		}
+		lam := &Lambda{
+			Fixed: fixed,
+			Rest:  rest,
+			Body:  c.compileExpr(body, &cenv{link: nil, names: formals})}
+		return &Setglobal{
+			Name: globName,
+			Rhs:  lam,
 		}
 	}
 	panic("Invalid top-level definition")
 }
 
-func (c *Compiler) compileExpr(v Val, env *CEnv) Code {
+func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 	switch e := v.(type) {
 	case *big.Int:
 		return &Quote{Value: e}
@@ -118,7 +154,9 @@ func (c *Compiler) compileExpr(v Val, env *CEnv) Code {
 			if kwd == c.setSym {
 				return c.compileSet(e, len, env)
 			}
-			// More macros here!
+			// FIXME: More syntax here!
+
+			// Fall through to generic "call" case
 		}
 		return c.compileCall(e, len, env)
 	default:
@@ -126,7 +164,8 @@ func (c *Compiler) compileExpr(v Val, env *CEnv) Code {
 	}
 }
 
-func (c *Compiler) compileCall(l Val, _ int, env *CEnv) Code {
+func (c *Compiler) compileCall(l Val, _ int, env *cenv) Code {
+	// (expr expr ...)
 	var exprs []Code
 	for l != c.s.NullVal {
 		exprs = append(exprs, c.compileExpr(car(l), env))
@@ -135,7 +174,9 @@ func (c *Compiler) compileCall(l Val, _ int, env *CEnv) Code {
 	return &Call{Exprs: exprs}
 }
 
-func (c *Compiler) compileIf(l *Cons, len int, env *CEnv) Code {
+func (c *Compiler) compileIf(l *Cons, len int, env *cenv) Code {
+	// (if expr expr)
+	// (if expr expr expr)
 	if len != 3 && len != 4 {
 		panic("if: Illegal form")
 	}
@@ -152,7 +193,8 @@ func (c *Compiler) compileIf(l *Cons, len int, env *CEnv) Code {
 	}
 }
 
-func (c *Compiler) compileRef(s *Symbol, env *CEnv) Code {
+func (c *Compiler) compileRef(s *Symbol, env *cenv) Code {
+	// ident
 	if levels, offset, ok := lookup(env, s); ok {
 		return &Lexical{Levels: levels, Offset: offset}
 	}
@@ -162,7 +204,8 @@ func (c *Compiler) compileRef(s *Symbol, env *CEnv) Code {
 	return &Global{Name: s}
 }
 
-func (c *Compiler) compileSet(l *Cons, len int, env *CEnv) Code {
+func (c *Compiler) compileSet(l *Cons, len int, env *cenv) Code {
+	// (set! ident expr)
 	if len != 3 {
 		panic("set!: Illegal form")
 	}
@@ -208,6 +251,46 @@ func cadddr(v Val) Val {
 	return car(cdr(cdr(cdr(v))))
 }
 
+func (c *Compiler) checkDefinitionSignature(sig Val) (fixed int, rest bool, globName *Symbol, formals []*Symbol, ok bool) {
+	// FIXME: This needs to deal with circularity
+	var names []*Symbol
+	for {
+		cell, cellIsCons := sig.(*Cons)
+		if !cellIsCons {
+			break
+		}
+		argName, argIsSymbol := cell.Car.(*Symbol)
+		if !argIsSymbol {
+			ok = false
+			return
+		}
+		names = append(names, argName)
+		sig = cell.Cdr
+		fixed++
+	}
+	if sig != c.s.NullVal {
+		rest = true
+		argName, argIsSymbol := sig.(*Symbol)
+		if !argIsSymbol {
+			ok = false
+			return
+		}
+		names = append(formals, argName)
+	}
+	globName = names[0]
+	formals = names[1:]
+	for i := 0; i < len(formals); i++ {
+		for j := i + 1; j < len(formals); j++ {
+			if formals[i] == formals[j] {
+				ok = false
+				return
+			}
+		}
+	}
+	ok = true
+	return
+}
+
 func (c *Compiler) checkProperList(v Val) (int, bool) {
 	// Check that v is a proper list, and return its length if it is
 	// FIXME: This needs to deal with circularity
@@ -227,13 +310,5 @@ func (c *Compiler) checkProperList(v Val) (int, bool) {
 }
 
 func (c *Compiler) isKeyword(s *Symbol) bool {
-	// FIXME: Stupid to do a linear search here.  Alternative is a map, or that
-	// environment lookup will find a denotation that is 'keyword', it all amounts
-	// to the same thing
-	if s == c.andSym || s == c.beginSym || s == c.caseSym || s == c.condSym || s == c.defineSym ||
-		s == c.elseSym || s == c.ifSym || s == c.lambdaSym || s == c.letSym || s == c.letrecSym ||
-		s == c.orSym || s == c.quoteSym || s == c.setSym {
-		return true
-	}
-	return false
+	return c.keywords[s]
 }

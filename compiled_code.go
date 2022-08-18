@@ -3,11 +3,11 @@
 package sint
 
 func (c *Scheme) gcall1(s string, e1 Code) Code {
-	return &Call{[]Code{&Global{c.intern(s)}, e1}}
+	return &Call{[]Code{&Global{c.Intern(s)}, e1}}
 }
 
 func (c *Scheme) initCompiled() {
-	c.intern("cadr").Value =
+	c.Intern("cadr").Value =
 		&Procedure{
 			&Lambda{1, false, c.gcall1("car", c.gcall1("cadr", &Lexical{0, 0}))},
 			nil, nil}

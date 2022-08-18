@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-// Values
+// Values.
 //
 // type Val union {
 //   *Cons,
@@ -47,7 +47,7 @@ func (c *Symbol) String() string {
 
 type Procedure struct {
 	Lam    *Lambda
-	Env    *LexEnv                  // closed-over lexical environment, nil for global procedures and primitives
+	Env    *lexenv                  // closed-over lexical environment, nil for global procedures and primitives
 	Primop func(*Scheme, []Val) Val // nil for non-primitives
 }
 
@@ -213,11 +213,7 @@ func (c *Setglobal) String() string {
 	return "setglobal"
 }
 
-type LexEnv struct {
-	slots []Val
-	link  *LexEnv
-	// Documentation: This should carry the names of locals in the rib
-}
+// Runtimes.
 
 type Scheme struct {
 	UnspecifiedVal Val
@@ -245,7 +241,7 @@ func NewScheme() *Scheme {
 	c.initCompiled()
 	return c
 }
-func (c *Scheme) intern(s string) *Symbol {
+func (c *Scheme) Intern(s string) *Symbol {
 	if v, ok := c.oblist[s]; ok {
 		return v
 	}
@@ -254,7 +250,17 @@ func (c *Scheme) intern(s string) *Symbol {
 	return sym
 }
 
-func (c *Scheme) eval(expr Code, env *LexEnv) Val {
+func (c *Scheme) EvalToplevel(expr Code) Val {
+	return c.eval(expr, nil)
+}
+
+type lexenv struct {
+	slots []Val
+	link  *lexenv
+	// Documentation: This should carry the names of locals in the rib
+}
+
+func (c *Scheme) eval(expr Code, env *lexenv) Val {
 again:
 	switch e := expr.(type) {
 	case *Quote:
@@ -287,11 +293,11 @@ again:
 			if p.Lam.Body == nil {
 				return p.Primop(c, args)
 			}
-			var newEnv *LexEnv = nil
+			var newEnv *lexenv = nil
 			// args (really the underlying vals) is freshly allocated,
 			// so it's OK to use that storage here.
 			if !p.Lam.Rest {
-				newEnv = &LexEnv{args, env}
+				newEnv = &lexenv{args, env}
 			} else {
 				// TODO: I think we can do better than this.  Since the storage
 				// is fresh, we can store the rest argument in the slot after the
@@ -316,7 +322,7 @@ again:
 				} else {
 					newSlots = append(newSlots, l)
 				}
-				newEnv = &LexEnv{newSlots, env}
+				newEnv = &lexenv{newSlots, env}
 			}
 			expr = p.Lam.Body
 			env = newEnv
@@ -328,7 +334,7 @@ again:
 		return &Procedure{e, env, nil}
 	case *Let:
 		vals := c.evalExprs(e.Exprs, env)
-		newEnv := &LexEnv{vals, env}
+		newEnv := &lexenv{vals, env}
 		expr = e.Body
 		env = newEnv
 		goto again
@@ -340,7 +346,7 @@ again:
 		for i := 0; i < len(e.Exprs); i++ {
 			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
-		newEnv := &LexEnv{slotvals, env}
+		newEnv := &lexenv{slotvals, env}
 		vals := c.evalExprs(e.Exprs, newEnv)
 		for i, v := range vals {
 			slotvals[i] = v
@@ -377,7 +383,7 @@ again:
 	}
 }
 
-func (c *Scheme) evalExprs(es []Code, env *LexEnv) []Val {
+func (c *Scheme) evalExprs(es []Code, env *lexenv) []Val {
 	vs := []Val{}
 	for _, e := range es {
 		vs = append(vs, c.eval(e, env))

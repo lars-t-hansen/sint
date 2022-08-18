@@ -14,7 +14,7 @@ func call2(p Code, v0 Code, v1 Code) Code {
 }
 
 func glob(c *Scheme, s string) Code {
-	return &Global{c.intern(s)}
+	return &Global{c.Intern(s)}
 }
 
 func exact(n int64) Code {
@@ -34,7 +34,7 @@ func TestFib(t *testing.T) {
 				call1(glob(c, "fib"), call2(glob(c, "-"), n, exact(1))),
 				call1(glob(c, "fib"), call2(glob(c, "-"), n, exact(2))))}}
 	prog := &Begin{[]Code{
-		&Setglobal{c.intern("fib"), lam},
+		&Setglobal{c.Intern("fib"), lam},
 		call1(glob(c, "fib"), exact(10))}}
 	v := c.eval(prog, nil)
 	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {

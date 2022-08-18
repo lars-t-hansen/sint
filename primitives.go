@@ -3,7 +3,7 @@ package sint
 import "math/big"
 
 func (c *Scheme) addPrimitive(name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
-	sym := c.intern(name)
+	sym := c.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
