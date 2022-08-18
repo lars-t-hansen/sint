@@ -28,8 +28,8 @@ type Val interface {
 }
 
 type Cons struct {
-	car Val
-	cdr Val
+	Car Val
+	Cdr Val
 }
 
 func (c *Cons) String() string {
@@ -37,8 +37,8 @@ func (c *Cons) String() string {
 }
 
 type Symbol struct {
-	name  string
-	value Val // if the symbol is a global variable, otherwise c.undefined
+	Name  string
+	Value Val // if the symbol is a global variable, otherwise c.undefined
 }
 
 func (c *Symbol) String() string {
@@ -46,9 +46,9 @@ func (c *Symbol) String() string {
 }
 
 type Procedure struct {
-	lambda *Lambda
-	env    *LexEnv                  // closed-over lexical environment, nil for global procedures and primitives
-	primop func(*Scheme, []Val) Val // nil for non-primitives
+	Lam    *Lambda
+	Env    *LexEnv                  // closed-over lexical environment, nil for global procedures and primitives
+	Primop func(*Scheme, []Val) Val // nil for non-primitives
 }
 
 func (c *Procedure) String() string {
@@ -110,7 +110,7 @@ type Code interface {
 }
 
 type Quote struct {
-	value Val
+	Value Val
 }
 
 func (c *Quote) String() string {
@@ -118,9 +118,9 @@ func (c *Quote) String() string {
 }
 
 type If struct {
-	test       Code
-	consequent Code
-	alternate  Code
+	Test       Code
+	Consequent Code
+	Alternate  Code
 }
 
 func (c *If) String() string {
@@ -128,7 +128,7 @@ func (c *If) String() string {
 }
 
 type Begin struct {
-	exprs []Code
+	Exprs []Code
 }
 
 func (c *Begin) String() string {
@@ -136,7 +136,7 @@ func (c *Begin) String() string {
 }
 
 type Call struct {
-	exprs []Code
+	Exprs []Code
 }
 
 func (c *Call) String() string {
@@ -144,9 +144,9 @@ func (c *Call) String() string {
 }
 
 type Lambda struct {
-	fixed int
-	rest  bool
-	body  Code
+	Fixed int
+	Rest  bool
+	Body  Code
 	// Documentation: this should carry the doc string and the source code
 	// Documentation: This should carry the names of locals in the rib
 }
@@ -156,8 +156,8 @@ func (c *Lambda) String() string {
 }
 
 type Let struct {
-	exprs []Code
-	body  Code
+	Exprs []Code
+	Body  Code
 	// Documentation: This should carry the names of locals in the rib
 }
 
@@ -166,8 +166,8 @@ func (c *Let) String() string {
 }
 
 type Letrec struct {
-	exprs []Code
-	body  Code
+	Exprs []Code
+	Body  Code
 	// Documentation: This should carry the names of locals in the rib
 }
 
@@ -176,8 +176,8 @@ func (c *Letrec) String() string {
 }
 
 type Lexical struct {
-	levels int
-	offset int
+	Levels int
+	Offset int
 	// Documentation: This should carry the name of the variable
 }
 
@@ -186,9 +186,9 @@ func (c *Lexical) String() string {
 }
 
 type Setlex struct {
-	levels int
-	offset int
-	rhs    Code
+	Levels int
+	Offset int
+	Rhs    Code
 	// Documentation: This should carry the name of the variable
 }
 
@@ -197,7 +197,7 @@ func (c *Setlex) String() string {
 }
 
 type Global struct {
-	name *Symbol
+	Name *Symbol
 }
 
 func (c *Global) String() string {
@@ -205,8 +205,8 @@ func (c *Global) String() string {
 }
 
 type Setglobal struct {
-	name *Symbol
-	rhs  Code
+	Name *Symbol
+	Rhs  Code
 }
 
 func (c *Setglobal) String() string {
@@ -220,26 +220,26 @@ type LexEnv struct {
 }
 
 type Scheme struct {
-	unspecified Val
-	undefined   Val
-	null        Val
-	trueVal     Val
-	falseVal    Val
-	zero        *big.Int
-	fzero       *big.Float
-	oblist      map[string]*Symbol
+	UnspecifiedVal Val
+	UndefinedVal   Val
+	NullVal        Val
+	TrueVal        Val
+	FalseVal       Val
+	zero           *big.Int
+	fzero          *big.Float
+	oblist         map[string]*Symbol
 }
 
 func NewScheme() *Scheme {
 	c := &Scheme{
-		unspecified: &Unspecified{},
-		undefined:   &Undefined{},
-		null:        &Null{},
-		trueVal:     &True{},
-		falseVal:    &False{},
-		zero:        big.NewInt(0),
-		fzero:       big.NewFloat(0),
-		oblist:      map[string]*Symbol{},
+		UnspecifiedVal: &Unspecified{},
+		UndefinedVal:   &Undefined{},
+		NullVal:        &Null{},
+		TrueVal:        &True{},
+		FalseVal:       &False{},
+		zero:           big.NewInt(0),
+		fzero:          big.NewFloat(0),
+		oblist:         map[string]*Symbol{},
 	}
 	c.initPrimitives()
 	c.initCompiled()
@@ -249,7 +249,7 @@ func (c *Scheme) intern(s string) *Symbol {
 	if v, ok := c.oblist[s]; ok {
 		return v
 	}
-	sym := &Symbol{s, c.undefined}
+	sym := &Symbol{s, c.UndefinedVal}
 	c.oblist[s] = sym
 	return sym
 }
@@ -258,39 +258,39 @@ func (c *Scheme) eval(expr Code, env *LexEnv) Val {
 again:
 	switch e := expr.(type) {
 	case *Quote:
-		return e.value
+		return e.Value
 	case *If:
-		if c.eval(e.test, env) != c.falseVal {
-			expr = e.consequent
+		if c.eval(e.Test, env) != c.FalseVal {
+			expr = e.Consequent
 		} else {
-			expr = e.alternate
+			expr = e.Alternate
 		}
 		goto again
 	case *Begin:
-		if len(e.exprs) == 0 {
-			return c.unspecified
+		if len(e.Exprs) == 0 {
+			return c.UnspecifiedVal
 		}
-		c.evalExprs(e.exprs[:len(e.exprs)-1], env)
-		expr = e.exprs[len(e.exprs)-1]
+		c.evalExprs(e.Exprs[:len(e.Exprs)-1], env)
+		expr = e.Exprs[len(e.Exprs)-1]
 		goto again
 	case *Call:
-		vals := c.evalExprs(e.exprs, env)
+		vals := c.evalExprs(e.Exprs, env)
 		maybeProc := vals[0]
 		args := vals[1:]
 		if p, ok := maybeProc.(*Procedure); ok {
-			if len(args) < p.lambda.fixed {
+			if len(args) < p.Lam.Fixed {
 				panic("Not enough arguments") // FIXME msg
 			}
-			if len(args) > p.lambda.fixed && !p.lambda.rest {
+			if len(args) > p.Lam.Fixed && !p.Lam.Rest {
 				panic("Too many arguments") // FIXME msg
 			}
-			if p.lambda.body == nil {
-				return p.primop(c, args)
+			if p.Lam.Body == nil {
+				return p.Primop(c, args)
 			}
 			var newEnv *LexEnv = nil
 			// args (really the underlying vals) is freshly allocated,
 			// so it's OK to use that storage here.
-			if !p.lambda.rest {
+			if !p.Lam.Rest {
 				newEnv = &LexEnv{args, env}
 			} else {
 				// TODO: I think we can do better than this.  Since the storage
@@ -298,27 +298,27 @@ again:
 				// slice, if it exists, in which case we avoid copying the
 				// array in the append() below.  If there is no extra slot then there's
 				// at least a chance that the append() will use capacity that is there.
-				newSlots := args[:p.lambda.fixed]
+				newSlots := args[:p.Lam.Fixed]
 				var l *Cons
 				var last *Cons
-				for i := p.lambda.fixed; i < len(args); i++ {
-					x := &Cons{args[i], c.null}
+				for i := p.Lam.Fixed; i < len(args); i++ {
+					x := &Cons{args[i], c.NullVal}
 					if l == nil {
 						l = x
 					}
 					if last != nil {
-						last.cdr = x
+						last.Cdr = x
 					}
 					last = x
 				}
 				if l == nil {
-					newSlots = append(newSlots, c.null)
+					newSlots = append(newSlots, c.NullVal)
 				} else {
 					newSlots = append(newSlots, l)
 				}
 				newEnv = &LexEnv{newSlots, env}
 			}
-			expr = p.lambda.body
+			expr = p.Lam.Body
 			env = newEnv
 			goto again
 		} else {
@@ -327,9 +327,9 @@ again:
 	case *Lambda:
 		return &Procedure{e, env, nil}
 	case *Let:
-		vals := c.evalExprs(e.exprs, env)
+		vals := c.evalExprs(e.Exprs, env)
 		newEnv := &LexEnv{vals, env}
-		expr = e.body
+		expr = e.Body
 		env = newEnv
 		goto again
 	case *Letrec:
@@ -337,41 +337,41 @@ again:
 		// fresh storage, so at a minimum we need to copy out of a master slice of
 		// undefined values.
 		slotvals := []Val{}
-		for i := 0; i < len(e.exprs); i++ {
-			slotvals = append(slotvals, c.unspecified)
+		for i := 0; i < len(e.Exprs); i++ {
+			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
 		newEnv := &LexEnv{slotvals, env}
-		vals := c.evalExprs(e.exprs, newEnv)
+		vals := c.evalExprs(e.Exprs, newEnv)
 		for i, v := range vals {
 			slotvals[i] = v
 		}
-		expr = e.body
+		expr = e.Body
 		env = newEnv
 		goto again
 	case *Lexical:
 		rib := env
-		for levels := e.levels; levels > 0; levels-- {
+		for levels := e.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
-		return rib.slots[e.offset]
+		return rib.slots[e.Offset]
 	case *Setlex:
-		rhs := c.eval(e.rhs, env)
+		rhs := c.eval(e.Rhs, env)
 		rib := env
-		for levels := e.levels; levels > 0; levels-- {
+		for levels := e.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
-		rib.slots[e.offset] = rhs
-		return c.unspecified
+		rib.slots[e.Offset] = rhs
+		return c.UnspecifiedVal
 	case *Global:
-		val := e.name.value
-		if val == c.undefined {
-			panic("Undefined global variable '" + e.name.name + "'")
+		val := e.Name.Value
+		if val == c.UndefinedVal {
+			panic("Undefined global variable '" + e.Name.Name + "'")
 		}
 		return val
 	case *Setglobal:
-		rhs := c.eval(e.rhs, env)
-		e.name.value = rhs
-		return c.unspecified
+		rhs := c.eval(e.Rhs, env)
+		e.Name.Value = rhs
+		return c.UnspecifiedVal
 	default:
 		panic("Bad expression: " + expr.String())
 	}

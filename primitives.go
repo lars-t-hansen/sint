@@ -4,7 +4,7 @@ import "math/big"
 
 func (c *Scheme) addPrimitive(name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
 	sym := c.intern(name)
-	sym.value = &Procedure{lambda: &Lambda{fixed: fixed, rest: rest, body: nil}, env: nil, primop: primop}
+	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
 func (c *Scheme) initPrimitives() {
@@ -59,28 +59,28 @@ func primCons(_ *Scheme, args []Val) Val {
 }
 
 func primCar(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "car").car
+	return checkCons(args[0], "car").Car
 }
 
 func primCdr(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "cdr").cdr
+	return checkCons(args[0], "cdr").Cdr
 }
 
 func primSetcar(ctx *Scheme, args []Val) Val {
-	checkCons(args[0], "set-car!").car = args[1]
-	return ctx.unspecified
+	checkCons(args[0], "set-car!").Car = args[1]
+	return ctx.UnspecifiedVal
 }
 
 func primSetcdr(ctx *Scheme, args []Val) Val {
-	checkCons(args[0], "set-cdr!").cdr = args[1]
-	return ctx.unspecified
+	checkCons(args[0], "set-cdr!").Cdr = args[1]
+	return ctx.UnspecifiedVal
 }
 
 func primNullp(ctx *Scheme, args []Val) Val {
-	if args[0] == ctx.null {
-		return ctx.trueVal
+	if args[0] == ctx.NullVal {
+		return ctx.TrueVal
 	}
-	return ctx.falseVal
+	return ctx.FalseVal
 }
 
 func primAdd(c *Scheme, args []Val) Val {
@@ -122,19 +122,19 @@ func primSub(_ *Scheme, args []Val) Val {
 func primLess(c *Scheme, args []Val) Val {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "<") != -1 {
-			return c.falseVal
+			return c.FalseVal
 		}
 	}
-	return c.trueVal
+	return c.TrueVal
 }
 
 func primEqual(c *Scheme, args []Val) Val {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "=") != 0 {
-			return c.falseVal
+			return c.FalseVal
 		}
 	}
-	return c.trueVal
+	return c.TrueVal
 }
 
 func add2(a Val, b Val) Val {
