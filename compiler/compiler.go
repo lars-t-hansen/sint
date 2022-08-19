@@ -366,7 +366,7 @@ func (c *Compiler) compileQuote(l Val, llen int, env *cenv) Code {
 	// - a symbol
 	// - a proper or improper list, probably without any non-atomic sharing
 	//
-	// Notably it can't be a procedure or `undefined`.
+	// Notably it can't be a procedure or `undefined` or the eof object?
 	//
 	// TODO: Check those things.
 

@@ -19,6 +19,7 @@ import (
 //   *False			// Singleton
 //   *Unspecified,	// Singleton
 //   *Undefined		// Singleton
+//   *EofObject     // Singleton
 //   *big.Int,      // Exact integer
 //   *big.Float,    // Inexact real (rational?)
 //   *string		// String, immutable for now
@@ -84,6 +85,12 @@ type Undefined struct{}
 
 func (c *Undefined) String() string {
 	return "undefined"
+}
+
+type EofObject struct{}
+
+func (c *EofObject) String() string {
+	return "eof-object"
 }
 
 // Code and evaluation.
@@ -222,6 +229,7 @@ type Scheme struct {
 	NullVal        Val
 	TrueVal        Val
 	FalseVal       Val
+	EofVal         Val
 	Zero           *big.Int
 	FZero          *big.Float
 	oblist         map[string]*Symbol
@@ -235,6 +243,7 @@ func NewScheme() *Scheme {
 		NullVal:        &Null{},
 		TrueVal:        &True{},
 		FalseVal:       &False{},
+		EofVal:         &EofObject{},
 		Zero:           big.NewInt(0),
 		FZero:          big.NewFloat(0),
 		oblist:         map[string]*Symbol{},
