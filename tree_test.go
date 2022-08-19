@@ -1,3 +1,5 @@
+// Test cases that run preconstructed program trees through the evaluator.
+
 package sint
 
 import (
@@ -23,8 +25,9 @@ func exact(n int64) Code {
 	return &Quote{Value: big.NewInt(n)}
 }
 
-func TestFib(t *testing.T) {
+func TestFibTree(t *testing.T) {
 	c := NewScheme()
+	nullVal = c.NullVal
 	runtime.InitPrimitives(c)
 	runtime.InitCompiled(c)
 	n := &Lexical{Levels: 0, Offset: 0}
@@ -45,5 +48,4 @@ func TestFib(t *testing.T) {
 	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
 	}
-	t.Log(v)
 }

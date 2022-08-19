@@ -1,10 +1,11 @@
-// Interpreter core - definitions of values and program nodes; evaluation.
+// Evaluation engine core - definitions of values and program nodes; evaluation.
 
 package core
 
 import (
 	"fmt"
 	"math/big"
+	"strconv"
 )
 
 // Values.
@@ -224,6 +225,7 @@ type Scheme struct {
 	Zero           *big.Int
 	FZero          *big.Float
 	oblist         map[string]*Symbol
+	nextGensym     int
 }
 
 func NewScheme() *Scheme {
@@ -236,15 +238,22 @@ func NewScheme() *Scheme {
 		Zero:           big.NewInt(0),
 		FZero:          big.NewFloat(0),
 		oblist:         map[string]*Symbol{},
+		nextGensym:     1000,
 	}
 }
 func (c *Scheme) Intern(s string) *Symbol {
 	if v, ok := c.oblist[s]; ok {
 		return v
 	}
-	sym := &Symbol{s, c.UndefinedVal}
+	sym := &Symbol{Name: s, Value: c.UndefinedVal}
 	c.oblist[s] = sym
 	return sym
+}
+
+func (c *Scheme) Gensym(s string) *Symbol {
+	name := ".G" + strconv.Itoa(c.nextGensym) + "." + s
+	c.nextGensym++
+	return &Symbol{Name: name, Value: c.UndefinedVal}
 }
 
 func (c *Scheme) EvalToplevel(expr Code) Val {

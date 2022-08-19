@@ -1,3 +1,5 @@
+// The reader produces an sexpr from an input stream
+
 package runtime
 
 import (
