@@ -291,10 +291,10 @@ again:
 		args := vals[1:]
 		if p, ok := maybeProc.(*Procedure); ok {
 			if len(args) < p.Lam.Fixed {
-				panic("Not enough arguments") // FIXME msg
+				panic("Not enough arguments") // TODO msg
 			}
 			if len(args) > p.Lam.Fixed && !p.Lam.Rest {
-				panic("Too many arguments") // FIXME msg
+				panic("Too many arguments") // TODO msg
 			}
 			if p.Lam.Body == nil {
 				return p.Primop(c, args)
@@ -334,7 +334,7 @@ again:
 			env = newEnv
 			goto again
 		} else {
-			panic("Not a procedure") // FIXME msg
+			panic("Not a procedure") // TODO msg
 		}
 	case *Lambda:
 		return &Procedure{e, env, nil}
