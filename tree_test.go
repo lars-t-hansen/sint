@@ -1,6 +1,6 @@
 // Test cases that run preconstructed program trees through the evaluator.
 
-package sint
+package main
 
 import (
 	"math/big"
@@ -27,7 +27,6 @@ func exact(n int64) Code {
 
 func TestFibTree(t *testing.T) {
 	c := NewScheme()
-	nullVal = c.NullVal
 	runtime.InitPrimitives(c)
 	runtime.InitCompiled(c)
 	n := &Lexical{Levels: 0, Offset: 0}

@@ -1,6 +1,6 @@
 // Test cases that compile sexprs into programs and then run those programs.
 
-package sint
+package main
 
 import (
 	"math/big"
