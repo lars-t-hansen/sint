@@ -3,28 +3,32 @@
 package runtime
 
 import (
-	"bufio"
 	"io"
 	"math/big"
 	. "sint/core"
 )
 
+// Matches bufio.Reader and strings.Reader
+type InputStream interface {
+	ReadRune() (rune, int, error)
+	UnreadRune() error
+}
+
 type reader struct {
 	c      *Scheme
-	rdr    *bufio.Reader
+	rdr    InputStream
 	symDot *Symbol
 }
 
-func Read(c *Scheme, rdr *bufio.Reader) Val {
+func Read(c *Scheme, rdr InputStream) Val {
 	r := &reader{c: c, rdr: rdr, symDot: c.Intern(".")}
 	return r.read()
 }
 
 func (r *reader) read() Val {
-	r.skipWhitespace()
-	c, _, err := r.rdr.ReadRune()
-	if err != nil {
-		return r.handleError(err)
+	c, atEOF := r.skipWhitespace()
+	if atEOF {
+		return r.c.EofVal
 	}
 	switch c {
 	case '(':
@@ -33,9 +37,11 @@ func (r *reader) read() Val {
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
 			r.handleErrorIgnoreEOF(err)
+			return r.symDot
 		}
-		if isSymbolInitial(d) {
-			r.rdr.UnreadRune()
+		r.rdr.UnreadRune()
+		// TODO: Maybe .37 is valid syntax for 0.37
+		if isSymbolSubsequent(d) {
 			return r.readSymbol(c)
 		}
 		return r.symDot
@@ -115,13 +121,9 @@ func (r *reader) readList() Val {
 }
 
 func (r *reader) canReadRightParen() bool {
-	r.skipWhitespace()
-	c, _, err := r.rdr.ReadRune()
-	if err != nil {
-		if err == io.EOF {
-			panic("EOF in datum")
-		}
-		panic("I/O error")
+	c, atEOF := r.skipWhitespace()
+	if atEOF {
+		panic("EOF in datum")
 	}
 	if c == ')' {
 		return true
@@ -240,15 +242,19 @@ func (r *reader) readSymbol(initial rune) Val {
 	return r.c.Intern(s)
 }
 
-func (r *reader) skipWhitespace() {
+// Skip whitespace.  Throws on I/O error.  If EOF is encountered, atEOF is
+// true and the ch is garbage.  Otherwise, atEOF is false and ch has the
+// first nonblank character.
+func (r *reader) skipWhitespace() (ch rune, atEOF bool) {
 	for {
 		c, _, err := r.rdr.ReadRune()
 		if err != nil {
 			r.handleErrorIgnoreEOF(err)
-			break
+			atEOF = true
+			return
 		}
 		if !isSpace(c) {
-			r.rdr.UnreadRune()
+			ch = c
 			return
 		}
 	}
@@ -257,46 +263,46 @@ func (r *reader) skipWhitespace() {
 var charTable [128]byte
 
 const (
-	INITIAL    = 1
-	SUBSEQUENT = 2
-	SPACE      = 4
+	kInitial    = 1
+	kSubsequent = 2
+	kSpace      = 4
 )
 
 func init() {
 	for c := 'a'; c <= 'z'; c++ {
-		charTable[c] = INITIAL | SUBSEQUENT
+		charTable[c] = kInitial | kSubsequent
 	}
 	for c := 'A'; c <= 'Z'; c++ {
-		charTable[c] = INITIAL | SUBSEQUENT
+		charTable[c] = kInitial | kSubsequent
 	}
-	charTable['_'] = INITIAL | SUBSEQUENT
-	charTable['$'] = INITIAL | SUBSEQUENT
-	charTable['+'] = INITIAL | SUBSEQUENT
-	charTable['-'] = INITIAL | SUBSEQUENT
-	charTable['*'] = INITIAL | SUBSEQUENT
-	charTable['/'] = INITIAL | SUBSEQUENT
-	charTable['<'] = INITIAL | SUBSEQUENT
-	charTable['>'] = INITIAL | SUBSEQUENT
-	charTable['='] = INITIAL | SUBSEQUENT
+	charTable['_'] = kInitial | kSubsequent
+	charTable['$'] = kInitial | kSubsequent
+	charTable['+'] = kInitial | kSubsequent
+	charTable['-'] = kInitial | kSubsequent
+	charTable['*'] = kInitial | kSubsequent
+	charTable['/'] = kInitial | kSubsequent
+	charTable['<'] = kInitial | kSubsequent
+	charTable['>'] = kInitial | kSubsequent
+	charTable['='] = kInitial | kSubsequent
 	for c := '0'; c <= '9'; c++ {
-		charTable[c] = SUBSEQUENT
+		charTable[c] = kSubsequent
 	}
-	charTable[' '] = SPACE
-	charTable['\n'] = SPACE
-	charTable['\r'] = SPACE
-	charTable['\t'] = SPACE
+	charTable[' '] = kSpace
+	charTable['\n'] = kSpace
+	charTable['\r'] = kSpace
+	charTable['\t'] = kSpace
 }
 
 func isSymbolInitial(c rune) bool {
-	return c < 128 && (charTable[c]&INITIAL) != 0
+	return c < 128 && (charTable[c]&kInitial) != 0
 }
 
 func isSymbolSubsequent(c rune) bool {
-	return c < 128 && (charTable[c]&SUBSEQUENT) != 0
+	return c < 128 && (charTable[c]&kSubsequent) != 0
 }
 
 func isSpace(c rune) bool {
-	return c < 128 && (charTable[c]&SPACE) != 0
+	return c < 128 && (charTable[c]&kSpace) != 0
 }
 
 func (r *reader) handleError(err error) Val {

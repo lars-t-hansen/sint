@@ -19,8 +19,9 @@ func main() {
 		writer.WriteString("> ")
 		writer.Flush()
 		v := runtime.Read(engine, reader)
-		// TODO: This test for EOF does not work, interestingly, but where is the error?
 		if v == engine.EofVal {
+			writer.WriteByte('\n')
+			writer.Flush()
 			break
 		}
 		// TODO: Recover from compilation error
