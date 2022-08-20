@@ -35,7 +35,7 @@ type Cons struct {
 }
 
 func (c *Cons) String() string {
-	return "cons"
+	return "[cons " + c.Car.String() + c.Cdr.String() + "]"
 }
 
 type Symbol struct {
@@ -44,7 +44,7 @@ type Symbol struct {
 }
 
 func (c *Symbol) String() string {
-	return "symbol"
+	return "[symbol " + c.Name + "]"
 }
 
 type Procedure struct {
@@ -122,7 +122,7 @@ type Quote struct {
 }
 
 func (c *Quote) String() string {
-	return "quote"
+	return "(quote " + c.Value.String() + ")"
 }
 
 type If struct {
@@ -132,7 +132,7 @@ type If struct {
 }
 
 func (c *If) String() string {
-	return "if"
+	return "(if " + c.Test.String() + " " + c.Consequent.String() + ")"
 }
 
 type Begin struct {
@@ -140,7 +140,15 @@ type Begin struct {
 }
 
 func (c *Begin) String() string {
-	return "begin"
+	return "(begin " + stringifyExprs(c.Exprs) + ")"
+}
+
+func stringifyExprs(es []Code) string {
+	s := es[0].String()
+	for _, e := range es[1:] {
+		s = s + " " + e.String()
+	}
+	return s
 }
 
 type Call struct {
@@ -148,7 +156,7 @@ type Call struct {
 }
 
 func (c *Call) String() string {
-	return "call"
+	return "(" + stringifyExprs(c.Exprs) + ")"
 }
 
 type Lambda struct {
@@ -160,7 +168,7 @@ type Lambda struct {
 }
 
 func (c *Lambda) String() string {
-	return "lambda"
+	return "(lambda " + strconv.Itoa(c.Fixed) + strconv.FormatBool(c.Rest) + " " + c.Body.String() + ")"
 }
 
 type Let struct {
@@ -170,7 +178,7 @@ type Let struct {
 }
 
 func (c *Let) String() string {
-	return "let"
+	return "(let (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
 }
 
 type Letrec struct {
@@ -180,7 +188,7 @@ type Letrec struct {
 }
 
 func (c *Letrec) String() string {
-	return "letrec"
+	return "(letrec (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
 }
 
 type Lexical struct {
@@ -190,7 +198,7 @@ type Lexical struct {
 }
 
 func (c *Lexical) String() string {
-	return "lexical"
+	return "(lexical " + strconv.Itoa(c.Levels) + " " + strconv.Itoa(c.Offset) + ")"
 }
 
 type Setlex struct {
@@ -201,7 +209,7 @@ type Setlex struct {
 }
 
 func (c *Setlex) String() string {
-	return "setlex"
+	return "(setlex " + strconv.Itoa(c.Levels) + " " + strconv.Itoa(c.Offset) + " " + c.Rhs.String() + ")"
 }
 
 type Global struct {
@@ -209,7 +217,7 @@ type Global struct {
 }
 
 func (c *Global) String() string {
-	return "global"
+	return "(global " + c.Name.Name + ")"
 }
 
 type Setglobal struct {
@@ -218,7 +226,7 @@ type Setglobal struct {
 }
 
 func (c *Setglobal) String() string {
-	return "setglobal"
+	return "(setglobal " + c.Name.Name + " " + c.Rhs.String() + ")"
 }
 
 // Runtimes.

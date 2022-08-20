@@ -95,6 +95,7 @@ func lookup(env *cenv, s *Symbol) (int, int, bool) {
 				return levels, offset, true
 			}
 		}
+		levels++
 		env = env.link
 	}
 	return 0, 0, false
@@ -131,6 +132,7 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 }
 
 func (c *Compiler) compileExpr(v Val, env *cenv) Code {
+	//os.Stdout.WriteString(v.String() + "\n")
 	switch e := v.(type) {
 	case *big.Int:
 		return &Quote{Value: e}
@@ -302,9 +304,11 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	if !bindingsAreOk {
 		panic(name + ": Illegal form")
 	}
-	bodyExpr := cddr(l)
+	var bodyExpr Val
 	if llen > 3 {
-		bodyExpr = cons(c.beginSym, bodyExpr)
+		bodyExpr = cons(c.beginSym, cddr(l))
+	} else {
+		bodyExpr = car(cddr(l))
 	}
 	// Optimization: Don't introduce a rib if there are no bindings
 	if len(names) == 0 {
@@ -449,6 +453,7 @@ func (c *Compiler) checkLetBindings(bindings Val) (names []*Symbol, inits []Val,
 		}
 		names = append(names, nameSym)
 		inits = append(inits, bindingExpr)
+		bindings = cdr(bindings)
 	}
 	if !c.namesAreUnique(names) {
 		return

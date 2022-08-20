@@ -25,6 +25,8 @@ func main() {
 		}
 		// TODO: Recover from compilation error
 		prog := comp.CompileToplevel(v)
+		writer.WriteString(prog.String() + "\n")
+		writer.Flush()
 		// TODO: Recover from runtime error
 		result := engine.EvalToplevel(prog)
 		// TODO: Maybe not write if unspecified?

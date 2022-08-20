@@ -44,6 +44,25 @@ func TestFibSexpr(t *testing.T) {
 	}
 }
 
+/*
+func TestLetSexpr(t *testing.T) {
+	c := NewScheme()
+	nullVal = c.NullVal
+	comp := compiler.NewCompiler(c)
+	runtime.InitPrimitives(c)
+	runtime.InitCompiled(c)
+	symLet := c.Intern("let")
+	syma := c.Intern("a")
+	symb := c.Intern("b")
+	symPlus := c.Intern("+")
+	prog := list(symLet, list(list(syma, big.NewInt(10))),
+		list(symLet, list(list(symb, big.NewInt(20))),
+			list(symPlus, syma, symb)))
+	code := comp.CompileToplevel(prog)
+	t.Fatal(code.String())
+}
+*/
+
 func list(vs ...Val) Val {
 	v := nullVal
 	for i := len(vs) - 1; i >= 0; i-- {
