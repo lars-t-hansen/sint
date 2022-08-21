@@ -99,11 +99,11 @@ func emitDatum(v Val, w *bufio.Writer) {
 	case *Symbol:
 		emitSymbol(d, w)
 	case *big.Int:
-		// FIXME: Different depending on whether the value is int64 or not
-		w.WriteString("...")
+		// FIXME: Bytes from GobEncode
+		w.WriteString("c.DecodeInt([]byte{...})")
 	case *big.Float:
-		// FIXME: Different depending on whether the value is float64 or not
-		w.WriteString("...")
+		// FIXME: Bytes from GobEncode
+		w.WriteString("c.DecodeFloat([]byte{...})")
 	case *Cons:
 		w.WriteString("&Cons{Car:")
 		emitDatum(d.Car, w)

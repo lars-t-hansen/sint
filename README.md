@@ -1,13 +1,22 @@
 # sint
 Subset scheme implementation in Go
 
-TODO in some kind of priority order
-- finish the compiler - compile both to in-memory trees and to Go code on disk
+To help prioritize:
+- "Learn more go" -- emphasize things that do that, eg, I/O, efficiency
+
+Near-term TODO
+- more testing and bugfixing
+- compile to Go code on disk, and figure out how to incorporate this
 - some kind of loader from file
 - strings
 - characters
 - a number of primitives
-- "Learn more go" -- emphasize things that do that, eg, I/O, efficiency
-- threads!
-- a way of compiling Scheme code into this system, for the std lib
+- eval & apply
+- library functions, compiled-in
 - some kind of repl
+- probably want to represent ports somehow, including string ports
+- basic error handling
+- the sint/runtime package could provide a Processor abstraction that encapsulates boilerplate
+
+Longer-term(?) TODO
+- goroutines and channels

@@ -12,12 +12,24 @@ func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Sch
 
 func InitPrimitives(c *Scheme) {
 	// TODO: These could go in a table, it doesn't have to be code
+
+	// Fundamental predicates
+	addPrimitive(c, "null?", 1, false, primNullp)
+	addPrimitive(c, "pair?", 1, false, primPairp)
+	addPrimitive(c, "symbol?", 1, false, primSymbolp)
+	addPrimitive(c, "number?", 1, false, primNumberp)
+	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+
+	// Pairs and lists
 	addPrimitive(c, "cons", 2, false, primCons)
 	addPrimitive(c, "car", 1, false, primCar)
 	addPrimitive(c, "cdr", 1, false, primCdr)
 	addPrimitive(c, "set-car!", 2, false, primSetcar)
 	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
-	addPrimitive(c, "null?", 1, false, primNullp)
+
+	// Numbers
+	addPrimitive(c, "real?", 1, false, primRealp)
+	addPrimitive(c, "integer?", 1, false, primIntegerp)
 	addPrimitive(c, "+", 0, true, primAdd)
 	addPrimitive(c, "-", 1, true, primSub)
 	addPrimitive(c, "<", 2, true, primLess)
@@ -29,25 +41,77 @@ func InitPrimitives(c *Scheme) {
 	// /
 	// quotient
 	// (other numerics as required)
-	// integer?
-	// real?
-	// exact?
-	// inexact?
 	// <=
 	// >
 	// >=
 	// exact->inexact
 	// inexact->exact
-	// not
-	// boolean?
-	// pair?
 	// string?
-	// symbol?
 	// symbol->string
 	// string->symbol
 	// (Anything to do with characters, which we don't have yet but must have)
-	// (Many string functions)
-	// procedure?
+	// (Many string functions, ditto)
+}
+
+func primNullp(ctx *Scheme, args []Val) Val {
+	if args[0] == ctx.NullVal {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primPairp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*Cons); ok {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primSymbolp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*Symbol); ok {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primProcedurep(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*Symbol); ok {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primNumberp(ctx *Scheme, args []Val) Val {
+	switch args[0].(type) {
+	case *big.Int:
+		return ctx.TrueVal
+	case *big.Float:
+		return ctx.TrueVal
+	default:
+		return ctx.FalseVal
+	}
+}
+
+func primRealp(ctx *Scheme, args []Val) Val {
+	switch args[0].(type) {
+	case *big.Int:
+		return ctx.TrueVal
+	case *big.Float:
+		return ctx.TrueVal
+	default:
+		panic("real?: not a number: " + args[0].String())
+	}
+}
+
+func primIntegerp(ctx *Scheme, args []Val) Val {
+	switch args[0].(type) {
+	case *big.Int:
+		return ctx.TrueVal
+	case *big.Float:
+		return ctx.FalseVal
+	default:
+		panic("integer?: not a number: " + args[0].String())
+	}
 }
 
 func checkCons(v Val, fn string) *Cons {
@@ -77,13 +141,6 @@ func primSetcar(ctx *Scheme, args []Val) Val {
 func primSetcdr(ctx *Scheme, args []Val) Val {
 	checkCons(args[0], "set-cdr!").Cdr = args[1]
 	return ctx.UnspecifiedVal
-}
-
-func primNullp(ctx *Scheme, args []Val) Val {
-	if args[0] == ctx.NullVal {
-		return ctx.TrueVal
-	}
-	return ctx.FalseVal
 }
 
 func primAdd(c *Scheme, args []Val) Val {
