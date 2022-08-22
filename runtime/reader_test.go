@@ -8,6 +8,9 @@ import (
 	"testing"
 )
 
+// None of these tests are whitebox; they could be moved out of the package,
+// to avoid polluting it.
+
 func TestReader(t *testing.T) {
 	c := NewScheme()
 	{
