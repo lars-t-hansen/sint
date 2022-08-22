@@ -32,6 +32,11 @@
 (define (list . xs) xs)
 
 ;;(define (list? xs) ...)
+;; list-ref
+;; filter
+;; for-each
+;; every?
+;; some?
 
 (define length
   (letrec ((loop
@@ -76,3 +81,12 @@
 		  (loop (cdr l) (cons (car l) r))))))
     (lambda (l)
       (loop l '()))))
+
+(define reverse-append
+  (letrec ((loop
+	    (lambda (xs l)
+	      (if (null? xs)
+		  l
+		  (loop (cdr xs) (cons (car xs) l))))))
+    (lambda (xs l)
+      (loop xs l))))

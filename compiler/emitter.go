@@ -36,7 +36,7 @@ func emit(expr Code, w *bufio.Writer) {
 		emitExprs(e.Exprs, w)
 		w.WriteString("}")
 	case *Lambda:
-		w.WriteString(fmt.Sprintf("&Lambda{Fixed:%d, Rest:%t, Body:", e.Fixed, e.Rest))
+		fmt.Fprintf(w, "&Lambda{Fixed:%d, Rest:%t, Body:", e.Fixed, e.Rest)
 		emit(e.Body, w)
 		w.WriteString("}")
 	case *Let:
@@ -52,9 +52,9 @@ func emit(expr Code, w *bufio.Writer) {
 		emit(e.Body, w)
 		w.WriteString("}")
 	case *Lexical:
-		w.WriteString(fmt.Sprintf("&Lexical{Levels:%d, Offset:%d}", e.Levels, e.Offset))
+		fmt.Fprintf(w, "&Lexical{Levels:%d, Offset:%d}", e.Levels, e.Offset)
 	case *Setlex:
-		w.WriteString(fmt.Sprintf("&Setlex{Levels:%d, Offset:%d, Rhs:", e.Levels, e.Offset))
+		fmt.Fprintf(w, "&Setlex{Levels:%d, Offset:%d, Rhs:", e.Levels, e.Offset)
 		emit(e.Rhs, w)
 		w.WriteString("}")
 	case *Global:
@@ -99,11 +99,26 @@ func emitDatum(v Val, w *bufio.Writer) {
 	case *Symbol:
 		emitSymbol(d, w)
 	case *big.Int:
-		// FIXME: Bytes from GobEncode
-		w.WriteString("c.DecodeInt([]byte{...})")
+		if d.IsInt64() {
+			fmt.Fprintf(w, "big.NewInt(%d)", d.Int64())
+		} else {
+			bytes, err := d.GobEncode()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Fprintf(w, "c.DecodeInt([]byte{%s})", bytes)
+		}
 	case *big.Float:
-		// FIXME: Bytes from GobEncode
-		w.WriteString("c.DecodeFloat([]byte{...})")
+		n, acc := d.Float64()
+		if acc == big.Exact {
+			fmt.Fprintf(w, "big.NewFloat(%g)", n)
+		} else {
+			bytes, err := d.GobEncode()
+			if err != nil {
+				panic(err)
+			}
+			fmt.Fprintf(w, "c.DecodeFloat([]byte{%s})", bytes)
+		}
 	case *Cons:
 		w.WriteString("&Cons{Car:")
 		emitDatum(d.Car, w)

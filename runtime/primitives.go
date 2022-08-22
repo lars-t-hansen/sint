@@ -10,6 +10,16 @@ func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Sch
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
+// These are primitives that do not invoke procedures.  All primitives that do invoke
+// procedures must be supported differently, to ensure proper tail recursion.  Not sure
+// how to do that yet, but the most obvious way is to have hand-written procedures that
+// invoke special instructions that do the right thing.  Then the evaluator will insert
+// the correct glue.  apply is obvious, as in Larceny.  eval I'm not sure about.  it is
+// a function that compiles an expression and then runs it.  Probably hte compiled
+// expression is delivered in the form of a thunk.  Then the thunk can be invoked in the
+// manner of a tail call.  So eval is user code that uses a primitive to create the thunk,
+// and then just invokes it.
+
 func InitPrimitives(c *Scheme) {
 	// TODO: These could go in a table, it doesn't have to be code
 
@@ -35,6 +45,9 @@ func InitPrimitives(c *Scheme) {
 	addPrimitive(c, "<", 2, true, primLess)
 	addPrimitive(c, "=", 2, true, primEqual)
 
+	// Sundry
+	addPrimitive(c, "compile-toplevel-phrase", 1, false, primCompileToplevel)
+
 	// eqv?
 	// eq?
 	// *
@@ -51,6 +64,8 @@ func InitPrimitives(c *Scheme) {
 	// string->symbol
 	// (Anything to do with characters, which we don't have yet but must have)
 	// (Many string functions, ditto)
+
+	// eval + apply are NOT here, see comments in the evaluator
 }
 
 func primNullp(ctx *Scheme, args []Val) Val {
@@ -275,4 +290,10 @@ func checkNumber(v Val, s string) Val {
 		return v
 	}
 	panic("'" + s + ": Not a number: " + v.String())
+}
+
+func primCompileToplevel(c *Scheme, args []Val) Val {
+	// Compiles args[0] into a lambda and then creates a toplevel procedure
+	// from that lambda, and returns the procedure
+	panic("compileToplevel not implemented yet")
 }

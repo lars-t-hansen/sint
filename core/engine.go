@@ -303,6 +303,7 @@ again:
 		expr = e.Exprs[len(e.Exprs)-1]
 		goto again
 	case *Call:
+		// TODO: eval and apply must be supported directly here
 		vals := c.evalExprs(e.Exprs, env)
 		maybeProc := vals[0]
 		args := vals[1:]
