@@ -1,12 +1,14 @@
-;; compile-toplevel-phrase returns a thunk.
+;; -*- fill-column: 100 -*-
+
+;; (sint:compile-toplevel-phrase x) interprets the datum `x` as top-level source code and returns a
+;; thunk that evaluates that code and returns its result.
 
 (define (eval x)
-  ((compile-toplevel-phrase x)))
+  ((sint:compile-toplevel-phrase x)))
 
-;; @raw-apply@ is a built-in function that uses a special instruction
-;; to invoke the function on the arguments with proper tail recursion.
+;; (sint:raw-apply fn l count) is a primitive that applies the procedure `fn` to the `count` first
+;; values in the list `l` in a properly tail-recursive manner.
 
-(define apply
   (letrec ((construct-apply-args
             (lambda (x rest)
               (if (null? rest)
@@ -24,5 +26,5 @@
     (lambda (fn x . rest)
       (if (not (procedure? fn))
           (error "apply: expected procedure")
-          (@raw-apply@ fn (construct-apply-args x rest))))))
+          (sint:raw-apply fn (construct-apply-args x rest))))))
                      

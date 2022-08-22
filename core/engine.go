@@ -100,6 +100,7 @@ func (c *EofObject) String() string {
 //   *Begin,
 //   *Quote,
 //   *Call,
+//   *Apply,
 //   *Lambda,
 //   *Let,
 //   *Letrec,
@@ -157,6 +158,12 @@ type Call struct {
 
 func (c *Call) String() string {
 	return "(" + stringifyExprs(c.Exprs) + ")"
+}
+
+type Apply struct{}
+
+func (c *Apply) String() string {
+	return "sint:raw-apply"
 }
 
 type Lambda struct {
@@ -354,6 +361,9 @@ again:
 		} else {
 			panic("Not a procedure") // TODO msg
 		}
+	case *Apply:
+		// FIXME
+		panic("Apply not implemented yet")
 	case *Lambda:
 		return &Procedure{e, env, nil}
 	case *Let:

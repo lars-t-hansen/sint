@@ -168,6 +168,7 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 			// TODO: case
 			// TODO: cond
 			// TODO: do
+			// TODO: named let
 			if kwd == c.lambdaSym {
 				return c.compileLambda(e, llen, env)
 			}
@@ -193,7 +194,7 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 		}
 		return c.compileCall(e, llen, env)
 	default:
-		panic("Bad expression")
+		panic("Bad expression: " + v.String())
 	}
 }
 
@@ -250,7 +251,7 @@ func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) Code {
 	// (if expr expr)
 	// (if expr expr expr)
 	if llen != 3 && llen != 4 {
-		panic("if: Illegal form")
+		panic("if: Illegal form: " + l.String())
 	}
 	test := cadr(l)
 	consequent := caddr(l)
@@ -267,11 +268,11 @@ func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) Code {
 
 func (c *Compiler) compileLambda(l Val, llen int, env *cenv) Code {
 	if llen < 3 {
-		panic("lambda: Illegal form")
+		panic("lambda: Illegal form: " + l.String())
 	}
 	fixed, rest, formals, ok := c.checkLambdaSignature(cadr(l))
 	if !ok {
-		panic("lambda: Illegal form")
+		panic("lambda: Illegal form: " + l.String())
 	}
 	bodyExpr := cddr(l)
 	if llen > 3 {
@@ -298,11 +299,11 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 		name = "letrec"
 	}
 	if llen < 3 {
-		panic(name + ": Illegal form")
+		panic(name + ": Illegal form: " + l.String())
 	}
 	names, inits, bindingsAreOk := c.checkLetBindings(cadr(l))
 	if !bindingsAreOk {
-		panic(name + ": Illegal form")
+		panic(name + ": Illegal form: " + l.String())
 	}
 	var bodyExpr Val
 	if llen > 3 {
@@ -335,18 +336,19 @@ func (c *Compiler) compileOr(l Val, llen int, env *cenv) Code {
 	}
 	// Introduce a let binding to avoid repeated evaluation.
 	// Optimization: Don't introduce a let if the first operand is a variable.
-	fst := cadr(l)
+	first := cadr(l)
+	rest := cddr(l)
 	useLet := true
 	var vname *Symbol
-	if s, isSymbol := fst.(*Symbol); isSymbol {
+	if s, isSymbol := first.(*Symbol); isSymbol {
 		vname = s
 		useLet = false
 	} else {
 		vname = c.s.Gensym("OR")
 	}
-	e := cons(c.ifSym, cons(vname, cons(vname, cons(c.orSym, cddr(l)))))
+	e := c.list(c.ifSym, vname, vname, cons(c.orSym, rest))
 	if useLet {
-		e = c.list(c.letSym, c.list(c.list(vname, fst)), e)
+		e = c.list(c.letSym, c.list(c.list(vname, first)), e)
 	}
 	return c.compileExpr(e, env)
 }
@@ -354,7 +356,7 @@ func (c *Compiler) compileOr(l Val, llen int, env *cenv) Code {
 func (c *Compiler) compileQuote(l Val, llen int, env *cenv) Code {
 	// (quote datum)
 	if llen != 2 {
-		panic("quote: Illegal form")
+		panic("quote: Illegal form: " + l.String())
 	}
 
 	// There are probably restrictions on the datum.  It can be:

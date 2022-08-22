@@ -13,6 +13,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"sint/compiler"
 	"sint/core"
@@ -75,18 +76,28 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 	if strings.LastIndex(fn, ".sch") != len(fn)-4 {
 		panic("Input file for 'compile' must have type '.sch'")
 	}
-	tmpFn := fn[:len(fn)-4] + ".tmp"
-	outFn := fn[:len(fn)-4] + ".go"
-	os.Stdout.WriteString(tmpFn + "\n")
-	os.Stdout.WriteString(outFn + "\n")
+	withoutExt := fn[:len(fn)-4]
+	ix := strings.LastIndexAny(withoutExt, "/\\")
+	moduleName := withoutExt
+	if ix != -1 {
+		moduleName = moduleName[ix+1:]
+	}
+	if len(moduleName) == 0 {
+		panic("Input file name is empty")
+	}
+	moduleName = strings.ToUpper(moduleName[0:1]) + strings.ToLower(moduleName[1:])
+	tmpFn := withoutExt + ".tmp"
+	outFn := withoutExt + ".go"
 	input, inErr := os.Open(fn)
 	if inErr != nil {
 		panic(inErr)
 	}
+	// TODO: Use proper tempfiles
 	tmp, tmpErr := os.Create(tmpFn)
 	if tmpErr != nil {
 		panic(tmpErr)
 	}
+	// TODO: Remove the tempfile on error / early exit
 	/*
 		defer {
 			if tmp != nil {
@@ -95,12 +106,31 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 			}
 		}
 	*/
-	// Compute output file from input file
-	// Open input file
-	// Open temp output file, remove on exit if failure
-	// Read expressions
-	// Compile them
-	// Emit them as Go code
-	// Close files
-	// Rename temp file as final output file
+	reader := bufio.NewReader(input)
+	writer := bufio.NewWriter(tmp)
+	fmt.Fprintf(writer, `
+package runtime
+import (
+	. "sint/core"
+)
+func init%s(c *Scheme) {
+`, moduleName)
+	id := 1
+	for {
+		v := runtime.Read(engine, reader)
+		if v == engine.EofVal {
+			break
+		}
+		// TODO: Recover from compilation error
+		prog := comp.CompileToplevel(v)
+		initName := fmt.Sprintf("code%d", id)
+		id++
+		compiler.EmitGo(prog, initName, writer)
+		fmt.Fprintf(writer, "c.EvalToplevel(%s)\n", initName)
+	}
+	writer.WriteString("}\n")
+	writer.Flush()
+	input.Close()
+	tmp.Close()
+	os.Rename(tmpFn, outFn)
 }

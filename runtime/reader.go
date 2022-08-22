@@ -284,6 +284,7 @@ func init() {
 	charTable['<'] = kInitial | kSubsequent
 	charTable['>'] = kInitial | kSubsequent
 	charTable['='] = kInitial | kSubsequent
+	charTable['?'] = kInitial | kSubsequent
 	for c := '0'; c <= '9'; c++ {
 		charTable[c] = kSubsequent
 	}

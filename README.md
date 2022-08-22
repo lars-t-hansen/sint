@@ -12,6 +12,14 @@ Near-term TODO
 - characters
 - a number of primitives
 - eval & apply
+- multiple values
+  - let-values syntax
+  - values primitive
+  - call-with-values primitive
+  - probably each function starts returning two values, the first value plus a flag indicating additional values
+  - "values" stores additional values in secret slots
+  - "call-with-values" interprets the flag and the slots
+  - single-value continuations ignore the flag and the secret slots
 - library functions, compiled-in
 - some kind of repl
 - probably want to represent ports somehow, including string ports

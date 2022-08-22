@@ -10,6 +10,9 @@ func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Sch
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
+func addApply(c *Scheme) {
+}
+
 // These are primitives that do not invoke procedures.  All primitives that do invoke
 // procedures must be supported differently, to ensure proper tail recursion.  Not sure
 // how to do that yet, but the most obvious way is to have hand-written procedures that
@@ -29,6 +32,7 @@ func InitPrimitives(c *Scheme) {
 	addPrimitive(c, "symbol?", 1, false, primSymbolp)
 	addPrimitive(c, "number?", 1, false, primNumberp)
 	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+	addPrimitive(c, "eq?", 2, false, primEqp)
 
 	// Pairs and lists
 	addPrimitive(c, "cons", 2, false, primCons)
@@ -44,9 +48,6 @@ func InitPrimitives(c *Scheme) {
 	addPrimitive(c, "-", 1, true, primSub)
 	addPrimitive(c, "<", 2, true, primLess)
 	addPrimitive(c, "=", 2, true, primEqual)
-
-	// Sundry
-	addPrimitive(c, "compile-toplevel-phrase", 1, false, primCompileToplevel)
 
 	// eqv?
 	// eq?
@@ -65,7 +66,17 @@ func InitPrimitives(c *Scheme) {
 	// (Anything to do with characters, which we don't have yet but must have)
 	// (Many string functions, ditto)
 
-	// eval + apply are NOT here, see comments in the evaluator
+	// See runtime/control.sch.  This treats its argument as a top-level program expression or
+	// form and returns a thunk that evaluates that program.
+	addPrimitive(c, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
+
+	// See runtime/control.sch.  This is a one-instruction procedure with the signature (fn l count)
+	// where the `fn` must be a procedure and `l` must appear to be a list up to at least `count` elements.
+	// It applies `fn` to the `count` first elements of `l` in a properly tail-recursive manner.
+	// The values are not arguments to the instruction but are taken from the environment, lexical offsets
+	// 0, 1, and 2 at relative level 0.
+	sym := c.Intern("sint:raw-apply")
+	sym.Value = &Procedure{Lam: &Lambda{Fixed: 3, Rest: false, Body: &Apply{}}, Env: nil, Primop: nil}
 }
 
 func primNullp(ctx *Scheme, args []Val) Val {
@@ -105,6 +116,13 @@ func primNumberp(ctx *Scheme, args []Val) Val {
 	default:
 		return ctx.FalseVal
 	}
+}
+
+func primEqp(ctx *Scheme, args []Val) Val {
+	if args[0] == args[1] {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
 }
 
 func primRealp(ctx *Scheme, args []Val) Val {

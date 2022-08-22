@@ -10,7 +10,7 @@ import (
 )
 
 func EmitGo(expr Code, name string, w *bufio.Writer) {
-	w.WriteString("var " + name + " Code = \n")
+	w.WriteString(name + " := \n")
 	emit(expr, w)
 	w.WriteString("\n")
 }
@@ -35,18 +35,22 @@ func emit(expr Code, w *bufio.Writer) {
 		w.WriteString("&Call{Exprs:")
 		emitExprs(e.Exprs, w)
 		w.WriteString("}")
+	case *Apply:
+		// There are no technical reasons why we couldn't just emit it, but
+		// it should never appear in code we want to emit.
+		panic("The Apply instruction is not supported by the emitter")
 	case *Lambda:
-		fmt.Fprintf(w, "&Lambda{Fixed:%d, Rest:%t, Body:", e.Fixed, e.Rest)
+		fmt.Fprintf(w, "&Lambda{\nFixed:%d, Rest:%t,\nBody:", e.Fixed, e.Rest)
 		emit(e.Body, w)
 		w.WriteString("}")
 	case *Let:
-		w.WriteString("&Let{Bindings:")
+		w.WriteString("&Let{Exprs:")
 		emitExprs(e.Exprs, w)
 		w.WriteString(", Body:")
 		emit(e.Body, w)
 		w.WriteString("}")
 	case *Letrec:
-		w.WriteString("&Letrec{Bindings:")
+		w.WriteString("&Letrec{Exprs:")
 		emitExprs(e.Exprs, w)
 		w.WriteString(", Body:")
 		emit(e.Body, w)
@@ -74,7 +78,7 @@ func emit(expr Code, w *bufio.Writer) {
 }
 
 func emitExprs(es []Code, w *bufio.Writer) {
-	w.WriteString("&Code[]{")
+	w.WriteString("[]Code{\n")
 	for _, e := range es {
 		emit(e, w)
 		w.WriteString(",\n")
