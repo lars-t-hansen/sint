@@ -8,8 +8,6 @@ import (
 	. "sint/core"
 )
 
-// TODO: Comments!
-
 // Matches bufio.Reader and strings.Reader
 type InputStream interface {
 	ReadRune() (rune, int, error)
@@ -78,6 +76,7 @@ func (r *reader) read() Val {
 		return r.readDecimalNumber(c)
 	default:
 		if isSymbolInitial(c) {
+			// TODO: quasiquote, unquote, unquote-splicing
 			return r.readSymbol(c)
 		}
 		panic("Unknown character")
@@ -248,8 +247,8 @@ func (r *reader) readSymbol(initial rune) Val {
 	return r.c.Intern(s)
 }
 
-// Skip whitespace.  Throws on I/O error.  If EOF is encountered, atEOF is
-// true and the ch is garbage.  Otherwise, atEOF is false and ch has the
+// Skip whitespace and comments.  Throws on I/O error.  If EOF is encountered,
+// atEOF is true and the ch is garbage.  Otherwise, atEOF is false and ch has the
 // first nonblank character.
 func (r *reader) skipWhitespace() (ch rune, atEOF bool) {
 again:
@@ -305,6 +304,8 @@ func init() {
 	charTable['='] = kInitial | kSubsequent
 	charTable['?'] = kInitial | kSubsequent
 	charTable[':'] = kInitial | kSubsequent
+	charTable[','] = kInitial | kSubsequent
+	charTable['@'] = kInitial | kSubsequent
 	for c := '0'; c <= '9'; c++ {
 		charTable[c] = kSubsequent
 	}

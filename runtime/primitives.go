@@ -46,12 +46,11 @@ func InitPrimitives(c *Scheme) {
 	// Numbers
 	addPrimitive(c, "+", 0, true, primAdd)
 	addPrimitive(c, "-", 1, true, primSub)
+	addPrimitive(c, "*", 0, true, primMul)
 	addPrimitive(c, "<", 2, true, primLess)
 	addPrimitive(c, "=", 2, true, primEqual)
 
 	// eqv?
-	// eq?
-	// *
 	// /
 	// quotient
 	// (other numerics as required)
@@ -66,8 +65,8 @@ func InitPrimitives(c *Scheme) {
 	// (Anything to do with characters, which we don't have yet but must have)
 	// (Many string functions, ditto)
 
-	// See runtime/control.sch.  This treats its argument as a top-level program expression or
-	// form and returns a thunk that evaluates that program.
+	// See runtime/control.sch.  This treats its argument as a top-level program form
+	// and returns a thunk that evaluates that form.
 	addPrimitive(c, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
 
 	// See runtime/control.sch.  This is a one-instruction procedure with the signature (fn l count)
@@ -193,6 +192,20 @@ func primSub(_ *Scheme, args []Val) Val {
 	return r
 }
 
+func primMul(c *Scheme, args []Val) Val {
+	if len(args) == 0 {
+		return big.NewInt(1)
+	}
+	if len(args) == 1 {
+		return checkNumber(args[0], "*")
+	}
+	r := mul2(args[0], args[1])
+	for _, v := range args[2:] {
+		r = mul2(r, v)
+	}
+	return r
+}
+
 func primLess(c *Scheme, args []Val) Val {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "<") != -1 {
@@ -232,6 +245,18 @@ func sub2(a Val, b Val) Val {
 	fa, fb := bothFloat(a, b, "+")
 	var z big.Float
 	z.Sub(fa, fb)
+	return &z
+}
+
+func mul2(a Val, b Val) Val {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Mul(ia, ib)
+		return &z
+	}
+	fa, fb := bothFloat(a, b, "*")
+	var z big.Float
+	z.Mul(fa, fb)
 	return &z
 }
 

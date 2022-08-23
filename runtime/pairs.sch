@@ -37,6 +37,7 @@
 ;; for-each
 ;; every?
 ;; some?
+;; append
 
 (define length
   (letrec ((loop
