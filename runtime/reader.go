@@ -15,14 +15,25 @@ type InputStream interface {
 }
 
 type reader struct {
-	c        *Scheme
-	rdr      InputStream
-	symDot   *Symbol
-	symQuote *Symbol
+	c          *Scheme
+	rdr        InputStream
+	symDot     *Symbol
+	symQuote   *Symbol
+	symNewline *Symbol
+	symReturn  *Symbol
+	symTab     *Symbol
+	symSpace   *Symbol
 }
 
 func Read(c *Scheme, rdr InputStream) Val {
-	r := &reader{c: c, rdr: rdr, symDot: c.Intern("."), symQuote: c.Intern("quote")}
+	r := &reader{c: c, rdr: rdr,
+		symDot:     c.Intern("."),
+		symQuote:   c.Intern("quote"),
+		symNewline: c.Intern("newline"),
+		symReturn:  c.Intern("return"),
+		symTab:     c.Intern("tab"),
+		symSpace:   c.Intern("space"),
+	}
 	return r.read()
 }
 
@@ -68,8 +79,7 @@ func (r *reader) read() Val {
 			panic("No syntax for #!unspecified and suchlike yet")
 		}
 		if d == '\\' {
-			// Remember char names for space, tab, newline, return
-			panic("Characters not yet supported")
+			return r.readCharacter()
 		}
 		panic("Unknown # syntax")
 	case '"':
@@ -231,7 +241,44 @@ func (r *reader) readDecimalDigits() (s string, any bool) {
 	}
 }
 
-func (r *reader) readSymbol(initial rune) Val {
+func (r *reader) readCharacter() Val {
+	e, _, err := r.rdr.ReadRune()
+	if err != nil {
+		r.handleErrorIgnoreEOF(err)
+		panic("EOF in character")
+	}
+	switch e {
+	case 'n', 'r', 's', 't':
+		f, _, err := r.rdr.ReadRune()
+		if err != nil {
+			r.handleErrorIgnoreEOF(err)
+			break
+		}
+		r.rdr.UnreadRune()
+		if !isAlphabetic(f) {
+			break
+		}
+		name := r.readSymbol(e)
+		if name == r.symNewline {
+			return &Char{Value: '\n'}
+		}
+		if name == r.symReturn {
+			return &Char{Value: '\r'}
+		}
+		if name == r.symTab {
+			return &Char{Value: '\t'}
+		}
+		if name == r.symSpace {
+			return &Char{Value: ' '}
+		}
+		panic("Illegal character name: " + name.Name)
+	default:
+		break
+	}
+	return &Char{Value: e}
+}
+
+func (r *reader) readSymbol(initial rune) *Symbol {
 	s := string(initial)
 	for {
 		d, _, err := r.rdr.ReadRune()
@@ -286,14 +333,15 @@ const (
 	kInitial    = 1
 	kSubsequent = 2
 	kSpace      = 4
+	kAlphabetic = 8
 )
 
 func init() {
 	for c := 'a'; c <= 'z'; c++ {
-		charTable[c] = kInitial | kSubsequent
+		charTable[c] = kInitial | kSubsequent | kAlphabetic
 	}
 	for c := 'A'; c <= 'Z'; c++ {
-		charTable[c] = kInitial | kSubsequent
+		charTable[c] = kInitial | kSubsequent | kAlphabetic
 	}
 	charTable['_'] = kInitial | kSubsequent
 	charTable['$'] = kInitial | kSubsequent
@@ -327,6 +375,10 @@ func isSymbolSubsequent(c rune) bool {
 
 func isSpace(c rune) bool {
 	return c < 128 && (charTable[c]&kSpace) != 0
+}
+
+func isAlphabetic(c rune) bool {
+	return c < 128 && (charTable[c]&kAlphabetic) != 0
 }
 
 func (r *reader) handleError(err error) Val {
