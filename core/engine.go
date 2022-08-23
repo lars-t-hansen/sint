@@ -3,240 +3,11 @@
 package core
 
 import (
-	"fmt"
 	"math/big"
 	"strconv"
 )
 
-// Values.
-//
-// type Val union {
-//   *Cons,
-//   *Symbol,
-//   *Procedure,
-//   *Null,			// Singleton
-//   *True			// Singleton
-//   *False			// Singleton
-//   *Unspecified,	// Singleton
-//   *Undefined		// Singleton
-//   *EofObject     // Singleton
-//   *big.Int,      // Exact integer
-//   *big.Float,    // Inexact real (rational?)
-//   *string		// String, immutable for now
-// }
-
-type Val interface {
-	fmt.Stringer
-}
-
-type Cons struct {
-	Car Val
-	Cdr Val
-}
-
-func (c *Cons) String() string {
-	return "[cons " + c.Car.String() + c.Cdr.String() + "]"
-}
-
-type Symbol struct {
-	Name  string
-	Value Val // if the symbol is a global variable, otherwise c.undefined
-}
-
-func (c *Symbol) String() string {
-	return "[symbol " + c.Name + "]"
-}
-
-type Procedure struct {
-	Lam    *Lambda
-	Env    *lexenv                  // closed-over lexical environment, nil for global procedures and primitives
-	Primop func(*Scheme, []Val) Val // nil for non-primitives
-}
-
-func (c *Procedure) String() string {
-	return "procedure"
-}
-
-type Null struct{}
-
-func (c *Null) String() string {
-	return "null"
-}
-
-type True struct{}
-
-func (c *True) String() string {
-	return "true"
-}
-
-type False struct{}
-
-func (c *False) String() string {
-	return "false"
-}
-
-type Unspecified struct{}
-
-func (c *Unspecified) String() string {
-	return "unspecified"
-}
-
-type Undefined struct{}
-
-func (c *Undefined) String() string {
-	return "undefined"
-}
-
-type EofObject struct{}
-
-func (c *EofObject) String() string {
-	return "eof-object"
-}
-
-// Code and evaluation.
-//
-// type Code union {
-//   *If,
-//   *Begin,
-//   *Quote,
-//   *Call,
-//   *Apply,
-//   *Lambda,
-//   *Let,
-//   *Letrec,
-//   *Lexical,
-//   *Setlex,
-//   *Global,
-//   *Setglobal
-// }
-//
-// TODO: Probably want a let*, at least, to cut down on the number of
-// ribs being allocated and the number of eval steps.
-
-type Code interface {
-	// Documentation: each expression should carry its source location
-	fmt.Stringer
-}
-
-type Quote struct {
-	Value Val
-}
-
-func (c *Quote) String() string {
-	return "(quote " + c.Value.String() + ")"
-}
-
-type If struct {
-	Test       Code
-	Consequent Code
-	Alternate  Code
-}
-
-func (c *If) String() string {
-	return "(if " + c.Test.String() + " " + c.Consequent.String() + ")"
-}
-
-type Begin struct {
-	Exprs []Code
-}
-
-func (c *Begin) String() string {
-	return "(begin " + stringifyExprs(c.Exprs) + ")"
-}
-
-func stringifyExprs(es []Code) string {
-	s := es[0].String()
-	for _, e := range es[1:] {
-		s = s + " " + e.String()
-	}
-	return s
-}
-
-type Call struct {
-	Exprs []Code
-}
-
-func (c *Call) String() string {
-	return "(" + stringifyExprs(c.Exprs) + ")"
-}
-
-type Apply struct{}
-
-func (c *Apply) String() string {
-	return "sint:raw-apply"
-}
-
-type Lambda struct {
-	Fixed int
-	Rest  bool
-	Body  Code
-	// Documentation: this should carry the doc string and the source code
-	// Documentation: This should carry the names of locals in the rib
-}
-
-func (c *Lambda) String() string {
-	return "(lambda " + strconv.Itoa(c.Fixed) + strconv.FormatBool(c.Rest) + " " + c.Body.String() + ")"
-}
-
-type Let struct {
-	Exprs []Code
-	Body  Code
-	// Documentation: This should carry the names of locals in the rib
-}
-
-func (c *Let) String() string {
-	return "(let (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
-}
-
-type Letrec struct {
-	Exprs []Code
-	Body  Code
-	// Documentation: This should carry the names of locals in the rib
-}
-
-func (c *Letrec) String() string {
-	return "(letrec (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
-}
-
-type Lexical struct {
-	Levels int
-	Offset int
-	// Documentation: This should carry the name of the variable
-}
-
-func (c *Lexical) String() string {
-	return "(lexical " + strconv.Itoa(c.Levels) + " " + strconv.Itoa(c.Offset) + ")"
-}
-
-type Setlex struct {
-	Levels int
-	Offset int
-	Rhs    Code
-	// Documentation: This should carry the name of the variable
-}
-
-func (c *Setlex) String() string {
-	return "(setlex " + strconv.Itoa(c.Levels) + " " + strconv.Itoa(c.Offset) + " " + c.Rhs.String() + ")"
-}
-
-type Global struct {
-	Name *Symbol
-}
-
-func (c *Global) String() string {
-	return "(global " + c.Name.Name + ")"
-}
-
-type Setglobal struct {
-	Name *Symbol
-	Rhs  Code
-}
-
-func (c *Setglobal) String() string {
-	return "(setglobal " + c.Name.Name + " " + c.Rhs.String() + ")"
-}
-
-// Runtimes.
+// Runtimes and evaluation.
 
 type Scheme struct {
 	UnspecifiedVal Val
@@ -287,7 +58,7 @@ func (c *Scheme) EvalToplevel(expr Code) Val {
 type lexenv struct {
 	slots []Val
 	link  *lexenv
-	// Documentation: This should carry the names of locals in the rib
+	// TODO: Documentation: This should carry the names of locals in the rib
 }
 
 func (c *Scheme) eval(expr Code, env *lexenv) Val {
@@ -310,7 +81,7 @@ again:
 		expr = e.Exprs[len(e.Exprs)-1]
 		goto again
 	case *Call:
-		// TODO: eval and apply must be supported directly here
+		// TODO: apply must be supported directly here
 		vals := c.evalExprs(e.Exprs, env)
 		maybeProc := vals[0]
 		args := vals[1:]

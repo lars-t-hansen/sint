@@ -18,7 +18,7 @@ func EmitGo(expr Code, name string, w *bufio.Writer) {
 func emit(expr Code, w *bufio.Writer) {
 	switch e := expr.(type) {
 	case *Quote:
-		w.WriteString("&Quote{")
+		w.WriteString("&Quote{Value:")
 		emitDatum(e.Value, w)
 		w.WriteString("}")
 	case *If:
