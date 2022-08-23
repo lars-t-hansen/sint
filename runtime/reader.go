@@ -15,32 +15,19 @@ type InputStream interface {
 }
 
 type reader struct {
-	c          *Scheme
-	rdr        InputStream
-	symDot     *Symbol
-	symQuote   *Symbol
-	symNewline *Symbol
-	symReturn  *Symbol
-	symTab     *Symbol
-	symSpace   *Symbol
+	s   *Scheme
+	rdr InputStream
 }
 
-func Read(c *Scheme, rdr InputStream) Val {
-	r := &reader{c: c, rdr: rdr,
-		symDot:     c.Intern("."),
-		symQuote:   c.Intern("quote"),
-		symNewline: c.Intern("newline"),
-		symReturn:  c.Intern("return"),
-		symTab:     c.Intern("tab"),
-		symSpace:   c.Intern("space"),
-	}
+func Read(s *Scheme, rdr InputStream) Val {
+	r := &reader{s: s, rdr: rdr}
 	return r.read()
 }
 
 func (r *reader) read() Val {
 	c, atEOF := r.skipWhitespace()
 	if atEOF {
-		return r.c.EofVal
+		return r.s.EofVal
 	}
 	switch c {
 	case '(':
@@ -49,27 +36,27 @@ func (r *reader) read() Val {
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
 			r.handleErrorIgnoreEOF(err)
-			return r.symDot
+			return r.s.DotSym
 		}
 		r.rdr.UnreadRune()
 		// TODO: Maybe .37 is valid syntax for 0.37
 		if isSymbolSubsequent(d) {
 			return r.readSymbol(c)
 		}
-		return r.symDot
+		return r.s.DotSym
 	case '\'':
 		v := r.read()
-		return &Cons{Car: r.symQuote, Cdr: &Cons{Car: v, Cdr: r.c.NullVal}}
+		return &Cons{Car: r.s.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}
 	case '#':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
 			return r.handleError(err)
 		}
 		if d == 't' {
-			return r.c.TrueVal
+			return r.s.TrueVal
 		}
 		if d == 'f' {
-			return r.c.FalseVal
+			return r.s.FalseVal
 		}
 		if d == 'x' {
 			return r.readHexNumber()
@@ -97,7 +84,7 @@ func (r *reader) read() Val {
 
 func (r *reader) readNotEOF() Val {
 	w := r.read()
-	if w == r.c.EofVal {
+	if w == r.s.EofVal {
 		panic("EOF not allowed here")
 	}
 	return w
@@ -112,7 +99,7 @@ func (r *reader) readList() Val {
 			break
 		}
 		v := r.readNotEOF()
-		if v == r.symDot {
+		if v == r.s.DotSym {
 			if last == nil {
 				panic("Illegal '.' in list")
 			}
@@ -123,7 +110,7 @@ func (r *reader) readList() Val {
 			}
 			break
 		}
-		p := &Cons{Car: v, Cdr: r.c.NullVal}
+		p := &Cons{Car: v, Cdr: r.s.NullVal}
 		if last != nil {
 			last.Cdr = p
 		} else {
@@ -132,7 +119,7 @@ func (r *reader) readList() Val {
 		last = p
 	}
 	if l == nil {
-		return r.c.NullVal
+		return r.s.NullVal
 	}
 	return l
 }
@@ -259,16 +246,16 @@ func (r *reader) readCharacter() Val {
 			break
 		}
 		name := r.readSymbol(e)
-		if name == r.symNewline {
+		if name == r.s.NewlineSym {
 			return &Char{Value: '\n'}
 		}
-		if name == r.symReturn {
+		if name == r.s.ReturnSym {
 			return &Char{Value: '\r'}
 		}
-		if name == r.symTab {
+		if name == r.s.TabSym {
 			return &Char{Value: '\t'}
 		}
-		if name == r.symSpace {
+		if name == r.s.SpaceSym {
 			return &Char{Value: ' '}
 		}
 		panic("Illegal character name: " + name.Name)
@@ -293,7 +280,7 @@ func (r *reader) readSymbol(initial rune) *Symbol {
 			break
 		}
 	}
-	return r.c.Intern(s)
+	return r.s.Intern(s)
 }
 
 // Skip whitespace and comments.  Throws on I/O error.  If EOF is encountered,
@@ -383,7 +370,7 @@ func isAlphabetic(c rune) bool {
 
 func (r *reader) handleError(err error) Val {
 	r.handleErrorIgnoreEOF(err)
-	return r.c.EofVal
+	return r.s.EofVal
 }
 
 func (r *reader) handleErrorIgnoreEOF(err error) {

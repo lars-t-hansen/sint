@@ -10,20 +10,50 @@ import (
 // Runtimes and evaluation.
 
 type Scheme struct {
+	// Symbol table
+	oblist map[string]*Symbol
+
+	// Counter for non-interned symbol name generation
+	nextGensym int
+
+	// Singleton values
 	UnspecifiedVal Val
 	UndefinedVal   Val
 	NullVal        Val
 	TrueVal        Val
 	FalseVal       Val
 	EofVal         Val
-	Zero           *big.Int
-	FZero          *big.Float
-	oblist         map[string]*Symbol
-	nextGensym     int
+
+	// Useful values
+	Zero  *big.Int
+	FZero *big.Float
+
+	// Well-known symbols.
+	// FOO - these must be capitalized
+	AndSym     *Symbol
+	BeginSym   *Symbol
+	CaseSym    *Symbol
+	CondSym    *Symbol
+	DefineSym  *Symbol
+	DoSym      *Symbol
+	ElseSym    *Symbol
+	IfSym      *Symbol
+	LambdaSym  *Symbol
+	LetSym     *Symbol
+	LetrecSym  *Symbol
+	OrSym      *Symbol
+	QuoteSym   *Symbol
+	SetSym     *Symbol
+	ArrowSym   *Symbol
+	DotSym     *Symbol
+	NewlineSym *Symbol
+	ReturnSym  *Symbol
+	TabSym     *Symbol
+	SpaceSym   *Symbol
 }
 
 func NewScheme() *Scheme {
-	return &Scheme{
+	s := &Scheme{
 		UnspecifiedVal: &Unspecified{},
 		UndefinedVal:   &Undefined{},
 		NullVal:        &Null{},
@@ -35,7 +65,30 @@ func NewScheme() *Scheme {
 		oblist:         map[string]*Symbol{},
 		nextGensym:     1000,
 	}
+	s.AndSym = s.Intern("and")
+	s.BeginSym = s.Intern("begin")
+	s.CaseSym = s.Intern("case")
+	s.CondSym = s.Intern("cond")
+	s.DefineSym = s.Intern("define")
+	s.DoSym = s.Intern("do")
+	s.ElseSym = s.Intern("else")
+	s.IfSym = s.Intern("if")
+	s.LambdaSym = s.Intern("lambda")
+	s.LetSym = s.Intern("let")
+	s.LetrecSym = s.Intern("letrec")
+	s.OrSym = s.Intern("or")
+	s.QuoteSym = s.Intern("quote")
+	s.SetSym = s.Intern("set!")
+	s.ArrowSym = s.Intern("=>")
+	s.DotSym = s.Intern(".")
+	s.NewlineSym = s.Intern("newline")
+	s.ReturnSym = s.Intern("return")
+	s.TabSym = s.Intern("tab")
+	s.SpaceSym = s.Intern("space")
+
+	return s
 }
+
 func (c *Scheme) Intern(s string) *Symbol {
 	if v, ok := c.oblist[s]; ok {
 		return v

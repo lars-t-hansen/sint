@@ -14,23 +14,8 @@ import (
 )
 
 type Compiler struct {
-	s         *Scheme
-	keywords  map[*Symbol]bool
-	andSym    *Symbol
-	beginSym  *Symbol
-	caseSym   *Symbol
-	condSym   *Symbol
-	defineSym *Symbol
-	doSym     *Symbol
-	elseSym   *Symbol
-	ifSym     *Symbol
-	lambdaSym *Symbol
-	letSym    *Symbol
-	letrecSym *Symbol
-	orSym     *Symbol
-	quoteSym  *Symbol
-	setSym    *Symbol
-	arrowSym  *Symbol
+	s        *Scheme
+	keywords map[*Symbol]bool
 }
 
 // A Compiler currently has no interesting mutable state, it can be reused for
@@ -42,45 +27,30 @@ type Compiler struct {
 
 func NewCompiler(s *Scheme) *Compiler {
 	c := &Compiler{
-		s:         s,
-		keywords:  make(map[*Symbol]bool),
-		andSym:    s.Intern("and"),
-		beginSym:  s.Intern("begin"),
-		caseSym:   s.Intern("case"),
-		condSym:   s.Intern("cond"),
-		defineSym: s.Intern("define"),
-		doSym:     s.Intern("do"),
-		elseSym:   s.Intern("else"),
-		ifSym:     s.Intern("if"),
-		lambdaSym: s.Intern("lambda"),
-		letSym:    s.Intern("let"),
-		letrecSym: s.Intern("letrec"),
-		orSym:     s.Intern("or"),
-		quoteSym:  s.Intern("quote"),
-		setSym:    s.Intern("set!"),
-		arrowSym:  s.Intern("=>"),
+		s:        s,
+		keywords: make(map[*Symbol]bool),
 	}
-	c.keywords[c.andSym] = true
-	c.keywords[c.beginSym] = true
-	c.keywords[c.caseSym] = true
-	c.keywords[c.condSym] = true
-	c.keywords[c.defineSym] = true
-	c.keywords[c.doSym] = true
-	c.keywords[c.elseSym] = true
-	c.keywords[c.ifSym] = true
-	c.keywords[c.lambdaSym] = true
-	c.keywords[c.letSym] = true
-	c.keywords[c.letrecSym] = true
-	c.keywords[c.orSym] = true
-	c.keywords[c.quoteSym] = true
-	c.keywords[c.setSym] = true
+	c.keywords[s.AndSym] = true
+	c.keywords[s.BeginSym] = true
+	c.keywords[s.CaseSym] = true
+	c.keywords[s.CondSym] = true
+	c.keywords[s.DefineSym] = true
+	c.keywords[s.DoSym] = true
+	c.keywords[s.ElseSym] = true
+	c.keywords[s.IfSym] = true
+	c.keywords[s.LambdaSym] = true
+	c.keywords[s.LetSym] = true
+	c.keywords[s.LetrecSym] = true
+	c.keywords[s.OrSym] = true
+	c.keywords[s.QuoteSym] = true
+	c.keywords[s.SetSym] = true
 	// arrowSym is not reserved, possibly elseSym should not be either
 	return c
 }
 
 func (c *Compiler) CompileToplevel(v Val) Code {
 	length, exprIsList := c.checkProperList(v)
-	if exprIsList && length >= 3 && car(v) == c.defineSym {
+	if exprIsList && length >= 3 && car(v) == c.s.DefineSym {
 		return c.compileToplevelDefinition(v)
 	}
 	return c.compileExpr(v, nil)
@@ -119,7 +89,7 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 		bodyList := cddr(v)
 		var body Code
 		if cdr(bodyList) != c.s.NullVal {
-			body = cons(c.beginSym, bodyList)
+			body = cons(c.s.BeginSym, bodyList)
 		} else {
 			body = car(bodyList)
 		}
@@ -162,35 +132,35 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 			panic("Unquoted empty list used as expression")
 		}
 		if kwd, ok := e.Car.(*Symbol); ok {
-			if kwd == c.andSym {
+			if kwd == c.s.AndSym {
 				return c.compileAnd(e, llen, env)
 			}
-			if kwd == c.beginSym {
+			if kwd == c.s.BeginSym {
 				return c.compileBegin(e, llen, env)
 			}
 			// TODO: case
 			// TODO: cond
 			// TODO: do
 			// TODO: named let
-			if kwd == c.lambdaSym {
+			if kwd == c.s.LambdaSym {
 				return c.compileLambda(e, llen, env)
 			}
-			if kwd == c.letSym {
+			if kwd == c.s.LetSym {
 				return c.compileLet(e, llen, env)
 			}
-			if kwd == c.letrecSym {
+			if kwd == c.s.LetrecSym {
 				return c.compileLetrec(e, llen, env)
 			}
-			if kwd == c.orSym {
+			if kwd == c.s.OrSym {
 				return c.compileOr(e, llen, env)
 			}
-			if kwd == c.quoteSym {
+			if kwd == c.s.QuoteSym {
 				return c.compileQuote(e, llen, env)
 			}
-			if kwd == c.ifSym {
+			if kwd == c.s.IfSym {
 				return c.compileIf(e, llen, env)
 			}
-			if kwd == c.setSym {
+			if kwd == c.s.SetSym {
 				return c.compileSet(e, llen, env)
 			}
 			// Fall through to generic "call" case
@@ -228,7 +198,7 @@ func (c *Compiler) compileAnd(l Val, llen int, env *cenv) Code {
 	}
 	return &If{
 		Test:       c.compileExpr(cadr(l), env),
-		Consequent: c.compileExpr(cons(c.andSym, cddr(l)), env),
+		Consequent: c.compileExpr(cons(c.s.AndSym, cddr(l)), env),
 		Alternate:  &Quote{Value: c.s.FalseVal},
 	}
 }
@@ -279,7 +249,7 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) Code {
 	}
 	bodyExpr := cddr(l)
 	if llen > 3 {
-		bodyExpr = cons(c.beginSym, bodyExpr)
+		bodyExpr = cons(c.s.BeginSym, bodyExpr)
 	}
 	newEnv := &cenv{link: env, names: formals}
 	compiledBodyExpr := c.compileExpr(bodyExpr, newEnv)
@@ -310,7 +280,7 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	}
 	var bodyExpr Val
 	if llen > 3 {
-		bodyExpr = cons(c.beginSym, cddr(l))
+		bodyExpr = cons(c.s.BeginSym, cddr(l))
 	} else {
 		bodyExpr = car(cddr(l))
 	}
@@ -349,9 +319,9 @@ func (c *Compiler) compileOr(l Val, llen int, env *cenv) Code {
 	} else {
 		vname = c.s.Gensym("OR")
 	}
-	e := c.list(c.ifSym, vname, vname, cons(c.orSym, rest))
+	e := c.list(c.s.IfSym, vname, vname, cons(c.s.OrSym, rest))
 	if useLet {
-		e = c.list(c.letSym, c.list(c.list(vname, first)), e)
+		e = c.list(c.s.LetSym, c.list(c.list(vname, first)), e)
 	}
 	return c.compileExpr(e, env)
 }
