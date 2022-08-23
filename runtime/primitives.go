@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"math/big"
+	"sint/compiler"
 	. "sint/core"
 )
 
@@ -30,8 +31,9 @@ func InitPrimitives(c *Scheme) {
 	addPrimitive(c, "null?", 1, false, primNullp)
 	addPrimitive(c, "pair?", 1, false, primPairp)
 	addPrimitive(c, "symbol?", 1, false, primSymbolp)
-	addPrimitive(c, "number?", 1, false, primNumberp)
 	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+	addPrimitive(c, "sint:inexact-float?", 1, false, primInexactFloatp)
+	addPrimitive(c, "sint:exact-integer?", 1, false, primExactIntegerp)
 	addPrimitive(c, "eq?", 2, false, primEqp)
 
 	// Pairs and lists
@@ -42,8 +44,6 @@ func InitPrimitives(c *Scheme) {
 	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
 
 	// Numbers
-	addPrimitive(c, "real?", 1, false, primRealp)
-	addPrimitive(c, "integer?", 1, false, primIntegerp)
 	addPrimitive(c, "+", 0, true, primAdd)
 	addPrimitive(c, "-", 1, true, primSub)
 	addPrimitive(c, "<", 2, true, primLess)
@@ -107,17 +107,6 @@ func primProcedurep(ctx *Scheme, args []Val) Val {
 	return ctx.FalseVal
 }
 
-func primNumberp(ctx *Scheme, args []Val) Val {
-	switch args[0].(type) {
-	case *big.Int:
-		return ctx.TrueVal
-	case *big.Float:
-		return ctx.TrueVal
-	default:
-		return ctx.FalseVal
-	}
-}
-
 func primEqp(ctx *Scheme, args []Val) Val {
 	if args[0] == args[1] {
 		return ctx.TrueVal
@@ -125,26 +114,18 @@ func primEqp(ctx *Scheme, args []Val) Val {
 	return ctx.FalseVal
 }
 
-func primRealp(ctx *Scheme, args []Val) Val {
-	switch args[0].(type) {
-	case *big.Int:
+func primInexactFloatp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*big.Float); ok {
 		return ctx.TrueVal
-	case *big.Float:
-		return ctx.TrueVal
-	default:
-		panic("real?: not a number: " + args[0].String())
 	}
+	return ctx.FalseVal
 }
 
-func primIntegerp(ctx *Scheme, args []Val) Val {
-	switch args[0].(type) {
-	case *big.Int:
+func primExactIntegerp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*big.Int); ok {
 		return ctx.TrueVal
-	case *big.Float:
-		return ctx.FalseVal
-	default:
-		panic("integer?: not a number: " + args[0].String())
 	}
+	return ctx.FalseVal
 }
 
 func checkCons(v Val, fn string) *Cons {
@@ -313,5 +294,8 @@ func checkNumber(v Val, s string) Val {
 func primCompileToplevel(c *Scheme, args []Val) Val {
 	// Compiles args[0] into a lambda and then creates a toplevel procedure
 	// from that lambda, and returns the procedure
-	panic("compileToplevel not implemented yet")
+	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
+	comp := compiler.NewCompiler(c)
+	prog := comp.CompileToplevel(args[0])
+	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}
 }

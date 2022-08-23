@@ -1,9 +1,7 @@
-;; FIXME: integer? and real? get this wrong, rename + fix
-;; FIXME: number? is a primitive but need not be, remove
+;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
 ;; (sint:exact-integer? obj) => bool is a primitive
 ;; (sint:inexact-float? obj) => bool is a primitive
-;; (sint:number? obj) => bool is a primitive
 
 (define (number? obj)
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
@@ -69,3 +67,27 @@
   (if (not (exact-integer? n))
       (error "odd?: not an exact integer: " n)
       (zero? (remainder n 2))))
+
+(define max
+  (letrec ((loop
+            (lambda (isInexact max xs)
+              (if (null? xs)
+                  (inexact max)
+                  (let ((x (car xs)))
+                    (if (> x max)
+                        (loop (or isInexact (inexact? x)) x (cdr xs))
+                        (loop isInexact max (cdr xs))))))))
+    (lambda (x . xs)
+      (loop (inexact? x) x xs))))
+
+(define min
+  (letrec ((loop
+            (lambda (isInexact min xs)
+              (if (null? xs)
+                  (inexact min)
+                  (let ((x (car xs)))
+                    (if (< x min)
+                        (loop (or isInexact (inexact? x)) x (cdr xs))
+                        (loop isInexact min (cdr xs))))))))
+    (lambda (x . xs)
+      (loop (inexact? x) x xs))))

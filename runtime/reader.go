@@ -8,6 +8,8 @@ import (
 	. "sint/core"
 )
 
+// TODO: Comments!
+
 // Matches bufio.Reader and strings.Reader
 type InputStream interface {
 	ReadRune() (rune, int, error)
@@ -15,13 +17,14 @@ type InputStream interface {
 }
 
 type reader struct {
-	c      *Scheme
-	rdr    InputStream
-	symDot *Symbol
+	c        *Scheme
+	rdr      InputStream
+	symDot   *Symbol
+	symQuote *Symbol
 }
 
 func Read(c *Scheme, rdr InputStream) Val {
-	r := &reader{c: c, rdr: rdr, symDot: c.Intern(".")}
+	r := &reader{c: c, rdr: rdr, symDot: c.Intern("."), symQuote: c.Intern("quote")}
 	return r.read()
 }
 
@@ -45,6 +48,9 @@ func (r *reader) read() Val {
 			return r.readSymbol(c)
 		}
 		return r.symDot
+	case '\'':
+		v := r.read()
+		return &Cons{Car: r.symQuote, Cdr: &Cons{Car: v, Cdr: r.c.NullVal}}
 	case '#':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
@@ -246,18 +252,31 @@ func (r *reader) readSymbol(initial rune) Val {
 // true and the ch is garbage.  Otherwise, atEOF is false and ch has the
 // first nonblank character.
 func (r *reader) skipWhitespace() (ch rune, atEOF bool) {
-	for {
-		c, _, err := r.rdr.ReadRune()
-		if err != nil {
-			r.handleErrorIgnoreEOF(err)
-			atEOF = true
-			return
-		}
-		if !isSpace(c) {
-			ch = c
-			return
+again:
+	c, _, err := r.rdr.ReadRune()
+	if err != nil {
+		r.handleErrorIgnoreEOF(err)
+		atEOF = true
+		return
+	}
+	if isSpace(c) {
+		goto again
+	}
+	if c == ';' {
+		for {
+			d, _, err := r.rdr.ReadRune()
+			if err != nil {
+				r.handleErrorIgnoreEOF(err)
+				atEOF = true
+				return
+			}
+			if d == '\n' {
+				goto again
+			}
 		}
 	}
+	ch = c
+	return
 }
 
 var charTable [128]byte
@@ -285,6 +304,7 @@ func init() {
 	charTable['>'] = kInitial | kSubsequent
 	charTable['='] = kInitial | kSubsequent
 	charTable['?'] = kInitial | kSubsequent
+	charTable[':'] = kInitial | kSubsequent
 	for c := '0'; c <= '9'; c++ {
 		charTable[c] = kSubsequent
 	}
