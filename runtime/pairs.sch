@@ -1,3 +1,7 @@
+;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+
+;; note map, for-each, et al are in control.sch
+
 (define (caar x) (car (car x)))
 (define (cadr x) (car (cdr x)))
 (define (cdar x) (cdr (car x)))
@@ -31,63 +35,43 @@
 
 (define (list . xs) xs)
 
-;;(define (list? xs) ...)
-;; list-ref
-;; filter
-;; for-each
-;; every?
-;; some?
+;; list?
+;; make-list
 ;; append
+;; list-tail
+;; list-ref
+;; list-set!
+;; memq
+;; memv
+;; member
+;; assq
+;; assv
+;; assoc
+;; list-copy
 
 (define length
   (letrec ((loop
-	    (lambda (l k)
-	      (if (null? l)
-		  k
-		  (loop (cdr l) (+ k 1))))))
+            (lambda (l k)
+              (if (null? l)
+                  k
+                  (loop (cdr l) (+ k 1))))))
     (lambda (l)
       (loop l 0))))
 
-(define map
-  (letrec ((map1
-            (lambda (fn l0)
-              (if (null? l0)
-                  '()
-                  (cons (fn (car l0))
-			(map1 fn (cdr l0))))))
-           (map2
-            (lambda (fn l0 l1)
-              (if (null? l0)
-                  '()
-                  (cons (fn (car l0) (car l1))
-                        (map2 fn (cdr l0) (cdr l1))))))
-	   (mapn
-	    (lambda (fn ls)
-	      (if (null? (car ls))
-		  '()
-		  (cons (apply fn (map1 car ls))
-			(mapn fn (map1 cdr ls)))))))
-    (lambda (fn l0 . rest)
-      (if (null? rest)
-          (map1 fn l0)
-          (if (null? (cdr rest))
-              (map2 fn l0 (car rest))
-	      (mapn fn (cons l0 rest)))))))
-
 (define reverse
   (letrec ((loop
-	    (lambda (l r)
-	      (if (null? l)
-		  r
-		  (loop (cdr l) (cons (car l) r))))))
+            (lambda (l r)
+              (if (null? l)
+                  r
+                  (loop (cdr l) (cons (car l) r))))))
     (lambda (l)
       (loop l '()))))
 
 (define reverse-append
   (letrec ((loop
-	    (lambda (xs l)
-	      (if (null? xs)
-		  l
-		  (loop (cdr xs) (cons (car xs) l))))))
+            (lambda (xs l)
+              (if (null? xs)
+                  l
+                  (loop (cdr xs) (cons (car xs) l))))))
     (lambda (xs l)
       (loop xs l))))

@@ -35,6 +35,10 @@ type Compiler struct {
 
 // A Compiler currently has no interesting mutable state, it can be reused for
 // multiple compilations.
+//
+// TODO: The Scheme instance should cache the compiler.  Also, well-known symbols
+// could be attached to the Scheme instance, this would benefit other parts of
+// the system as well, eg the reader.
 
 func NewCompiler(s *Scheme) *Compiler {
 	c := &Compiler{
@@ -132,11 +136,12 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 }
 
 func (c *Compiler) compileExpr(v Val, env *cenv) Code {
-	//os.Stdout.WriteString(v.String() + "\n")
 	switch e := v.(type) {
 	case *big.Int:
 		return &Quote{Value: e}
 	case *big.Float:
+		return &Quote{Value: e}
+	case *Char:
 		return &Quote{Value: e}
 	case *True:
 		return &Quote{Value: e}
@@ -146,8 +151,6 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 		return &Quote{Value: e}
 	case *Undefined:
 		return &Quote{Value: e}
-		/*case string:
-		return &Quote{e}*/
 	case *Symbol:
 		return c.compileRef(e, env)
 	case *Cons:
@@ -224,7 +227,7 @@ func (c *Compiler) compileAnd(l Val, llen int, env *cenv) Code {
 		return c.compileExpr(cadr(l), env)
 	}
 	return &If{
-		Test:       cadr(l),
+		Test:       c.compileExpr(cadr(l), env),
 		Consequent: c.compileExpr(cons(c.andSym, cddr(l)), env),
 		Alternate:  &Quote{Value: c.s.FalseVal},
 	}
@@ -368,7 +371,7 @@ func (c *Compiler) compileQuote(l Val, llen int, env *cenv) Code {
 	// - true
 	// - false
 	// - a string (TBD)
-	// - a character (TBD)
+	// - a character
 	// - a symbol
 	// - a proper or improper list, probably without any non-atomic sharing
 	//

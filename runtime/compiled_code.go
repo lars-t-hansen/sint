@@ -7,4 +7,5 @@ import . "sint/core"
 func InitCompiled(c *Scheme) {
 	initBooleans(c)
 	initControl(c)
+	initEquivalence(c)
 }

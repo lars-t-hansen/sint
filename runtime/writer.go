@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"bufio"
+	"fmt"
 	"math/big"
 	. "sint/core"
 )
@@ -12,6 +13,20 @@ func Write(v Val, w *bufio.Writer) {
 		w.WriteString(x.String())
 	case *big.Float:
 		w.WriteString(x.String())
+	case *Char:
+		switch x.Value {
+		case ' ':
+			w.WriteString("#\\space")
+		case '\t':
+			w.WriteString("#\\tab")
+		case '\n':
+			w.WriteString("#\\newline")
+		case '\r':
+			w.WriteString("#\\return")
+		default:
+			// Hm, maybe check if it's printable?
+			fmt.Fprintf(w, "#\\%c", x.Value)
+		}
 	case *True:
 		w.WriteString("#t")
 	case *False:

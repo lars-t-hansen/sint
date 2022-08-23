@@ -125,6 +125,8 @@ func emitDatum(v Val, w *bufio.Writer) {
 			}
 			fmt.Fprintf(w, "c.DecodeFloat([]byte{%s})", bytes)
 		}
+	case *Char:
+		fmt.Fprintf(w, "&Char{Value:%d}}", d.Value)
 	case *Cons:
 		w.WriteString("&Cons{Car:")
 		emitDatum(d.Car, w)

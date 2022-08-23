@@ -11,59 +11,64 @@ func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Sch
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
-func addApply(c *Scheme) {
-}
-
-// These are primitives that do not invoke procedures.  All primitives that do invoke
-// procedures must be supported differently, to ensure proper tail recursion.  Not sure
-// how to do that yet, but the most obvious way is to have hand-written procedures that
-// invoke special instructions that do the right thing.  Then the evaluator will insert
-// the correct glue.  apply is obvious, as in Larceny.  eval I'm not sure about.  it is
-// a function that compiles an expression and then runs it.  Probably hte compiled
-// expression is delivered in the form of a thunk.  Then the thunk can be invoked in the
-// manner of a tail call.  So eval is user code that uses a primitive to create the thunk,
-// and then just invokes it.
-
 func InitPrimitives(c *Scheme) {
-	// TODO: These could go in a table, it doesn't have to be code
+	// R7R7 6.1, Equivalence predicates, also see equivalence.sch
+	addPrimitive(c, "eq?", 2, false, primEqp)
+	addPrimitive(c, "eqv?", 2, false, primEqvp)
 
-	// Fundamental predicates
-	addPrimitive(c, "null?", 1, false, primNullp)
-	addPrimitive(c, "pair?", 1, false, primPairp)
-	addPrimitive(c, "symbol?", 1, false, primSymbolp)
-	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+	// R7RS 6.2, Numbers, also see numbers.sch
+	// TODO: /
+	// TODO: quotient
+	// TODO: remainder
+	// TODO: exact
+	// TODO: inexact
+	// TODO: (other numerics as required)
 	addPrimitive(c, "sint:inexact-float?", 1, false, primInexactFloatp)
 	addPrimitive(c, "sint:exact-integer?", 1, false, primExactIntegerp)
-	addPrimitive(c, "eq?", 2, false, primEqp)
+	addPrimitive(c, "+", 0, true, primAdd)
+	addPrimitive(c, "-", 1, true, primSub)
+	addPrimitive(c, "*", 0, true, primMul)
+	addPrimitive(c, "<", 2, true, primLess)
+	addPrimitive(c, "<=", 2, true, primLessOrEqual)
+	addPrimitive(c, "=", 2, true, primEqual)
+	addPrimitive(c, ">", 2, true, primGreater)
+	addPrimitive(c, ">=", 2, true, primGreaterOrEqual)
 
-	// Pairs and lists
+	// R7RS 6.3, Booleans, see booleans.sch
+
+	// R7RS 6.4, Pairs and lists, also see pairs.sch
+	addPrimitive(c, "null?", 1, false, primNullp)
+	addPrimitive(c, "pair?", 1, false, primPairp)
 	addPrimitive(c, "cons", 2, false, primCons)
 	addPrimitive(c, "car", 1, false, primCar)
 	addPrimitive(c, "cdr", 1, false, primCdr)
 	addPrimitive(c, "set-car!", 2, false, primSetcar)
 	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
 
-	// Numbers
-	addPrimitive(c, "+", 0, true, primAdd)
-	addPrimitive(c, "-", 1, true, primSub)
-	addPrimitive(c, "*", 0, true, primMul)
-	addPrimitive(c, "<", 2, true, primLess)
-	addPrimitive(c, "=", 2, true, primEqual)
+	// R7RS 6.5, Symbols
+	// TODO: symbol->string
+	// TODO: string->symbol
+	// TODO: symbol=? which is not the same as eq? and might be defined in scheme
+	//       in terms of string=?
+	addPrimitive(c, "symbol?", 1, false, primSymbolp)
+	addPrimitive(c, "gensym", 0, false, primGensym)
 
-	// eqv?
-	// /
-	// quotient
-	// (other numerics as required)
-	// <=
-	// >
-	// >=
-	// exact->inexact
-	// inexact->exact
-	// string?
-	// symbol->string
-	// string->symbol
-	// (Anything to do with characters, which we don't have yet but must have)
-	// (Many string functions, ditto)
+	// R7RS 6.6, Characters
+	// TODO: char=?
+	// TODO: char>?
+	// TODO: char>=?
+	// TODO: char<?
+	// TODO: char<=?
+	// TODO: (and probably many others)
+	addPrimitive(c, "char?", 1, false, primCharp)
+
+	// R7RS 6.7, Strings
+
+	// R7RS 6.10, Control features, also see control.sch
+	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+
+	// R7RS 6.13, Input and output, also see io.sch
+	addPrimitive(c, "eof-object?", 1, false, primEofObjectp)
 
 	// See runtime/control.sch.  This treats its argument as a top-level program form
 	// and returns a thunk that evaluates that form.
@@ -106,9 +111,55 @@ func primProcedurep(ctx *Scheme, args []Val) Val {
 	return ctx.FalseVal
 }
 
+func primCharp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*Char); ok {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primEofObjectp(ctx *Scheme, args []Val) Val {
+	if _, ok := args[0].(*EofObject); ok {
+		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
 func primEqp(ctx *Scheme, args []Val) Val {
 	if args[0] == args[1] {
 		return ctx.TrueVal
+	}
+	return ctx.FalseVal
+}
+
+func primEqvp(ctx *Scheme, args []Val) Val {
+	if args[0] == args[1] {
+		return ctx.TrueVal
+	}
+	if n1, ok := args[0].(*big.Int); ok {
+		if n2, ok := args[1].(*big.Int); ok {
+			if n1.Cmp(n2) == 0 {
+				return ctx.TrueVal
+			}
+		}
+		return ctx.FalseVal
+	}
+	if n1, ok := args[0].(*big.Float); ok {
+		if n2, ok := args[1].(*big.Float); ok {
+			// TODO: Some fine points here around NaN?
+			if n1.Cmp(n2) == 0 {
+				return ctx.TrueVal
+			}
+		}
+		return ctx.FalseVal
+	}
+	if c1, ok := args[0].(*Char); ok {
+		if c2, ok := args[1].(*Char); ok {
+			if c1.Value == c2.Value {
+				return ctx.TrueVal
+			}
+		}
+		return ctx.FalseVal
 	}
 	return ctx.FalseVal
 }
@@ -215,9 +266,36 @@ func primLess(c *Scheme, args []Val) Val {
 	return c.TrueVal
 }
 
+func primLessOrEqual(c *Scheme, args []Val) Val {
+	for i := 1; i < len(args); i++ {
+		if cmp2(args[i-1], args[i], "<=") == 1 {
+			return c.FalseVal
+		}
+	}
+	return c.TrueVal
+}
+
 func primEqual(c *Scheme, args []Val) Val {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "=") != 0 {
+			return c.FalseVal
+		}
+	}
+	return c.TrueVal
+}
+
+func primGreater(c *Scheme, args []Val) Val {
+	for i := 1; i < len(args); i++ {
+		if cmp2(args[i-1], args[i], ">") != 1 {
+			return c.FalseVal
+		}
+	}
+	return c.TrueVal
+}
+
+func primGreaterOrEqual(c *Scheme, args []Val) Val {
+	for i := 1; i < len(args); i++ {
+		if cmp2(args[i-1], args[i], ">=") != -1 {
 			return c.FalseVal
 		}
 	}
@@ -307,13 +385,20 @@ func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
 }
 
 func checkNumber(v Val, s string) Val {
+	if !isNumber(v) {
+		panic("'" + s + ": Not a number: " + v.String())
+	}
+	return v
+}
+
+func isNumber(v Val) bool {
 	if _, ok := v.(*big.Int); ok {
-		return v
+		return true
 	}
 	if _, ok := v.(*big.Float); ok {
-		return v
+		return true
 	}
-	panic("'" + s + ": Not a number: " + v.String())
+	return false
 }
 
 func primCompileToplevel(c *Scheme, args []Val) Val {
@@ -323,4 +408,8 @@ func primCompileToplevel(c *Scheme, args []Val) Val {
 	comp := compiler.NewCompiler(c)
 	prog := comp.CompileToplevel(args[0])
 	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}
+}
+
+func primGensym(c *Scheme, _ []Val) Val {
+	return c.Gensym("S")
 }

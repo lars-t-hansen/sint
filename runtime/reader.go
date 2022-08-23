@@ -64,9 +64,11 @@ func (r *reader) read() Val {
 			return r.readHexNumber()
 		}
 		if d == '!' {
+			// FIXME: Implement this
 			panic("No syntax for #!unspecified and suchlike yet")
 		}
 		if d == '\\' {
+			// Remember char names for space, tab, newline, return
 			panic("Characters not yet supported")
 		}
 		panic("Unknown # syntax")

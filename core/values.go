@@ -8,6 +8,7 @@ import "fmt"
 //   *Cons,
 //   *Symbol,
 //   *Procedure,
+//   *Char,
 //   *Null,			// Singleton
 //   *True			// Singleton
 //   *False			// Singleton
@@ -49,6 +50,14 @@ type Procedure struct {
 
 func (c *Procedure) String() string {
 	return "procedure"
+}
+
+type Char struct {
+	Value rune
+}
+
+func (c *Char) String() string {
+	return fmt.Sprint("[char", c.Value, "]")
 }
 
 type Null struct{}

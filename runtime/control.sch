@@ -29,3 +29,34 @@
 ;;           (error "apply: expected procedure")
 ;;           (sint:raw-apply fn (construct-apply-args x rest))))))
                      
+;; filter
+;; for-each
+;; every?
+;; some?
+
+
+(define map
+  (letrec ((map1
+            (lambda (fn l0)
+              (if (null? l0)
+                  '()
+                  (cons (fn (car l0))
+                        (map1 fn (cdr l0))))))
+           (map2
+            (lambda (fn l0 l1)
+              (if (null? l0)
+                  '()
+                  (cons (fn (car l0) (car l1))
+                        (map2 fn (cdr l0) (cdr l1))))))
+           (mapn
+            (lambda (fn ls)
+              (if (null? (car ls))
+                  '()
+                  (cons (apply fn (map1 car ls))
+                        (mapn fn (map1 cdr ls)))))))
+    (lambda (fn l0 . rest)
+      (if (null? rest)
+          (map1 fn l0)
+          (if (null? (cdr rest))
+              (map2 fn l0 (car rest))
+              (mapn fn (cons l0 rest)))))))
