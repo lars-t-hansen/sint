@@ -20,10 +20,6 @@ type Compiler struct {
 
 // A Compiler currently has no interesting mutable state, it can be reused for
 // multiple compilations.
-//
-// TODO: The Scheme instance should cache the compiler.  Also, well-known symbols
-// could be attached to the Scheme instance, this would benefit other parts of
-// the system as well, eg the reader.
 
 func NewCompiler(s *Scheme) *Compiler {
 	c := &Compiler{
