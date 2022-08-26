@@ -155,7 +155,7 @@ again:
 			// args (really the underlying vals) is freshly allocated,
 			// so it's OK to use that storage here.
 			if !p.Lam.Rest {
-				newEnv = &lexenv{args, env}
+				newEnv = &lexenv{slots: args, link: p.Env}
 			} else {
 				// TODO: I think we can do better than this.  Since the storage
 				// is fresh, we can store the rest argument in the slot after the
@@ -166,7 +166,7 @@ again:
 				var l *Cons
 				var last *Cons
 				for i := p.Lam.Fixed; i < len(args); i++ {
-					x := &Cons{args[i], c.NullVal}
+					x := &Cons{Car: args[i], Cdr: c.NullVal}
 					if l == nil {
 						l = x
 					}
@@ -180,13 +180,13 @@ again:
 				} else {
 					newSlots = append(newSlots, l)
 				}
-				newEnv = &lexenv{newSlots, env}
+				newEnv = &lexenv{slots: newSlots, link: p.Env}
 			}
 			expr = p.Lam.Body
 			env = newEnv
 			goto again
 		} else {
-			panic("Not a procedure") // TODO msg
+			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 		}
 	case *Apply:
 		// FIXME
@@ -195,7 +195,7 @@ again:
 		return &Procedure{e, env, nil}
 	case *Let:
 		vals := c.evalExprs(e.Exprs, env)
-		newEnv := &lexenv{vals, env}
+		newEnv := &lexenv{slots: vals, link: env}
 		expr = e.Body
 		env = newEnv
 		goto again
@@ -207,7 +207,7 @@ again:
 		for i := 0; i < len(e.Exprs); i++ {
 			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
-		newEnv := &lexenv{slotvals, env}
+		newEnv := &lexenv{slots: slotvals, link: env}
 		vals := c.evalExprs(e.Exprs, newEnv)
 		for i, v := range vals {
 			slotvals[i] = v

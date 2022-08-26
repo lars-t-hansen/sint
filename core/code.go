@@ -87,7 +87,7 @@ type Lambda struct {
 }
 
 func (c *Lambda) String() string {
-	return "(lambda " + strconv.Itoa(c.Fixed) + strconv.FormatBool(c.Rest) + " " + c.Body.String() + ")"
+	return "(lambda " + strconv.Itoa(c.Fixed) + " " + strconv.FormatBool(c.Rest) + " " + c.Body.String() + ")"
 }
 
 type Let struct {

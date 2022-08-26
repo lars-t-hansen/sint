@@ -109,12 +109,13 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 	reader := bufio.NewReader(input)
 	writer := bufio.NewWriter(tmp)
 	fmt.Fprintf(writer, `
+// Generated from %s
 package runtime
 import (
 	. "sint/core"
 )
 func init%s(c *Scheme) {
-`, moduleName)
+`, fn, moduleName)
 	id := 1
 	for {
 		v := runtime.Read(engine, reader)

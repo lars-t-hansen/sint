@@ -8,4 +8,5 @@ func InitCompiled(c *Scheme) {
 	initBooleans(c)
 	initControl(c)
 	initEquivalence(c)
+	initSymbols(c)
 }

@@ -31,28 +31,32 @@ A number of subtractions and weirdnesses:
 
 ## Near-term TODO
 
+The immediate priority is to get this far enough along to be useful.  This means more types,
+some basic ergonomics, and more primitives and library, esp for I/O
+
 High priority
 
-- strings
-- apply
-- multiple values
+- strings - add enough primitives to make them useful
+- apply - design done, only some implementation left
+- multiple values - this will be disruptive
 - basic error handling & recovery
 - more testing and bugfixing
-- a verb to load and run a file
-- a verb to evaluate some code
+- a verb to load and run a file - eases testing, also delve
+- a verb to evaluate some code - eases testing, also delve
 
 Medium priority
 
 - a verb to print help
-- ports, including string ports
+- ports and I/O, including string ports
 - a number of primitives
 - many more library functions, compiled-in
 - the sint/runtime package could provide a Processor abstraction that encapsulates boilerplate?
 
 ## Longer-term TODO
 
-- goroutines and channels
-- Go FFI
+- goroutines and channels that can transmit scheme values
+- some notion of what mutation means in the context of concurrency.  atm, all values are pointer-sized, which is pretty good, but what does go's memory model do with unsynchronized concurrent access?
+- Go FFI.  Note plugins as a way of loading code dynamically, but nice also to be able to link in user code statically.
 - apropos
 - "doc" function (or form) on functions at least
 - "source" function on functions

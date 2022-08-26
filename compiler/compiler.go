@@ -294,7 +294,11 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 		compiledInits = c.compileExprSlice(inits, env)
 	}
 	compiledBody := c.compileExpr(bodyExpr, newEnv)
-	return &Let{Exprs: compiledInits, Body: compiledBody}
+	if isLetrec {
+		return &Letrec{Exprs: compiledInits, Body: compiledBody}
+	} else {
+		return &Let{Exprs: compiledInits, Body: compiledBody}
+	}
 }
 
 func (c *Compiler) compileOr(l Val, llen int, env *cenv) Code {
