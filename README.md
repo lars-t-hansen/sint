@@ -106,12 +106,12 @@ string-ci>=?
 string-ci<?
 string-ci<=?
 string-append
-string-map (maps characters)
-string-for-each (eaches characters)
+string-map
+string-for-each
 string->vector
 vector->string
-string->list (without indices)
-string->copy (without indices)
+string->list (whole-string form)
+string->copy (whole-string form)
 list->string
 string-upcase
 string-downcase
@@ -119,11 +119,11 @@ string-foldcase
 
 These operates on byte indices and lengths and perhaps should have new names
 
-string-length
-string-ref
-substring
-string-copy (substring form)
-string->list (substring form)
+string-length - returns byte length
+string-ref - returns a decoded code point starting at the given byte index
+substring - returns a string if the byte indices are proper for full characters
+string-copy (substring form) - as for substring
+string->list (substring form) - as for substring
 
 Mutators are missing:
 

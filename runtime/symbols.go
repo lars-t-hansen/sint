@@ -86,7 +86,7 @@ Test:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("symbol->string")},
-&Global{Name:c.Intern("sb")},
+&Lexical{Levels:1, Offset:1},
 }},
 }},
 Consequent:&Call{Exprs:[]Code{

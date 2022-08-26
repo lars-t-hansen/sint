@@ -18,6 +18,6 @@
       (check a)
       (check b)
       (let ((sa (symbol->string a)))
-        (if (string=? sa (symbol->string sb))
+        (if (string=? sa (symbol->string b))
             (loop sa xs)
             #f)))))
