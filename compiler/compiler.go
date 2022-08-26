@@ -92,7 +92,7 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 			Rhs:  lam,
 		}
 	}
-	panic("Invalid top-level definition")
+	panic("Invalid top-level definition") // TODO: msg
 }
 
 // bodyList is a list of expressions.  If its length is 1, return the first element,
@@ -127,10 +127,10 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 	case *Cons:
 		llen, exprIsList := c.checkProperList(e)
 		if !exprIsList {
-			panic("Improper list used as expression")
+			panic("Improper list used as expression") // TODO: msg
 		}
 		if llen == 0 {
-			panic("Unquoted empty list used as expression")
+			panic("Unquoted empty list used as expression") // TODO: msg
 		}
 		if kwd, ok := e.Car.(*Symbol); ok {
 			if kwd == c.s.AndSym {

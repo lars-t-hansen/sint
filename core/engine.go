@@ -106,6 +106,62 @@ func (c *Scheme) EvalToplevel(expr Code) Val {
 	return c.eval(expr, nil)
 }
 
+func (c *Scheme) Invoke(proc Val, args []Val) Val {
+	newCode, newEnv, prim := c.invokeSetup(proc, args)
+	if prim != nil {
+		return prim(c, args)
+	}
+	return c.eval(newCode, newEnv)
+}
+
+func (c *Scheme) invokeSetup(proc Val, args []Val) (Code, *lexenv, func(*Scheme, []Val) Val) {
+	if p, ok := proc.(*Procedure); ok {
+		if len(args) < p.Lam.Fixed {
+			panic("Not enough arguments") // TODO msg
+		}
+		if len(args) > p.Lam.Fixed && !p.Lam.Rest {
+			panic("Too many arguments") // TODO msg
+		}
+		if p.Lam.Body == nil {
+			return nil, nil, p.Primop
+		}
+		var newEnv *lexenv = nil
+		// args (really the underlying vals) is freshly allocated,
+		// so it's OK to use that storage here.
+		if !p.Lam.Rest {
+			newEnv = &lexenv{slots: args, link: p.Env}
+		} else {
+			// TODO: I think we can do better than this.  Since the storage
+			// is fresh, we can store the rest argument in the slot after the
+			// slice, if it exists, in which case we avoid copying the
+			// array in the append() below.  If there is no extra slot then there's
+			// at least a chance that the append() will use capacity that is there.
+			newSlots := args[:p.Lam.Fixed]
+			var l *Cons
+			var last *Cons
+			for i := p.Lam.Fixed; i < len(args); i++ {
+				x := &Cons{Car: args[i], Cdr: c.NullVal}
+				if l == nil {
+					l = x
+				}
+				if last != nil {
+					last.Cdr = x
+				}
+				last = x
+			}
+			if l == nil {
+				newSlots = append(newSlots, c.NullVal)
+			} else {
+				newSlots = append(newSlots, l)
+			}
+			newEnv = &lexenv{slots: newSlots, link: p.Env}
+		}
+		return p.Lam.Body, newEnv, nil
+	} else {
+		panic("Invoke: Not a procedure" /*+ e.Exprs[0].String() + "\n" + proc.String()*/)
+	}
+}
+
 type lexenv struct {
 	slots []Val
 	link  *lexenv
@@ -132,57 +188,17 @@ again:
 		expr = e.Exprs[len(e.Exprs)-1]
 		goto again
 	case *Call:
-		// TODO: apply must be supported directly here
 		vals := c.evalExprs(e.Exprs, env)
 		maybeProc := vals[0]
 		args := vals[1:]
-		if p, ok := maybeProc.(*Procedure); ok {
-			if len(args) < p.Lam.Fixed {
-				panic("Not enough arguments") // TODO msg
-			}
-			if len(args) > p.Lam.Fixed && !p.Lam.Rest {
-				panic("Too many arguments") // TODO msg
-			}
-			if p.Lam.Body == nil {
-				return p.Primop(c, args)
-			}
-			var newEnv *lexenv = nil
-			// args (really the underlying vals) is freshly allocated,
-			// so it's OK to use that storage here.
-			if !p.Lam.Rest {
-				newEnv = &lexenv{slots: args, link: p.Env}
-			} else {
-				// TODO: I think we can do better than this.  Since the storage
-				// is fresh, we can store the rest argument in the slot after the
-				// slice, if it exists, in which case we avoid copying the
-				// array in the append() below.  If there is no extra slot then there's
-				// at least a chance that the append() will use capacity that is there.
-				newSlots := args[:p.Lam.Fixed]
-				var l *Cons
-				var last *Cons
-				for i := p.Lam.Fixed; i < len(args); i++ {
-					x := &Cons{Car: args[i], Cdr: c.NullVal}
-					if l == nil {
-						l = x
-					}
-					if last != nil {
-						last.Cdr = x
-					}
-					last = x
-				}
-				if l == nil {
-					newSlots = append(newSlots, c.NullVal)
-				} else {
-					newSlots = append(newSlots, l)
-				}
-				newEnv = &lexenv{slots: newSlots, link: p.Env}
-			}
-			expr = p.Lam.Body
-			env = newEnv
-			goto again
-		} else {
-			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
+		newCode, newEnv, prim := c.invokeSetup(maybeProc, args)
+		if prim != nil {
+			return prim(c, args)
 		}
+		expr = newCode
+		env = newEnv
+		goto again
+	//			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 	case *Apply:
 		// FIXME
 		panic("Apply not implemented yet")
