@@ -1,10 +1,5 @@
-package runtime
-
-import (
-	"math/big"
-	. "sint/core"
-)
-
+// Equivalence primitive procedures.
+//
 // R7RS 6.2, Numbers, also see numbers.sch
 // TODO: /
 // TODO: quotient
@@ -12,6 +7,14 @@ import (
 // TODO: exact
 // TODO: inexact
 // TODO: (other numerics as required)
+
+package runtime
+
+import (
+	"math/big"
+	. "sint/core"
+)
+
 func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "sint:inexact-float?", 1, false, primInexactFloatp)
 	addPrimitive(c, "sint:exact-integer?", 1, false, primExactIntegerp)

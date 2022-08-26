@@ -1,3 +1,8 @@
+// String primitive procedures.
+//
+// R7RS 6.7, Strings
+// TODO: Lots.  See README.md
+
 package runtime
 
 import (
@@ -5,8 +10,6 @@ import (
 	. "sint/core"
 )
 
-// R7RS 6.7, Strings
-// TODO: Lots.  See README.md
 func initStringPrimitives(c *Scheme) {
 	addPrimitive(c, "string?", 1, false, primStringp)
 	addPrimitive(c, "string-length", 1, false, primStringLength)

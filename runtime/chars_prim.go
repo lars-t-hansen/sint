@@ -1,10 +1,5 @@
-package runtime
-
-import (
-	"math/big"
-	. "sint/core"
-)
-
+// Character primitive procedures.
+//
 // R7RS 6.6, Characters
 // TODO: char=?
 // TODO: char>?
@@ -12,6 +7,14 @@ import (
 // TODO: char<?
 // TODO: char<=?
 // TODO: (and probably many others)
+
+package runtime
+
+import (
+	"math/big"
+	. "sint/core"
+)
+
 func initCharPrimitives(c *Scheme) {
 	addPrimitive(c, "char?", 1, false, primCharp)
 	addPrimitive(c, "char->integer", 1, false, primChar2Int)

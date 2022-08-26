@@ -1,3 +1,5 @@
+// Definitions of data structures representing Scheme values.
+
 package core
 
 import "fmt"

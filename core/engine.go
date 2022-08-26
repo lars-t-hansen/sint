@@ -1,4 +1,4 @@
-// Evaluation engine core - definitions of values and program nodes; evaluation.
+// Evaluation engine core
 
 package core
 
@@ -6,11 +6,6 @@ import (
 	"math/big"
 	"strconv"
 )
-
-// Runtimes and evaluation.
-//
-// TODO: The Scheme instance should cache a compiler instance, if it has no
-// post-init mutable state.
 
 type Scheme struct {
 	// Symbol table

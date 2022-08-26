@@ -1,3 +1,5 @@
+// Definitions of data types representing compiled code.
+
 package core
 
 import (

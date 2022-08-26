@@ -37,8 +37,13 @@ func main() {
 			}
 			panic("Bad 'compile' command")
 		}
+		// An idea is that "eval" is the default verb, or perhaps,
+		// it is the default verb if the first letter of the verb
+		// is left paren.  That way, `sint 'some expr'` will evaluate
+		// and print it.
 		if args[0] == "eval" {
 			evalExpr(engine, comp, args[1])
+			return
 		}
 		if args[0] == "repl" {
 			enterRepl(engine, comp)

@@ -1,10 +1,13 @@
+// Symbols primitive procedures.
+//
+// R7RS 6.5, Symbols.  Also see symbols.sch.
+
 package runtime
 
 import (
 	. "sint/core"
 )
 
-// R7RS 6.5, Symbols.  Also see symbols.sch.
 func initSymbolPrimitives(c *Scheme) {
 	addPrimitive(c, "symbol?", 1, false, primSymbolp)
 	addPrimitive(c, "symbol->string", 1, false, primSymbol2String)

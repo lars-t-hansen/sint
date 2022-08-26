@@ -1,3 +1,7 @@
+// Equivalence primitive procedures.
+//
+// R7R7 6.1, Equivalence predicates, also see equivalence.sch
+
 package runtime
 
 import (
@@ -5,7 +9,6 @@ import (
 	. "sint/core"
 )
 
-// R7R7 6.1, Equivalence predicates, also see equivalence.sch
 func initEquivalencePrimitives(c *Scheme) {
 	addPrimitive(c, "eq?", 2, false, primEqp)
 	addPrimitive(c, "eqv?", 2, false, primEqvp)

@@ -1,10 +1,13 @@
+// Pairs and lists primitive procedures.
+//
+// R7RS 6.4, Pairs and lists, also see pairs.sch
+
 package runtime
 
 import (
 	. "sint/core"
 )
 
-// R7RS 6.4, Pairs and lists, also see pairs.sch
 func initPairPrimitives(c *Scheme) {
 	addPrimitive(c, "null?", 1, false, primNullp)
 	addPrimitive(c, "pair?", 1, false, primPairp)

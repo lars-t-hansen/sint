@@ -36,7 +36,7 @@ some basic ergonomics, and more primitives and library, esp for I/O
 
 High priority
 
-- strings - add enough primitives to make them useful
+- strings & chars - add enough primitives to make them useful
 - apply - design done, only some implementation left
 - multiple values - this will be disruptive
 - basic error handling & recovery
