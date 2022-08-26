@@ -70,7 +70,11 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			break
 		}
 		// TODO: Recover from compilation error
-		prog := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(v)
+		if progErr != nil {
+			os.Stderr.WriteString(progErr.Error() + "\n")
+			continue
+		}
 		writer.WriteString(prog.String() + "\n")
 		writer.Flush()
 		result := engine.EvalToplevel(prog)
@@ -91,8 +95,9 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	reader := bufio.NewReader(strings.NewReader(expr))
 	writer := bufio.NewWriter(os.Stdout)
 	v := runtime.Read(engine, reader)
-	prog := comp.CompileToplevel(v)
-	if prog == nil {
+	prog, progErr := comp.CompileToplevel(v)
+	if progErr != nil {
+		os.Stderr.WriteString(progErr.Error() + "\n")
 		os.Stderr.WriteString("Aborting\n")
 		os.Exit(1)
 	}
@@ -159,9 +164,9 @@ func init%s(c *Scheme) {
 		if v == engine.EofVal {
 			break
 		}
-		// TODO: Recover from compilation error
-		prog := comp.CompileToplevel(v)
-		if prog == nil {
+		prog, progErr := comp.CompileToplevel(v)
+		if progErr != nil {
+			os.Stderr.WriteString(progErr.Error() + "\n")
 			os.Stderr.WriteString("Aborting\n")
 			os.Exit(1)
 		}

@@ -48,6 +48,9 @@ func primCompileToplevel(c *Scheme, args []Val) Val {
 	// from that lambda, and returns the procedure
 	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
 	comp := compiler.NewCompiler(c)
-	prog := comp.CompileToplevel(args[0])
+	prog, err := comp.CompileToplevel(args[0])
+	if err != nil {
+		panic(err.Error())
+	}
 	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}
 }

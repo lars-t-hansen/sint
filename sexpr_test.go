@@ -34,10 +34,16 @@ func TestFibSexpr(t *testing.T) {
 				list(symPlus,
 					list(symFib, list(symMinus, symN, big.NewInt(1))),
 					list(symFib, list(symMinus, symN, big.NewInt(2))))))
-	defnProg := comp.CompileToplevel(defn)
+	defnProg, defnErr := comp.CompileToplevel(defn)
+	if defnErr != nil {
+		panic(defnErr.Error())
+	}
 	c.EvalToplevel(defnProg)
 	invoke := list(symFib, big.NewInt(10))
-	invokeProg := comp.CompileToplevel(invoke)
+	invokeProg, invokeErr := comp.CompileToplevel(invoke)
+	if invokeErr != nil {
+		panic(invokeErr.Error())
+	}
 	v := c.EvalToplevel(invokeProg)
 	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
