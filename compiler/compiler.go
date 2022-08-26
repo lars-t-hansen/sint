@@ -289,7 +289,7 @@ func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) (Code, error) {
 		return nil, err1
 	}
 	e2, err2 := c.compileExpr(consequent, env)
-	if err1 != nil {
+	if err2 != nil {
 		return nil, err2
 	}
 	e3, err3 := c.compileExpr(alternate, env)
