@@ -4,6 +4,9 @@
 //  sint repl
 //    Enter the interactive repl
 //
+//  sint eval expr
+//    Evaluate the expression, print its result, and exit
+//
 //  sint compile filename.sch
 //    Compile filename.sch into filename.go with a function initFilename() that
 //    takes a *Scheme and evaluates the expressions and definitions of filename.sch
@@ -33,6 +36,9 @@ func main() {
 				return
 			}
 			panic("Bad 'compile' command")
+		}
+		if args[0] == "eval" {
+			evalExpr(engine, comp, args[1])
 		}
 		if args[0] == "repl" {
 			enterRepl(engine, comp)
@@ -69,6 +75,21 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			writer.WriteRune('\n')
 			writer.Flush()
 		}
+	}
+}
+
+func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
+	runtime.InitPrimitives(engine)
+	runtime.InitCompiled(engine)
+	reader := bufio.NewReader(strings.NewReader(expr))
+	writer := bufio.NewWriter(os.Stdout)
+	v := runtime.Read(engine, reader)
+	prog := comp.CompileToplevel(v)
+	result := engine.EvalToplevel(prog)
+	if result != engine.UnspecifiedVal {
+		runtime.Write(result, writer)
+		writer.WriteRune('\n')
+		writer.Flush()
 	}
 }
 

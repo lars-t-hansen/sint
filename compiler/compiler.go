@@ -82,13 +82,7 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 	}
 	// (define (f arg ... . arg) body ...)
 	if fixed, rest, globName, formals, ok := c.checkDefinitionSignature(nameOrSignature); ok {
-		bodyList := cddr(v)
-		var body Code
-		if cdr(bodyList) != c.s.NullVal {
-			body = cons(c.s.BeginSym, bodyList)
-		} else {
-			body = car(bodyList)
-		}
+		body := c.wrapBodyList(cddr(v))
 		lam := &Lambda{
 			Fixed: fixed,
 			Rest:  rest,
@@ -99,6 +93,15 @@ func (c *Compiler) compileToplevelDefinition(v Val) Code {
 		}
 	}
 	panic("Invalid top-level definition")
+}
+
+// bodyList is a list of expressions.  If its length is 1, return the first element,
+// otherwise turn it into a BEGIN.
+func (c *Compiler) wrapBodyList(bodyList Val) Val {
+	if cdr(bodyList) != c.s.NullVal {
+		return cons(c.s.BeginSym, bodyList)
+	}
+	return car(bodyList)
 }
 
 func (c *Compiler) compileExpr(v Val, env *cenv) Code {
@@ -245,10 +248,7 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) Code {
 	if !ok {
 		panic("lambda: Illegal form: " + l.String())
 	}
-	bodyExpr := cddr(l)
-	if llen > 3 {
-		bodyExpr = cons(c.s.BeginSym, bodyExpr)
-	}
+	bodyExpr := c.wrapBodyList(cddr(l))
 	newEnv := &cenv{link: env, names: formals}
 	compiledBodyExpr := c.compileExpr(bodyExpr, newEnv)
 	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr}
@@ -276,12 +276,7 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	if !bindingsAreOk {
 		panic(name + ": Illegal form: " + l.String())
 	}
-	var bodyExpr Val
-	if llen > 3 {
-		bodyExpr = cons(c.s.BeginSym, cddr(l))
-	} else {
-		bodyExpr = car(cddr(l))
-	}
+	bodyExpr := c.wrapBodyList(cddr(l))
 	// Optimization: Don't introduce a rib if there are no bindings
 	if len(names) == 0 {
 		return c.compileExpr(bodyExpr, env)
@@ -391,7 +386,7 @@ func (c *Compiler) checkDefinitionSignature(sig Val) (fixed int, rest bool, glob
 	if !k {
 		return
 	}
-	fixed = f - 1
+	fixed = f - 1 // hi
 	rest = r
 	globName = names[0]
 	formals = names[1:]
