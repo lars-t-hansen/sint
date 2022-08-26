@@ -119,6 +119,8 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 		return &Quote{Value: e}
 	case *Symbol:
 		return c.compileRef(e, env)
+	case *Str:
+		return &Quote{Value: e}
 	case *Cons:
 		llen, exprIsList := c.checkProperList(e)
 		if !exprIsList {

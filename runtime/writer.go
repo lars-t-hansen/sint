@@ -27,6 +27,9 @@ func Write(v Val, w *bufio.Writer) {
 			// Hm, maybe check if it's printable?
 			fmt.Fprintf(w, "#\\%c", x.Value)
 		}
+	case *Str:
+		// Hm, is this always the right syntax?
+		fmt.Fprintf(w, "%q", x.Value)
 	case *True:
 		w.WriteString("#t")
 	case *False:

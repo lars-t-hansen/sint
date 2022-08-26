@@ -70,7 +70,7 @@ func (r *reader) read() Val {
 		}
 		panic("Unknown # syntax")
 	case '"':
-		panic("Strings not yet supported")
+		return r.readString()
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
 		return r.readDecimalNumber(c)
 	default:
@@ -263,6 +263,42 @@ func (r *reader) readCharacter() Val {
 		break
 	}
 	return &Char{Value: e}
+}
+
+func (r *reader) readString() *Str {
+	s := ""
+	for {
+		c, _, err := r.rdr.ReadRune()
+		if err != nil {
+			r.handleErrorIgnoreEOF(err)
+			panic("EOF in string")
+		}
+		if c == '"' {
+			return &Str{Value: s}
+		}
+		if c == '\\' {
+			d, _, err := r.rdr.ReadRune()
+			if err != nil {
+				r.handleErrorIgnoreEOF(err)
+				panic("EOF in string")
+			}
+			switch d {
+			case 'n':
+				c = '\n'
+			case 'r':
+				c = '\r'
+			case 't':
+				c = '\t'
+			case '\\':
+				c = '\\'
+			default:
+				// TODO: \x, \u, probably others
+				panic("Unsupported escape sequence in string")
+			}
+		}
+		// TODO: Check for invalid code point?
+		s = s + string(c)
+	}
 }
 
 func (r *reader) readSymbol(initial rune) *Symbol {

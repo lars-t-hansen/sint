@@ -9,6 +9,7 @@ import "fmt"
 //   *Symbol,
 //   *Procedure,
 //   *Char,
+//   *Str,
 //   *Null,			// Singleton
 //   *True			// Singleton
 //   *False			// Singleton
@@ -17,7 +18,6 @@ import "fmt"
 //   *EofObject     // Singleton
 //   *big.Int,      // Exact integer
 //   *big.Float,    // Inexact real (rational?)
-//   *string		// String, immutable for now
 // }
 
 type Val interface {
@@ -53,11 +53,24 @@ func (c *Procedure) String() string {
 }
 
 type Char struct {
+	// The value may not be a unicode code point, so 'rune' is only suggestive.
+	// Also see Str below.
 	Value rune
 }
 
 func (c *Char) String() string {
-	return fmt.Sprint("[char", c.Value, "]")
+	return fmt.Sprint("[char ", c.Value, "]")
+}
+
+// Sint strings are Go strings, ie, they are immutable byte slices holding
+// UTF-8 encoded Unicode code points.  This is nonstandard.  See the Design
+// section of README.md.
+type Str struct {
+	Value string
+}
+
+func (s *Str) String() string {
+	return fmt.Sprint("[string ", s.Value, "]")
 }
 
 type Null struct{}

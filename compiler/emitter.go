@@ -104,6 +104,8 @@ func emitDatum(v Val, w *bufio.Writer) {
 		w.WriteString("c.FalseVal")
 	case *Symbol:
 		emitSymbol(d, w)
+	case *Str:
+		fmt.Fprintf(w, "&Str{Value:%q}", d)
 	case *big.Int:
 		if d.IsInt64() {
 			fmt.Fprintf(w, "big.NewInt(%d)", d.Int64())
