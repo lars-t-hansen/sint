@@ -139,9 +139,14 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 package runtime
 import (
 	. "sint/core"
+	"math/big"
 )
+func dummy%s() {
+	// Make sure the imports are used, or the Go compiler barfs.
+	var _ Val = big.NewInt(0)
+}
 func init%s(c *Scheme) {
-`, fn, moduleName)
+`, fn, moduleName, moduleName)
 	id := 1
 	for {
 		v := runtime.Read(engine, reader)

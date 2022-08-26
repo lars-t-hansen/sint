@@ -14,6 +14,7 @@ func initStringPrimitives(c *Scheme) {
 	addPrimitive(c, "string?", 1, false, primStringp)
 	addPrimitive(c, "string-length", 1, false, primStringLength)
 	addPrimitive(c, "string=?", 2, true, primStringEq)
+	addPrimitive(c, "string-append", 0, true, primStringAppend)
 }
 
 func primStringp(ctx *Scheme, args []Val) Val {
@@ -48,4 +49,16 @@ func primStringEq(ctx *Scheme, args []Val) Val {
 		}
 	}
 	return ctx.TrueVal
+}
+
+func primStringAppend(ctx *Scheme, args []Val) Val {
+	s := ""
+	for _, v := range args {
+		s2, ok := v.(*Str)
+		if !ok {
+			panic("string-append: Not a string: " + v.String())
+		}
+		s = s + s2.Value
+	}
+	return &Str{Value: s}
 }

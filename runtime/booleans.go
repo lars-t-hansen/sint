@@ -3,7 +3,12 @@
 package runtime
 import (
 	. "sint/core"
+	"math/big"
 )
+func dummyBooleans() {
+	// Make sure the imports are used, or the Go compiler barfs.
+	var _ Val = big.NewInt(0)
+}
 func initBooleans(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("boolean?"), Rhs:&Lambda{
@@ -47,7 +52,7 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("error")},
-&Quote{Value:&Str{Value:"[string boolean=?: not a boolean: ]"}},
+&Quote{Value:&Str{Value:"boolean=?: not a boolean: "}},
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},

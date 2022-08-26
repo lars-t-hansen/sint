@@ -12,9 +12,8 @@ func InitPrimitives(c *Scheme) {
 	initSymbolPrimitives(c)
 	initCharPrimitives(c)
 	initStringPrimitives(c)
-
-	// R7RS 6.10, Control features, also see control.sch
-	addPrimitive(c, "procedure?", 1, false, primProcedurep)
+	initControlPrimitives(c)
+	initExceptionsPrimitives(c)
 
 	// R7RS 6.13, Input and output, also see io.sch
 	addPrimitive(c, "eof-object?", 1, false, primEofObjectp)
@@ -35,13 +34,6 @@ func InitPrimitives(c *Scheme) {
 func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
 	sym := c.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
-}
-
-func primProcedurep(ctx *Scheme, args []Val) Val {
-	if _, ok := args[0].(*Symbol); ok {
-		return ctx.TrueVal
-	}
-	return ctx.FalseVal
 }
 
 func primEofObjectp(ctx *Scheme, args []Val) Val {

@@ -3,7 +3,12 @@
 package runtime
 import (
 	. "sint/core"
+	"math/big"
 )
+func dummySymbols() {
+	// Make sure the imports are used, or the Go compiler barfs.
+	var _ Val = big.NewInt(0)
+}
 func initSymbols(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("symbol=?"), Rhs:&Letrec{Exprs:[]Code{
@@ -19,7 +24,7 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("error")},
-&Quote{Value:&Str{Value:"[string symbol=?: not a symbol: ]"}},
+&Quote{Value:&Str{Value:"symbol=?: not a symbol: "}},
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
