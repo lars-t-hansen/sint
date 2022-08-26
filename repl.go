@@ -73,8 +73,10 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 		prog := comp.CompileToplevel(v)
 		writer.WriteString(prog.String() + "\n")
 		writer.Flush()
-		// TODO: Recover from runtime error
 		result := engine.EvalToplevel(prog)
+		if prog == nil {
+			continue
+		}
 		if result != engine.UnspecifiedVal {
 			runtime.Write(result, writer)
 			writer.WriteRune('\n')
@@ -90,6 +92,10 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	writer := bufio.NewWriter(os.Stdout)
 	v := runtime.Read(engine, reader)
 	prog := comp.CompileToplevel(v)
+	if prog == nil {
+		os.Stderr.WriteString("Aborting\n")
+		os.Exit(1)
+	}
 	result := engine.EvalToplevel(prog)
 	if result != engine.UnspecifiedVal {
 		runtime.Write(result, writer)
@@ -155,6 +161,10 @@ func init%s(c *Scheme) {
 		}
 		// TODO: Recover from compilation error
 		prog := comp.CompileToplevel(v)
+		if prog == nil {
+			os.Stderr.WriteString("Aborting\n")
+			os.Exit(1)
+		}
 		initName := fmt.Sprintf("code%d", id)
 		id++
 		compiler.EmitGo(prog, initName, writer)

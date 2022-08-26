@@ -10,6 +10,7 @@ package compiler
 
 import (
 	"math/big"
+	"os"
 	. "sint/core"
 )
 
@@ -44,12 +45,19 @@ func NewCompiler(s *Scheme) *Compiler {
 	return c
 }
 
+// Returns nil on error, after printing an error message on stderr.
 func (c *Compiler) CompileToplevel(v Val) Code {
 	length, exprIsList := c.checkProperList(v)
+	var compiled Code
 	if exprIsList && length >= 3 && car(v) == c.s.DefineSym {
-		return c.compileToplevelDefinition(v)
+		compiled = c.compileToplevelDefinition(v)
+	} else {
+		compiled = c.compileExpr(v, nil)
 	}
-	return c.compileExpr(v, nil)
+	if compiled == nil {
+		return nil
+	}
+	return compiled
 }
 
 type cenv struct {
@@ -71,28 +79,43 @@ func lookup(env *cenv, s *Symbol) (int, int, bool) {
 	return 0, 0, false
 }
 
+// This always returns nil
+func (c *Compiler) reportError(msg string) Code {
+	os.Stderr.WriteString(msg)
+	os.Stderr.WriteString("\n")
+	return nil
+}
+
 func (c *Compiler) compileToplevelDefinition(v Val) Code {
 	nameOrSignature := cadr(v)
 	// (define x v)
 	if globName, ok := nameOrSignature.(*Symbol); ok {
+		rhs := c.compileExpr(caddr(v), nil)
+		if rhs == nil {
+			return nil
+		}
 		return &Setglobal{
 			Name: globName,
-			Rhs:  c.compileExpr(caddr(v), nil),
+			Rhs:  rhs,
 		}
 	}
 	// (define (f arg ... . arg) body ...)
 	if fixed, rest, globName, formals, ok := c.checkDefinitionSignature(nameOrSignature); ok {
 		body := c.wrapBodyList(cddr(v))
+		bodyc := c.compileExpr(body, &cenv{link: nil, names: formals})
+		if bodyc == nil {
+			return nil
+		}
 		lam := &Lambda{
 			Fixed: fixed,
 			Rest:  rest,
-			Body:  c.compileExpr(body, &cenv{link: nil, names: formals})}
+			Body:  bodyc}
 		return &Setglobal{
 			Name: globName,
 			Rhs:  lam,
 		}
 	}
-	panic("Invalid top-level definition") // TODO: msg
+	return c.reportError("Invalid top-level definition") // TODO: msg
 }
 
 // bodyList is a list of expressions.  If its length is 1, return the first element,
@@ -127,10 +150,10 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 	case *Cons:
 		llen, exprIsList := c.checkProperList(e)
 		if !exprIsList {
-			panic("Improper list used as expression") // TODO: msg
+			return c.reportError("Improper list used as expression") // TODO: msg
 		}
 		if llen == 0 {
-			panic("Unquoted empty list used as expression") // TODO: msg
+			return c.reportError("Unquoted empty list used as expression") // TODO: msg
 		}
 		if kwd, ok := e.Car.(*Symbol); ok {
 			if kwd == c.s.AndSym {
@@ -175,7 +198,11 @@ func (c *Compiler) compileExpr(v Val, env *cenv) Code {
 func (c *Compiler) compileExprList(l Val, env *cenv) []Code {
 	var exprs []Code
 	for l != c.s.NullVal {
-		exprs = append(exprs, c.compileExpr(car(l), env))
+		ce := c.compileExpr(car(l), env)
+		if ce == nil {
+			return nil
+		}
+		exprs = append(exprs, ce)
 		l = cdr(l)
 	}
 	return exprs
@@ -184,7 +211,11 @@ func (c *Compiler) compileExprList(l Val, env *cenv) []Code {
 func (c *Compiler) compileExprSlice(es []Val, env *cenv) []Code {
 	var exprs []Code
 	for _, e := range es {
-		exprs = append(exprs, c.compileExpr(e, env))
+		ce := c.compileExpr(e, env)
+		if ce == nil {
+			return nil
+		}
+		exprs = append(exprs, ce)
 	}
 	return exprs
 }
@@ -197,11 +228,13 @@ func (c *Compiler) compileAnd(l Val, llen int, env *cenv) Code {
 	if llen == 2 {
 		return c.compileExpr(cadr(l), env)
 	}
-	return &If{
-		Test:       c.compileExpr(cadr(l), env),
-		Consequent: c.compileExpr(cons(c.s.AndSym, cddr(l)), env),
-		Alternate:  &Quote{Value: c.s.FalseVal},
+	e1 := c.compileExpr(cadr(l), env)
+	e2 := c.compileExpr(cons(c.s.AndSym, cddr(l)), env)
+	e3 := &Quote{Value: c.s.FalseVal}
+	if e1 == nil || e2 == nil {
+		return nil
 	}
+	return &If{Test: e1, Consequent: e2, Alternate: e3}
 }
 
 func (c *Compiler) compileBegin(l Val, llen int, env *cenv) Code {
@@ -218,14 +251,18 @@ func (c *Compiler) compileBegin(l Val, llen int, env *cenv) Code {
 
 func (c *Compiler) compileCall(l Val, _ int, env *cenv) Code {
 	// (expr expr ...)
-	return &Call{Exprs: c.compileExprList(l, env)}
+	es := c.compileExprList(l, env)
+	if es == nil {
+		return nil
+	}
+	return &Call{Exprs: es}
 }
 
 func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) Code {
 	// (if expr expr)
 	// (if expr expr expr)
 	if llen != 3 && llen != 4 {
-		panic("if: Illegal form: " + l.String())
+		return c.reportError("if: Illegal form: " + l.String())
 	}
 	test := cadr(l)
 	consequent := caddr(l)
@@ -233,24 +270,29 @@ func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) Code {
 	if llen == 4 {
 		alternate = cadddr(l)
 	}
-	return &If{
-		Test:       c.compileExpr(test, env),
-		Consequent: c.compileExpr(consequent, env),
-		Alternate:  c.compileExpr(alternate, env),
+	e1 := c.compileExpr(test, env)
+	e2 := c.compileExpr(consequent, env)
+	e3 := c.compileExpr(alternate, env)
+	if e1 == nil || e2 == nil || e3 == nil {
+		return nil
 	}
+	return &If{Test: e1, Consequent: e2, Alternate: e3}
 }
 
 func (c *Compiler) compileLambda(l Val, llen int, env *cenv) Code {
 	if llen < 3 {
-		panic("lambda: Illegal form: " + l.String())
+		return c.reportError("lambda: Illegal form: " + l.String())
 	}
 	fixed, rest, formals, ok := c.checkLambdaSignature(cadr(l))
 	if !ok {
-		panic("lambda: Illegal form: " + l.String())
+		return c.reportError("lambda: Illegal form: " + l.String())
 	}
 	bodyExpr := c.wrapBodyList(cddr(l))
 	newEnv := &cenv{link: env, names: formals}
 	compiledBodyExpr := c.compileExpr(bodyExpr, newEnv)
+	if compiledBodyExpr == nil {
+		return nil
+	}
 	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr}
 }
 
@@ -270,11 +312,11 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 		name = "letrec"
 	}
 	if llen < 3 {
-		panic(name + ": Illegal form: " + l.String())
+		return c.reportError(name + ": Illegal form: " + l.String())
 	}
 	names, inits, bindingsAreOk := c.checkLetBindings(cadr(l))
 	if !bindingsAreOk {
-		panic(name + ": Illegal form: " + l.String())
+		return c.reportError(name + ": Illegal form: " + l.String())
 	}
 	bodyExpr := c.wrapBodyList(cddr(l))
 	// Optimization: Don't introduce a rib if there are no bindings
@@ -288,7 +330,13 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	} else {
 		compiledInits = c.compileExprSlice(inits, env)
 	}
+	if compiledInits == nil {
+		return nil
+	}
 	compiledBody := c.compileExpr(bodyExpr, newEnv)
+	if compiledBody == nil {
+		return nil
+	}
 	if isLetrec {
 		return &Letrec{Exprs: compiledInits, Body: compiledBody}
 	} else {
@@ -326,7 +374,7 @@ func (c *Compiler) compileOr(l Val, llen int, env *cenv) Code {
 func (c *Compiler) compileQuote(l Val, llen int, env *cenv) Code {
 	// (quote datum)
 	if llen != 2 {
-		panic("quote: Illegal form: " + l.String())
+		return c.reportError("quote: Illegal form: " + l.String())
 	}
 
 	// There are probably restrictions on the datum.  It can be:
@@ -355,7 +403,7 @@ func (c *Compiler) compileRef(s *Symbol, env *cenv) Code {
 		return &Lexical{Levels: levels, Offset: offset}
 	}
 	if c.isKeyword(s) {
-		panic("Keyword used as variable reference: " + s.Name)
+		return c.reportError("Keyword used as variable reference: " + s.Name)
 	}
 	return &Global{Name: s}
 }
@@ -363,20 +411,23 @@ func (c *Compiler) compileRef(s *Symbol, env *cenv) Code {
 func (c *Compiler) compileSet(l Val, llen int, env *cenv) Code {
 	// (set! ident expr)
 	if llen != 3 {
-		panic("set!: Illegal form")
+		return c.reportError("set!: Illegal form")
 	}
 	place := cadr(l)
 	expr := caddr(l)
 	placeName, nameIsSymbol := place.(*Symbol)
 	if !nameIsSymbol {
-		panic("set!: Illegal variable name: " + place.String())
+		return c.reportError("set!: Illegal variable name: " + place.String())
 	}
 	rhs := c.compileExpr(expr, env)
+	if rhs == nil {
+		return nil
+	}
 	if levels, offset, ok := lookup(env, placeName); ok {
 		return &Setlex{Levels: levels, Offset: offset, Rhs: rhs}
 	}
 	if c.isKeyword(placeName) {
-		panic("Keyword used as variable name: " + placeName.Name)
+		return c.reportError("Keyword used as variable name: " + placeName.Name)
 	}
 	return &Setglobal{Name: placeName, Rhs: rhs}
 }
