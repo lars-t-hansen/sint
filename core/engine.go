@@ -22,9 +22,13 @@ type Scheme struct {
 	FalseVal       Val
 	EofVal         Val
 
-	// Useful values
-	Zero  *big.Int
-	FZero *big.Float
+	// Useful values.  TODO: Flesh this out, and use it in the emitter: Most
+	// literal values in programs are 0, 1, and 2, and we could have them
+	// all predefined here and could just use them rather than cons them
+	// up anew every time.  That said, those are *constant* values and
+	// are only consed up when the program is deserialized, not at runtime,
+	// so they probably are not all that useful frankly.
+	Zero *big.Int
 
 	// Well-known symbols.
 	AndSym     *Symbol
@@ -58,7 +62,6 @@ func NewScheme() *Scheme {
 		FalseVal:       &False{},
 		EofVal:         &EofObject{},
 		Zero:           big.NewInt(0),
-		FZero:          big.NewFloat(0),
 		oblist:         map[string]*Symbol{},
 		nextGensym:     1000,
 	}

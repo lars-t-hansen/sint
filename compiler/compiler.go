@@ -52,7 +52,7 @@ func (e *CompilerError) Error() string {
 	return e.msg
 }
 
-// Returns (nil, CompilerError) on error, the error holds a string explaining
+// Returns (nil, *CompilerError) on error, the error holds data explaining
 // the problem.  The compiler panics only on internal errors.
 func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	length, exprIsList := c.checkProperList(v)
