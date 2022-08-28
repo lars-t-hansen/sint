@@ -11,31 +11,31 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "writeln", 1, true, primWriteln)
 }
 
-func primWrite(ctx *Scheme, args []Val) Val {
+func primWrite(ctx *Scheme, args []Val) (Val, int) {
 	// TODO: Need to handle the port, but for now always use stdout.
 	writer := &StdoutWriter{}
 	Write(args[0], false, writer)
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }
 
-func primWriteln(ctx *Scheme, args []Val) Val {
+func primWriteln(ctx *Scheme, args []Val) (Val, int) {
 	// TODO: Need to handle the port, but for now always use stdout.
 	writer := &StdoutWriter{}
 	Write(args[0], false, writer)
 	writer.WriteRune('\n')
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }
 
-func primDisplay(ctx *Scheme, args []Val) Val {
+func primDisplay(ctx *Scheme, args []Val) (Val, int) {
 	// TODO: Need to handle the port, but for now always use stdout.
 	writer := &StdoutWriter{}
 	Write(args[0], true, writer)
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }
 
-func primNewline(ctx *Scheme, args []Val) Val {
+func primNewline(ctx *Scheme, args []Val) (Val, int) {
 	// TODO: Need to handle the port, but for now always use stdout.
 	writer := &StdoutWriter{}
 	writer.WriteRune('\n')
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }

@@ -46,8 +46,8 @@ func (c *Symbol) String() string {
 
 type Procedure struct {
 	Lam    *Lambda
-	Env    *lexenv                  // closed-over lexical environment, nil for global procedures and primitives
-	Primop func(*Scheme, []Val) Val // nil for non-primitives
+	Env    *lexenv                         // closed-over lexical environment, nil for global procedures and primitives
+	Primop func(*Scheme, []Val) (Val, int) // nil for non-primitives
 }
 
 func (c *Procedure) String() string {

@@ -77,7 +77,7 @@ func (c *Call) String() string {
 type Apply struct{}
 
 func (c *Apply) String() string {
-	return "sint:raw-apply"
+	return "sint:apply"
 }
 
 type Lambda struct {

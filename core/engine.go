@@ -51,6 +51,12 @@ type Scheme struct {
 	ReturnSym  *Symbol
 	TabSym     *Symbol
 	SpaceSym   *Symbol
+
+	// Per-thread state that should be handled differently
+
+	// This is interpreted in the context of the number-of-values flag passed back
+	// in the evaluator
+	MultiVals []Val
 }
 
 func NewScheme() *Scheme {
@@ -105,19 +111,31 @@ func (c *Scheme) Gensym(s string) *Symbol {
 	return &Symbol{Name: name, Value: c.UndefinedVal}
 }
 
-func (c *Scheme) EvalToplevel(expr Code) Val {
-	return c.eval(expr, nil)
+func (c *Scheme) EvalToplevel(expr Code) []Val {
+	return c.captureValues(c.eval(expr, nil))
 }
 
-func (c *Scheme) Invoke(proc Val, args []Val) Val {
+func (c *Scheme) Invoke(proc Val, args []Val) []Val {
 	newCode, newEnv, prim := c.invokeSetup(proc, args)
+	var v Val
+	var k int
 	if prim != nil {
-		return prim(c, args)
+		v, k = prim(c, args)
+	} else {
+		v, k = c.eval(newCode, newEnv)
 	}
-	return c.eval(newCode, newEnv)
+	return c.captureValues(v, k)
 }
 
-func (c *Scheme) invokeSetup(proc Val, args []Val) (Code, *lexenv, func(*Scheme, []Val) Val) {
+func (c *Scheme) captureValues(v Val, numVal int) []Val {
+	vs := []Val{v}
+	if numVal > 1 {
+		vs = append(vs, c.MultiVals[:numVal-1]...)
+	}
+	return vs
+}
+
+func (c *Scheme) invokeSetup(proc Val, args []Val) (Code, *lexenv, func(*Scheme, []Val) (Val, int)) {
 	if p, ok := proc.(*Procedure); ok {
 		if len(args) < p.Lam.Fixed {
 			panic("Not enough arguments") // TODO msg
@@ -171,13 +189,13 @@ type lexenv struct {
 	// TODO: Documentation: This should carry the names of locals in the rib
 }
 
-func (c *Scheme) eval(expr Code, env *lexenv) Val {
+func (c *Scheme) eval(expr Code, env *lexenv) (Val, int) {
 again:
 	switch e := expr.(type) {
 	case *Quote:
-		return e.Value
+		return e.Value, 1
 	case *If:
-		if c.eval(e.Test, env) != c.FalseVal {
+		if v, _ := c.eval(e.Test, env); v != c.FalseVal {
 			expr = e.Consequent
 		} else {
 			expr = e.Alternate
@@ -185,7 +203,7 @@ again:
 		goto again
 	case *Begin:
 		if len(e.Exprs) == 0 {
-			return c.UnspecifiedVal
+			return c.UnspecifiedVal, 1
 		}
 		c.evalExprs(e.Exprs[:len(e.Exprs)-1], env)
 		expr = e.Exprs[len(e.Exprs)-1]
@@ -203,10 +221,14 @@ again:
 		goto again
 	//			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 	case *Apply:
+		// Apply applies a function to the values in a list.  The innermost rib must have length exactly 3,
+		// (fn l count) where fn is a procedure, l a list, and count an integer.  fn is applied to the first
+		// count elements of l obtained by cdring down l.  The application is tail-recursive.  l can
+		// be improper or circular, if necessary.  All arguments are fully checked.
 		// FIXME
-		panic("Apply not implemented yet")
+		panic("APPLY not implemented yet")
 	case *Lambda:
-		return &Procedure{e, env, nil}
+		return &Procedure{e, env, nil}, 1
 	case *Let:
 		vals := c.evalExprs(e.Exprs, env)
 		newEnv := &lexenv{slots: vals, link: env}
@@ -234,25 +256,25 @@ again:
 		for levels := e.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
-		return rib.slots[e.Offset]
+		return rib.slots[e.Offset], 1
 	case *Setlex:
-		rhs := c.eval(e.Rhs, env)
+		rhs, _ := c.eval(e.Rhs, env)
 		rib := env
 		for levels := e.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
 		rib.slots[e.Offset] = rhs
-		return c.UnspecifiedVal
+		return c.UnspecifiedVal, 1
 	case *Global:
 		val := e.Name.Value
 		if val == c.UndefinedVal {
 			panic("Undefined global variable '" + e.Name.Name + "'")
 		}
-		return val
+		return val, 1
 	case *Setglobal:
-		rhs := c.eval(e.Rhs, env)
+		rhs, _ := c.eval(e.Rhs, env)
 		e.Name.Value = rhs
-		return c.UnspecifiedVal
+		return c.UnspecifiedVal, 1
 	default:
 		panic("Bad expression: " + expr.String())
 	}
@@ -261,7 +283,8 @@ again:
 func (c *Scheme) evalExprs(es []Code, env *lexenv) []Val {
 	vs := []Val{}
 	for _, e := range es {
-		vs = append(vs, c.eval(e, env))
+		r, _ := c.eval(e, env)
+		vs = append(vs, r)
 	}
 	return vs
 }

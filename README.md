@@ -133,3 +133,12 @@ string-fill!
 
 It is likely we would want some new procedures, to compensate for immutability.  Splicing,
 replacing, and searching are obvious.  Decoding an UTF8 char at byte index ditto.
+
+### Multiple values
+
+The semantics for multiple values is that if k values, k != 1, are returned to a continuation that
+requires just the one value, then it receives the one value: the first of the values returned if
+k > 1, or the unspecified value if k == 0.
+
+When call-with-values is used then the number of arguments must match the argument list.  R7RS
+appears to require this also for let-values and, one assumes, for let*-values.

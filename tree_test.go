@@ -44,7 +44,7 @@ func TestFibTree(t *testing.T) {
 		&Setglobal{Name: c.Intern("fib"), Rhs: lam},
 		call1(glob(c, "fib"), exact(10))}}
 	v := c.EvalToplevel(prog)
-	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {
+	if v[0].(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
 	}
 }

@@ -18,18 +18,18 @@ func initPairPrimitives(c *Scheme) {
 	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
 }
 
-func primNullp(ctx *Scheme, args []Val) Val {
+func primNullp(ctx *Scheme, args []Val) (Val, int) {
 	if args[0] == ctx.NullVal {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primPairp(ctx *Scheme, args []Val) Val {
+func primPairp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*Cons); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
 func checkCons(v Val, fn string) *Cons {
@@ -39,24 +39,24 @@ func checkCons(v Val, fn string) *Cons {
 	panic(fn + ": Not a pair: " + v.String())
 }
 
-func primCons(_ *Scheme, args []Val) Val {
-	return &Cons{Car: args[0], Cdr: args[1]}
+func primCons(_ *Scheme, args []Val) (Val, int) {
+	return &Cons{Car: args[0], Cdr: args[1]}, 1
 }
 
-func primCar(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "car").Car
+func primCar(_ *Scheme, args []Val) (Val, int) {
+	return checkCons(args[0], "car").Car, 1
 }
 
-func primCdr(_ *Scheme, args []Val) Val {
-	return checkCons(args[0], "cdr").Cdr
+func primCdr(_ *Scheme, args []Val) (Val, int) {
+	return checkCons(args[0], "cdr").Cdr, 1
 }
 
-func primSetcar(ctx *Scheme, args []Val) Val {
+func primSetcar(ctx *Scheme, args []Val) (Val, int) {
 	checkCons(args[0], "set-car!").Car = args[1]
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }
 
-func primSetcdr(ctx *Scheme, args []Val) Val {
+func primSetcdr(ctx *Scheme, args []Val) (Val, int) {
 	checkCons(args[0], "set-cdr!").Cdr = args[1]
-	return ctx.UnspecifiedVal
+	return ctx.UnspecifiedVal, 1
 }

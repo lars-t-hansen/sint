@@ -15,29 +15,29 @@ func initSymbolPrimitives(c *Scheme) {
 	addPrimitive(c, "gensym", 0, false, primGensym)
 }
 
-func primSymbolp(ctx *Scheme, args []Val) Val {
+func primSymbolp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*Symbol); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primSymbol2String(c *Scheme, args []Val) Val {
+func primSymbol2String(c *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if s, ok := v.(*Symbol); ok {
-		return &Str{Value: s.Name}
+		return &Str{Value: s.Name}, 1
 	}
 	panic("symbol->string: Not a symbol: " + v.String())
 }
 
-func primString2Symbol(c *Scheme, args []Val) Val {
+func primString2Symbol(c *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if s, ok := v.(*Str); ok {
-		return c.Intern(s.Value)
+		return c.Intern(s.Value), 1
 	}
 	panic("string->symbol: Not a string: " + v.String())
 }
 
-func primGensym(c *Scheme, _ []Val) Val {
-	return c.Gensym("S")
+func primGensym(c *Scheme, _ []Val) (Val, int) {
+	return c.Gensym("S"), 1
 }

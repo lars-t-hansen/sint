@@ -22,21 +22,21 @@ func initCharPrimitives(c *Scheme) {
 
 }
 
-func primCharp(ctx *Scheme, args []Val) Val {
+func primCharp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*Char); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primChar2Int(c *Scheme, args []Val) Val {
+func primChar2Int(c *Scheme, args []Val) (Val, int) {
 	if ch, ok := args[0].(*Char); ok {
-		return big.NewInt(int64(ch.Value))
+		return big.NewInt(int64(ch.Value)), 1
 	}
 	panic("char->integer: Not a character: " + args[0].String())
 }
 
-func primInt2Char(c *Scheme, args []Val) Val {
+func primInt2Char(c *Scheme, args []Val) (Val, int) {
 	if n, ok := args[0].(*big.Int); ok {
 		if !n.IsInt64() {
 			panic("char->integer: Integer outside character range: " + args[0].String())
@@ -46,7 +46,7 @@ func primInt2Char(c *Scheme, args []Val) Val {
 		if k < 0 || k > 0xDFFF {
 			panic("char->integer: Integer outside character range: " + args[0].String())
 		}
-		return &Char{Value: rune(n.Int64())}
+		return &Char{Value: rune(n.Int64())}, 1
 	}
 	panic("char->integer: Not an exact integer: " + args[0].String())
 }

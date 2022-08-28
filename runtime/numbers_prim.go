@@ -30,45 +30,45 @@ func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "number->string", 1, false, primNumber2String)
 }
 
-func primInexactFloatp(ctx *Scheme, args []Val) Val {
+func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*big.Float); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primExactIntegerp(ctx *Scheme, args []Val) Val {
+func primExactIntegerp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*big.Int); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primAdd(c *Scheme, args []Val) Val {
+func primAdd(c *Scheme, args []Val) (Val, int) {
 	if len(args) == 0 {
-		return c.Zero
+		return c.Zero, 1
 	}
 	if len(args) == 1 {
-		return checkNumber(args[0], "+")
+		return checkNumber(args[0], "+"), 1
 	}
 	r := add2(args[0], args[1])
 	for _, v := range args[2:] {
 		r = add2(r, v)
 	}
-	return r
+	return r, 1
 }
 
-func primSub(_ *Scheme, args []Val) Val {
+func primSub(_ *Scheme, args []Val) (Val, int) {
 	if len(args) == 1 {
 		switch v := args[0].(type) {
 		case *big.Int:
 			var r big.Int
 			r.Neg(v)
-			return &r
+			return &r, 1
 		case *big.Float:
 			var r big.Float
 			r.Neg(v)
-			return &r
+			return &r, 1
 		default:
 			panic("'-': Not a number: " + args[0].String())
 		}
@@ -77,75 +77,75 @@ func primSub(_ *Scheme, args []Val) Val {
 	for _, v := range args[2:] {
 		r = sub2(r, v)
 	}
-	return r
+	return r, 1
 }
 
-func primMul(c *Scheme, args []Val) Val {
+func primMul(c *Scheme, args []Val) (Val, int) {
 	if len(args) == 0 {
-		return big.NewInt(1)
+		return big.NewInt(1), 1
 	}
 	if len(args) == 1 {
-		return checkNumber(args[0], "*")
+		return checkNumber(args[0], "*"), 1
 	}
 	r := mul2(args[0], args[1])
 	for _, v := range args[2:] {
 		r = mul2(r, v)
 	}
-	return r
+	return r, 1
 }
 
-func primLess(c *Scheme, args []Val) Val {
+func primLess(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "<") != -1 {
-			return c.FalseVal
+			return c.FalseVal, 1
 		}
 	}
-	return c.TrueVal
+	return c.TrueVal, 1
 }
 
-func primLessOrEqual(c *Scheme, args []Val) Val {
+func primLessOrEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "<=") == 1 {
-			return c.FalseVal
+			return c.FalseVal, 1
 		}
 	}
-	return c.TrueVal
+	return c.TrueVal, 1
 }
 
-func primEqual(c *Scheme, args []Val) Val {
+func primEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], "=") != 0 {
-			return c.FalseVal
+			return c.FalseVal, 1
 		}
 	}
-	return c.TrueVal
+	return c.TrueVal, 1
 }
 
-func primGreater(c *Scheme, args []Val) Val {
+func primGreater(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], ">") != 1 {
-			return c.FalseVal
+			return c.FalseVal, 1
 		}
 	}
-	return c.TrueVal
+	return c.TrueVal, 1
 }
 
-func primGreaterOrEqual(c *Scheme, args []Val) Val {
+func primGreaterOrEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		if cmp2(args[i-1], args[i], ">=") != -1 {
-			return c.FalseVal
+			return c.FalseVal, 1
 		}
 	}
-	return c.TrueVal
+	return c.TrueVal, 1
 }
 
-func primNumber2String(ctx *Scheme, args []Val) Val {
+func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if iv, ok := v.(*big.Int); ok {
-		return &Str{Value: fmt.Sprint(iv)}
+		return &Str{Value: fmt.Sprint(iv)}, 1
 	}
 	if fv, ok := v.(*big.Float); ok {
-		return &Str{Value: fmt.Sprint(fv)}
+		return &Str{Value: fmt.Sprint(fv)}, 1
 	}
 	panic("number->string: Not a number: " + v.String())
 }

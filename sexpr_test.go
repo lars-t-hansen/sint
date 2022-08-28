@@ -45,7 +45,7 @@ func TestFibSexpr(t *testing.T) {
 		panic(invokeErr.Error())
 	}
 	v := c.EvalToplevel(invokeProg)
-	if v.(*big.Int).Cmp(big.NewInt(55)) != 0 {
+	if v[0].(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
 	}
 }

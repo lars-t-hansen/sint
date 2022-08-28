@@ -32,19 +32,19 @@ func InitPrimitives(c *Scheme) {
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: 3, Rest: false, Body: &Apply{}}, Env: nil, Primop: nil}
 }
 
-func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) Val) {
+func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) (Val, int)) {
 	sym := c.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
 }
 
-func primEofObjectp(ctx *Scheme, args []Val) Val {
+func primEofObjectp(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := args[0].(*EofObject); ok {
-		return ctx.TrueVal
+		return ctx.TrueVal, 1
 	}
-	return ctx.FalseVal
+	return ctx.FalseVal, 1
 }
 
-func primCompileToplevel(c *Scheme, args []Val) Val {
+func primCompileToplevel(c *Scheme, args []Val) (Val, int) {
 	// Compiles args[0] into a lambda and then creates a toplevel procedure
 	// from that lambda, and returns the procedure
 	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
@@ -53,5 +53,5 @@ func primCompileToplevel(c *Scheme, args []Val) Val {
 	if err != nil {
 		panic(err.Error())
 	}
-	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}
+	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}, 1
 }
