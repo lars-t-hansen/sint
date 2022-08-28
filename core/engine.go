@@ -31,26 +31,29 @@ type Scheme struct {
 	Zero *big.Int
 
 	// Well-known symbols.
-	AndSym     *Symbol
-	BeginSym   *Symbol
-	CaseSym    *Symbol
-	CondSym    *Symbol
-	DefineSym  *Symbol
-	DoSym      *Symbol
-	ElseSym    *Symbol
-	IfSym      *Symbol
-	LambdaSym  *Symbol
-	LetSym     *Symbol
-	LetrecSym  *Symbol
-	OrSym      *Symbol
-	QuoteSym   *Symbol
-	SetSym     *Symbol
-	ArrowSym   *Symbol
-	DotSym     *Symbol
-	NewlineSym *Symbol
-	ReturnSym  *Symbol
-	TabSym     *Symbol
-	SpaceSym   *Symbol
+	AndSym           *Symbol
+	BeginSym         *Symbol
+	CaseSym          *Symbol
+	CondSym          *Symbol
+	DefineSym        *Symbol
+	DoSym            *Symbol
+	ElseSym          *Symbol
+	IfSym            *Symbol
+	LambdaSym        *Symbol
+	LetSym           *Symbol
+	LetStarSym       *Symbol
+	LetValuesSym     *Symbol
+	LetStarValuesSym *Symbol
+	LetrecSym        *Symbol
+	OrSym            *Symbol
+	QuoteSym         *Symbol
+	SetSym           *Symbol
+	ArrowSym         *Symbol
+	DotSym           *Symbol
+	NewlineSym       *Symbol
+	ReturnSym        *Symbol
+	TabSym           *Symbol
+	SpaceSym         *Symbol
 
 	// Per-thread state that should be handled differently
 
@@ -82,6 +85,9 @@ func NewScheme() *Scheme {
 	s.IfSym = s.Intern("if")
 	s.LambdaSym = s.Intern("lambda")
 	s.LetSym = s.Intern("let")
+	s.LetStarSym = s.Intern("let*")
+	s.LetValuesSym = s.Intern("let-values")
+	s.LetStarValuesSym = s.Intern("let*-values")
 	s.LetrecSym = s.Intern("letrec")
 	s.OrSym = s.Intern("or")
 	s.QuoteSym = s.Intern("quote")

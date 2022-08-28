@@ -35,6 +35,9 @@ func NewCompiler(s *Scheme) *Compiler {
 	c.keywords[s.IfSym] = true
 	c.keywords[s.LambdaSym] = true
 	c.keywords[s.LetSym] = true
+	c.keywords[s.LetStarSym] = true
+	c.keywords[s.LetValuesSym] = true
+	c.keywords[s.LetStarValuesSym] = true
 	c.keywords[s.LetrecSym] = true
 	c.keywords[s.OrSym] = true
 	c.keywords[s.QuoteSym] = true
@@ -182,6 +185,15 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			}
 			if kwd == c.s.LetSym {
 				return c.compileLet(e, llen, env)
+			}
+			if kwd == c.s.LetStarSym {
+				return c.compileLetStar(e, llen, env)
+			}
+			if kwd == c.s.LetValuesSym {
+				return c.compileLetValues(e, llen, env)
+			}
+			if kwd == c.s.LetStarValuesSym {
+				return c.compileLetStarValues(e, llen, env)
 			}
 			if kwd == c.s.LetrecSym {
 				return c.compileLetrec(e, llen, env)
@@ -392,6 +404,21 @@ func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {
 func (c *Compiler) compileLetrec(l Val, llen int, env *cenv) (Code, error) {
 	// (letrec ((id expr) ...) expr expr ...)
 	return c.compileLetOrLetrec(l, llen, env, true)
+}
+
+func (c *Compiler) compileLetStar(l Val, llen int, env *cenv) (Code, error) {
+	// (let* ((id expr) ...) expr expr ...)
+	return c.reportError("`let*` not implemented yet")
+}
+
+func (c *Compiler) compileLetValues(l Val, llen int, env *cenv) (Code, error) {
+	// (let-values ((bindings expr) ...) expr expr ...)
+	return c.reportError("`let-values` not implemented yet")
+}
+
+func (c *Compiler) compileLetStarValues(l Val, llen int, env *cenv) (Code, error) {
+	// (let*-values ((bindings expr) ...) expr expr ...)
+	return c.reportError("`let*-values` not implemented yet")
 }
 
 func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool) (Code, error) {
