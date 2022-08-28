@@ -11,6 +11,7 @@
 package runtime
 
 import (
+	"fmt"
 	"math/big"
 	. "sint/core"
 )
@@ -26,6 +27,7 @@ func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "=", 2, true, primEqual)
 	addPrimitive(c, ">", 2, true, primGreater)
 	addPrimitive(c, ">=", 2, true, primGreaterOrEqual)
+	addPrimitive(c, "number->string", 1, false, primNumber2String)
 }
 
 func primInexactFloatp(ctx *Scheme, args []Val) Val {
@@ -137,6 +139,17 @@ func primGreaterOrEqual(c *Scheme, args []Val) Val {
 	return c.TrueVal
 }
 
+func primNumber2String(ctx *Scheme, args []Val) Val {
+	v := args[0]
+	if iv, ok := v.(*big.Int); ok {
+		return &Str{Value: fmt.Sprint(iv)}
+	}
+	if fv, ok := v.(*big.Float); ok {
+		return &Str{Value: fmt.Sprint(fv)}
+	}
+	panic("number->string: Not a number: " + v.String())
+}
+
 func add2(a Val, b Val) Val {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
@@ -221,7 +234,7 @@ func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
 
 func checkNumber(v Val, s string) Val {
 	if !isNumber(v) {
-		panic("'" + s + ": Not a number: " + v.String())
+		panic(s + ": Not a number: " + v.String())
 	}
 	return v
 }

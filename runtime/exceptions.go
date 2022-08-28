@@ -42,50 +42,52 @@ Alternate:&Call{Exprs:[]Code{
 }},
 &Lambda{
 Fixed:1, Rest:false,
-Body:&If{
-Test:&Call{Exprs:[]Code{
+Body:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
 &Global{Name:c.Intern("string?")},
 &Lexical{Levels:0, Offset:0},
 }},
+}, Body:&If{
+Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Lexical{Levels:0, Offset:0},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("number?")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("number->string")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("symbol?")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("symbol->string")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("char?")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("string")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 }},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("eq?")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 &Quote{Value:c.TrueVal},
 }},
 Consequent:&Quote{Value:&Str{Value:"#t"}},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("eq?")},
-&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 &Quote{Value:c.FalseVal},
 }},
 Consequent:&Quote{Value:&Str{Value:"#f"}},
@@ -95,7 +97,7 @@ Alternate:&Quote{Value:&Str{Value:"#<weird>"}},
 },
 },
 },
-}},
+}}},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{

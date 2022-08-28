@@ -11,19 +11,13 @@
             ;; Dumb pretty-printer
             ;; FIXME: We need something much better
             (lambda (x)
-              (if (string? x)
-                  x
-                  (if (number? x)
-                      (number->string x)
-                      (if (symbol? x)
-                          (symbol->string x)
-                          (if (char? x)
-                              (string x)
-                              (if (eq? x #t)
-                                  "#t"
-                                  (if (eq? x #f)
-                                      "#f"
-                                      "#<weird>")))))))))
+              (cond ((string? x))
+                    ((number? x) (number->string x))
+                    ((symbol? x) (symbol->string x))
+                    ((char? x) (string x))
+                    ((eq? x #t) "#t")
+                    ((eq? x #f) "#f")
+                    (else "#<weird>")))))
     (lambda (msg . irritants)
       (sint:throw-string (loop irritants msg)))))
 

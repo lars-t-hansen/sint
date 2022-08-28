@@ -38,7 +38,7 @@ High priority
 
 - strings & chars - add enough primitives to make them useful
 - apply - design done, only some implementation left
-- multiple values - this will be disruptive
+- multiple values - this will be disruptive, do it soon!
 - basic error handling & recovery
 - more testing and bugfixing
 - a verb to load and run a file - eases testing, also delve
