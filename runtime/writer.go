@@ -1,35 +1,59 @@
 package runtime
 
 import (
-	"bufio"
 	"fmt"
 	"math/big"
+	"os"
 	. "sint/core"
 )
 
-func Write(v Val, w *bufio.Writer) {
+type Writer interface {
+	WriteString(s string) (int, error)
+	WriteRune(r rune) (int, error)
+}
+
+type StdoutWriter struct {
+}
+
+func (w *StdoutWriter) WriteString(s string) (int, error) {
+	return os.Stdout.WriteString(s)
+}
+
+func (w *StdoutWriter) WriteRune(r rune) (int, error) {
+	return os.Stdout.WriteString(string(r))
+}
+
+func Write(v Val, quoted bool, w Writer) {
 	switch x := v.(type) {
 	case *big.Int:
 		w.WriteString(x.String())
 	case *big.Float:
 		w.WriteString(x.String())
 	case *Char:
-		switch x.Value {
-		case ' ':
-			w.WriteString("#\\space")
-		case '\t':
-			w.WriteString("#\\tab")
-		case '\n':
-			w.WriteString("#\\newline")
-		case '\r':
-			w.WriteString("#\\return")
-		default:
-			// Hm, maybe check if it's printable?
-			fmt.Fprintf(w, "#\\%c", x.Value)
+		if quoted {
+			switch x.Value {
+			case ' ':
+				w.WriteString("#\\space")
+			case '\t':
+				w.WriteString("#\\tab")
+			case '\n':
+				w.WriteString("#\\newline")
+			case '\r':
+				w.WriteString("#\\return")
+			default:
+				// Hm, maybe check if it's printable?
+				w.WriteString(fmt.Sprintf("#\\%c", x.Value))
+			}
+		} else {
+			w.WriteRune(x.Value)
 		}
 	case *Str:
 		// Hm, is this always the right syntax?
-		fmt.Fprintf(w, "%q", x.Value)
+		if quoted {
+			w.WriteString(fmt.Sprintf("%q", x.Value))
+		} else {
+			w.WriteString(x.Value)
+		}
 	case *True:
 		w.WriteString("#t")
 	case *False:
@@ -47,23 +71,23 @@ func Write(v Val, w *bufio.Writer) {
 	case *Symbol:
 		w.WriteString(x.Name)
 	case *Cons:
-		writeList(x, w)
+		writeList(x, quoted, w)
 	default:
 		w.WriteString("#<weird>")
 	}
 }
 
-func writeList(c *Cons, w *bufio.Writer) {
+func writeList(c *Cons, quoted bool, w Writer) {
 	w.WriteRune('(')
 	for {
-		Write(c.Car, w)
+		Write(c.Car, quoted, w)
 		if _, isNull := c.Cdr.(*Null); isNull {
 			break
 		}
 		next, isCons := c.Cdr.(*Cons)
 		if !isCons {
 			w.WriteString(" . ")
-			Write(c.Cdr, w)
+			Write(c.Cdr, quoted, w)
 			break
 		}
 		w.WriteRune(' ')

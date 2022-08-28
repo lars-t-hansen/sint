@@ -59,14 +59,12 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	runtime.InitPrimitives(engine)
 	runtime.InitCompiled(engine)
 	reader := bufio.NewReader(os.Stdin)
-	writer := bufio.NewWriter(os.Stdout)
+	writer := &runtime.StdoutWriter{}
 	for {
 		writer.WriteString("> ")
-		writer.Flush()
 		v := runtime.Read(engine, reader)
 		if v == engine.EofVal {
-			writer.WriteByte('\n')
-			writer.Flush()
+			writer.WriteRune('\n')
 			break
 		}
 		// TODO: Recover from compilation error
@@ -76,15 +74,13 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			continue
 		}
 		writer.WriteString(prog.String() + "\n")
-		writer.Flush()
 		result := engine.EvalToplevel(prog)
 		if prog == nil {
 			continue
 		}
 		if result != engine.UnspecifiedVal {
-			runtime.Write(result, writer)
+			runtime.Write(result, false, writer)
 			writer.WriteRune('\n')
-			writer.Flush()
 		}
 	}
 }
@@ -103,7 +99,7 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	}
 	result := engine.EvalToplevel(prog)
 	if result != engine.UnspecifiedVal {
-		runtime.Write(result, writer)
+		runtime.Write(result, false, writer)
 		writer.WriteRune('\n')
 		writer.Flush()
 	}

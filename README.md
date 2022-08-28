@@ -42,7 +42,6 @@ High priority
 - basic error handling & recovery
 - more testing and bugfixing
 - a verb to load and run a file - eases testing, also delve
-- a verb to evaluate some code - eases testing, also delve
 
 Medium priority
 
@@ -51,6 +50,7 @@ Medium priority
 - a number of primitives
 - many more library functions, compiled-in
 - the sint/runtime package could provide a Processor abstraction that encapsulates boilerplate?
+- regexes and string matching.  Syntax for literal regex could be #/.../ for example
 
 ## Longer-term TODO
 

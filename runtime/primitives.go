@@ -14,6 +14,7 @@ func InitPrimitives(c *Scheme) {
 	initStringPrimitives(c)
 	initControlPrimitives(c)
 	initExceptionsPrimitives(c)
+	initIoPrimitives(c)
 
 	// R7RS 6.13, Input and output, also see io.sch
 	addPrimitive(c, "eof-object?", 1, false, primEofObjectp)

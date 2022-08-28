@@ -47,7 +47,7 @@ type If struct {
 }
 
 func (c *If) String() string {
-	return "(if " + c.Test.String() + " " + c.Consequent.String() + ")"
+	return "(if " + c.Test.String() + " " + c.Consequent.String() + " " + c.Alternate.String() + ")"
 }
 
 type Begin struct {

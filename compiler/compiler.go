@@ -169,10 +169,15 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			if kwd == c.s.BeginSym {
 				return c.compileBegin(e, llen, env)
 			}
-			// TODO: case
-			// TODO: cond
-			// TODO: do
-			// TODO: named let
+			if kwd == c.s.CaseSym {
+				return c.compileCase(e, llen, env)
+			}
+			if kwd == c.s.CondSym {
+				return c.compileCond(e, llen, env)
+			}
+			if kwd == c.s.DoSym {
+				return c.compileDo(e, llen, env)
+			}
 			if kwd == c.s.LambdaSym {
 				return c.compileLambda(e, llen, env)
 			}
@@ -272,6 +277,64 @@ func (c *Compiler) compileCall(l Val, _ int, env *cenv) (Code, error) {
 	return &Call{Exprs: es}, nil
 }
 
+func (c *Compiler) compileCase(l Val, llen int, env *cenv) (Code, error) {
+	return c.reportError("`case` not implemented")
+}
+
+func (c *Compiler) compileCond(l Val, llen int, env *cenv) (Code, error) {
+	// ("cond" clause ...)
+	// ("cond" clause ... ("else" expr ...))
+	// clause ::= (expr expr  ...)
+	//          | (expr "=>" expr)
+	return c.compileCondClauses(cdr(l), env)
+}
+
+func (c *Compiler) compileCondClauses(clauses Val, env *cenv) (Code, error) {
+	if clauses == c.s.NullVal {
+		return &Quote{Value: c.s.UnspecifiedVal}, nil
+	}
+
+	clause := car(clauses)
+	rest := cdr(clauses)
+	clauseLen, clauseOk := c.checkProperList(clause)
+	if !clauseOk || clauseLen == 0 {
+		return c.reportError("Bad clause in `cond`:" + clause.String())
+	}
+	if clauseLen >= 2 && cadr(clause) == c.s.ArrowSym {
+		if clauseLen != 3 {
+			return c.reportError("Bad clause in `cond`:" + clause.String())
+		}
+		// expr => fn becomes (let ((v expr)) (if v (fn v) (cond <rest-of-clauses>)))
+		v := c.s.Gensym("COND")
+		return c.compileExpr(
+			c.list(c.s.LetSym, c.list(c.list(v, car(clause))),
+				c.list(c.s.IfSym, v,
+					c.list(caddr(clause), v),
+					cons(c.s.CondSym, rest))),
+			env)
+	}
+	if car(clause) == c.s.ElseSym {
+		if clauseLen < 2 {
+			return c.reportError("Bad `else` clause in `cond`:" + clause.String())
+		}
+		if rest != c.s.NullVal {
+			return c.reportError("The `else` clause must be last in `cond`:" + clause.String())
+		}
+		// (else expr expr ...) becomes (begin expr expr ...)
+		return c.compileExpr(c.wrapBodyList(cdr(clause)), env)
+	}
+	if clauseLen == 1 {
+		// (expr) becomes (or expr (cond <rest-of-clauses>))
+		return c.compileExpr(c.list(c.s.OrSym, car(clause), cons(c.s.CondSym, rest)), env)
+	}
+	// (expr0 expr1 expr2 ...) becomes (if expr0 (begin expr1 expr2 ...) (cond <rest-of-clauses>))
+	return c.compileExpr(c.list(c.s.IfSym, car(clause), c.wrapBodyList(cdr(clause)), cons(c.s.CondSym, rest)), env)
+}
+
+func (c *Compiler) compileDo(l Val, llen int, env *cenv) (Code, error) {
+	return c.reportError("`do` not implemented")
+}
+
 func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) (Code, error) {
 	// (if expr expr)
 	// (if expr expr expr)
@@ -318,6 +381,12 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) (Code, error) {
 
 func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {
 	// (let ((id expr) ...) expr expr ...)
+	// (let id ((id expr) ...) expr expr ...)
+	if llen >= 4 {
+		if _, ok := cadr(l).(*Symbol); ok {
+			return c.compileNamedLet(l, llen, env)
+		}
+	}
 	return c.compileLetOrLetrec(l, llen, env, false)
 }
 
@@ -363,6 +432,10 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	} else {
 		return &Let{Exprs: compiledInits, Body: compiledBody}, nil
 	}
+}
+
+func (c *Compiler) compileNamedLet(l Val, llen int, env *cenv) (Code, error) {
+	return c.reportError("Named `let` not implemented yet")
 }
 
 func (c *Compiler) compileOr(l Val, llen int, env *cenv) (Code, error) {
