@@ -12,13 +12,23 @@ func initControlPrimitives(c *Scheme) {
 	addPrimitive(c, "procedure?", 1, false, primProcedurep)
 	addPrimitive(c, "string-map", 2, true, primStringMap)
 	addPrimitive(c, "values", 0, true, primValues)
-	// call-with-values is tricky, it needs to be properly tail-recursive.
-	// basically, it is like apply.  so we need an apply-like primitive for
-	// it, or we can implement it in terms of sint:apply?
+	addPrimitive(c, "sint:receive-values", 1, false, primReceiveValues)
+
+	// See runtime/control.sch.  This is a procedure with the signature (fn l)
+	// where the `fn` must be a procedure and `l` must be a proper list.
+	// It applies `fn` to the elements of `l` in a properly tail-recursive manner.
+	sym := c.Intern("sint:apply")
+	sym.Value = &Procedure{
+		Lam: &Lambda{
+			Fixed: 2,
+			Rest:  false,
+			Body:  &Apply{Proc: &Lexical{Levels: 0, Offset: 0}, Args: &Lexical{Levels: 0, Offset: 1}}},
+		Env:    nil,
+		Primop: nil}
 }
 
 func primProcedurep(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Symbol); ok {
+	if _, ok := args[0].(*Procedure); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
@@ -57,4 +67,13 @@ func primValues(ctx *Scheme, args []Val) (Val, int) {
 	}
 	ctx.MultiVals = args[1:]
 	return args[0], len(args)
+}
+
+func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
+	results := ctx.Invoke(args[0], []Val{})
+	l := ctx.NullVal
+	for i := len(results) - 1; i >= 0; i-- {
+		l = &Cons{Car: results[i], Cdr: l}
+	}
+	return l, 1
 }

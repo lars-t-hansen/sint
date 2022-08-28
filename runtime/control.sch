@@ -6,29 +6,41 @@
 (define (eval x)
   ((sint:compile-toplevel-phrase x)))
 
-;; (sint:raw-apply fn l count) is a primitive that applies the procedure `fn` to the `count` first
-;; values in the list `l` in a properly tail-recursive manner.
+;; (sint:apply fn l) is a primitive that applies the procedure `fn` to the values
+;; in the proper list `l` in a properly tail-recursive manner.
 
-;; (define apply
-;;   (letrec ((construct-apply-args
-;;             (lambda (x rest)
-;;               (if (null? rest)
-;;                   (if (list? x)
-;;                       x
-;;                       (error "apply: expected list"))
-;;                   (if (null? (cdr rest))
-;;                       (if (list? (car rest))
-;;                           (cons x (car rest))
-;;                           (error "apply: expected list"))
-;;                       (let ((rest (reverse rest)))
-;;                         (if (list? (car rest))
-;;                             (cons x (reverse-append (cdr rest) (car rest)))
-;;                             (error "apply: expected list"))))))))
-;;     (lambda (fn x . rest)
-;;       (if (not (procedure? fn))
-;;           (error "apply: expected procedure")
-;;           (sint:raw-apply fn (construct-apply-args x rest))))))
-                     
+(define apply
+  (letrec ((build-apply-args
+            (lambda (fst rest)
+              (cond ((null? rest)
+                     (if (not (list? fst))
+                         (error "apply: expected list: " fst))
+                     fst)
+                    ((null? (cdr rest))
+                     (if (not (list? (car rest)))
+                         (error "apply: expected list: " (car rest)))
+                     (cons fst (car rest)))
+                    (else
+                     (let ((rest (reverse rest)))
+                       (if (not (list? (car rest)))
+                           (error "apply: expected list: " (car rest)))
+                       (cons x (reverse-append (cdr rest) (car rest)))))))))
+    (lambda (fn x . rest)
+      (if (not (procedure? fn))
+          (error "apply: expected procedure"))
+      (sint:apply fn (build-apply-args x rest)))))
+
+;; (sint:receive-values thunk) is a primitive that invokes the procedure `thunk` and then returns a
+;; proper list of the values it returns.
+
+(define (call-with-values thunk receiver)
+  (if (not (procedure? thunk))
+      (error "call-with-values: expected procedure: " thunk))
+  (if (not (procedure? receiver))
+      (error "call-with-values: expected procedure: " receiver))
+  (sint:apply receiver (sint:receive-values thunk)))
+
+
 ;; filter
 ;; for-each
 ;; every?

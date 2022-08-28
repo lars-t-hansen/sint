@@ -35,6 +35,13 @@
 
 (define (list . xs) xs)
 
+;; FIXME: Totally insufficient.
+
+(define (list? x)
+  (cond ((null? x) #t)
+        ((pair? x) (list? (cdr x)))
+        (else      #f)))
+
 ;; list?
 ;; make-list
 ;; append

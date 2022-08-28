@@ -191,25 +191,25 @@ type lexenv struct {
 
 func (c *Scheme) eval(expr Code, env *lexenv) (Val, int) {
 again:
-	switch e := expr.(type) {
+	switch instr := expr.(type) {
 	case *Quote:
-		return e.Value, 1
+		return instr.Value, 1
 	case *If:
-		if v, _ := c.eval(e.Test, env); v != c.FalseVal {
-			expr = e.Consequent
+		if v, _ := c.eval(instr.Test, env); v != c.FalseVal {
+			expr = instr.Consequent
 		} else {
-			expr = e.Alternate
+			expr = instr.Alternate
 		}
 		goto again
 	case *Begin:
-		if len(e.Exprs) == 0 {
+		if len(instr.Exprs) == 0 {
 			return c.UnspecifiedVal, 1
 		}
-		c.evalExprs(e.Exprs[:len(e.Exprs)-1], env)
-		expr = e.Exprs[len(e.Exprs)-1]
+		c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
+		expr = instr.Exprs[len(instr.Exprs)-1]
 		goto again
 	case *Call:
-		vals := c.evalExprs(e.Exprs, env)
+		vals := c.evalExprs(instr.Exprs, env)
 		maybeProc := vals[0]
 		args := vals[1:]
 		newCode, newEnv, prim := c.invokeSetup(maybeProc, args)
@@ -221,18 +221,33 @@ again:
 		goto again
 	//			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 	case *Apply:
-		// Apply applies a function to the values in a list.  The innermost rib must have length exactly 3,
-		// (fn l count) where fn is a procedure, l a list, and count an integer.  fn is applied to the first
-		// count elements of l obtained by cdring down l.  The application is tail-recursive.  l can
-		// be improper or circular, if necessary.  All arguments are fully checked.
-		// FIXME
-		panic("APPLY not implemented yet")
+		proc, _ := c.eval(instr.Proc, env)
+		argList, _ := c.eval(instr.Args, env)
+		args := []Val{}
+		for {
+			if argList == c.NullVal {
+				break
+			}
+			a, ok := argList.(*Cons)
+			if !ok {
+				panic("sint:apply: Not a list") // TODO: msg
+			}
+			args = append(args, a.Car)
+			argList = a.Cdr
+		}
+		newCode, newEnv, prim := c.invokeSetup(proc, args)
+		if prim != nil {
+			return prim(c, args)
+		}
+		expr = newCode
+		env = newEnv
+		goto again
 	case *Lambda:
-		return &Procedure{e, env, nil}, 1
+		return &Procedure{Lam: instr, Env: env, Primop: nil}, 1
 	case *Let:
-		vals := c.evalExprs(e.Exprs, env)
+		vals := c.evalExprs(instr.Exprs, env)
 		newEnv := &lexenv{slots: vals, link: env}
-		expr = e.Body
+		expr = instr.Body
 		env = newEnv
 		goto again
 	case *Letrec:
@@ -240,40 +255,40 @@ again:
 		// fresh storage, so at a minimum we need to copy out of a master slice of
 		// undefined values.
 		slotvals := []Val{}
-		for i := 0; i < len(e.Exprs); i++ {
+		for i := 0; i < len(instr.Exprs); i++ {
 			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
 		newEnv := &lexenv{slots: slotvals, link: env}
-		vals := c.evalExprs(e.Exprs, newEnv)
+		vals := c.evalExprs(instr.Exprs, newEnv)
 		for i, v := range vals {
 			slotvals[i] = v
 		}
-		expr = e.Body
+		expr = instr.Body
 		env = newEnv
 		goto again
 	case *Lexical:
 		rib := env
-		for levels := e.Levels; levels > 0; levels-- {
+		for levels := instr.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
-		return rib.slots[e.Offset], 1
+		return rib.slots[instr.Offset], 1
 	case *Setlex:
-		rhs, _ := c.eval(e.Rhs, env)
+		rhs, _ := c.eval(instr.Rhs, env)
 		rib := env
-		for levels := e.Levels; levels > 0; levels-- {
+		for levels := instr.Levels; levels > 0; levels-- {
 			rib = rib.link
 		}
-		rib.slots[e.Offset] = rhs
+		rib.slots[instr.Offset] = rhs
 		return c.UnspecifiedVal, 1
 	case *Global:
-		val := e.Name.Value
+		val := instr.Name.Value
 		if val == c.UndefinedVal {
-			panic("Undefined global variable '" + e.Name.Name + "'")
+			panic("Undefined global variable '" + instr.Name.Name + "'")
 		}
 		return val, 1
 	case *Setglobal:
-		rhs, _ := c.eval(e.Rhs, env)
-		e.Name.Value = rhs
+		rhs, _ := c.eval(instr.Rhs, env)
+		instr.Name.Value = rhs
 		return c.UnspecifiedVal, 1
 	default:
 		panic("Bad expression: " + expr.String())

@@ -22,14 +22,6 @@ func InitPrimitives(c *Scheme) {
 	// See runtime/control.sch.  This treats its argument as a top-level program form
 	// and returns a thunk that evaluates that form.
 	addPrimitive(c, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
-
-	// See runtime/control.sch.  This is a one-instruction procedure with the signature (fn l count)
-	// where the `fn` must be a procedure and `l` must appear to be a list up to at least `count` elements.
-	// It applies `fn` to the `count` first elements of `l` in a properly tail-recursive manner.
-	// The values are not arguments to the instruction but are taken from the environment, lexical offsets
-	// 0, 1, and 2 at relative level 0.
-	sym := c.Intern("sint:raw-apply")
-	sym.Value = &Procedure{Lam: &Lambda{Fixed: 3, Rest: false, Body: &Apply{}}, Env: nil, Primop: nil}
 }
 
 func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) (Val, int)) {

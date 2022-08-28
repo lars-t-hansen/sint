@@ -13,5 +13,6 @@ func InitCompiled(c *Scheme) {
 	initEquivalence(c)
 	initExceptions(c)
 	initNumbers(c)
+	initPairs(c)
 	initSymbols(c)
 }

@@ -37,9 +37,7 @@ some basic ergonomics, and more primitives and library, esp for I/O
 High priority
 
 - strings & chars - add enough primitives to make them useful
-- apply - design done, only some implementation left
-- multiple values - this will be disruptive, do it soon!
-- basic error handling & recovery
+- basic error handling & recovery during execution
 - more testing and bugfixing
 - a verb to load and run a file - eases testing, also delve
 

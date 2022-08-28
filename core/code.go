@@ -74,10 +74,13 @@ func (c *Call) String() string {
 	return "(" + stringifyExprs(c.Exprs) + ")"
 }
 
-type Apply struct{}
+type Apply struct {
+	Proc Code
+	Args Code
+}
 
 func (c *Apply) String() string {
-	return "sint:apply"
+	return "(sint:apply " + c.Proc.String() + " " + c.Args.String() + ")"
 }
 
 type Lambda struct {

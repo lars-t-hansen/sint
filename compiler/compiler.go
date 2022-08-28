@@ -1,6 +1,6 @@
 // Simple compiler from standard sexpr form to internal Code form.
 //
-// Built-in syntax (macros) have reserved names, which is not very "Scheme"
+// Built-in syntactic forms have reserved names, which is not very "Scheme"
 // but is just fine in practice.  There are no user-defined macros here.
 //
 // A more sophisticated compiler would take an AST form that also carries source
@@ -32,7 +32,6 @@ func NewCompiler(s *Scheme) *Compiler {
 	c.keywords[s.CondSym] = true
 	c.keywords[s.DefineSym] = true
 	c.keywords[s.DoSym] = true
-	c.keywords[s.ElseSym] = true
 	c.keywords[s.IfSym] = true
 	c.keywords[s.LambdaSym] = true
 	c.keywords[s.LetSym] = true
@@ -40,7 +39,7 @@ func NewCompiler(s *Scheme) *Compiler {
 	c.keywords[s.OrSym] = true
 	c.keywords[s.QuoteSym] = true
 	c.keywords[s.SetSym] = true
-	// arrowSym is not reserved, possibly elseSym should not be either
+	// arrowSym and elseSym are not reserved
 	return c
 }
 
@@ -160,7 +159,7 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			return c.reportError("Improper list used as expression") // TODO: msg
 		}
 		if llen == 0 {
-			return c.reportError("Unquoted empty list used as expression") // TODO: msg
+			return c.reportError("Unquoted empty list used as expression")
 		}
 		if kwd, ok := e.Car.(*Symbol); ok {
 			if kwd == c.s.AndSym {
@@ -278,7 +277,7 @@ func (c *Compiler) compileCall(l Val, _ int, env *cenv) (Code, error) {
 }
 
 func (c *Compiler) compileCase(l Val, llen int, env *cenv) (Code, error) {
-	return c.reportError("`case` not implemented")
+	return c.reportError("`case` not implemented") // TODO: msg
 }
 
 func (c *Compiler) compileCond(l Val, llen int, env *cenv) (Code, error) {
@@ -505,7 +504,7 @@ func (c *Compiler) compileRef(s *Symbol, env *cenv) (Code, error) {
 func (c *Compiler) compileSet(l Val, llen int, env *cenv) (Code, error) {
 	// (set! ident expr)
 	if llen != 3 {
-		return c.reportError("set!: Illegal form")
+		return c.reportError("set!: Illegal form: " + l.String())
 	}
 	place := cadr(l)
 	expr := caddr(l)
