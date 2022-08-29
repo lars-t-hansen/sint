@@ -21,6 +21,7 @@ func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "+", 0, true, primAdd)
 	addPrimitive(c, "-", 1, true, primSub)
 	addPrimitive(c, "*", 0, true, primMul)
+	addPrimitive(c, "/", 1, true, primDiv)
 	addPrimitive(c, "<", 2, true, primLess)
 	addPrimitive(c, "<=", 2, true, primLessOrEqual)
 	addPrimitive(c, "=", 2, true, primEqual)
@@ -92,6 +93,26 @@ func primMul(c *Scheme, args []Val) (Val, int) {
 	r := mul2(args[0], args[1])
 	for _, v := range args[2:] {
 		r = mul2(r, v)
+	}
+	return r, 1
+}
+
+func primDiv(_ *Scheme, args []Val) (Val, int) {
+	if len(args) == 1 {
+		var fv big.Float
+		switch v := args[0].(type) {
+		case *big.Int:
+			fv.SetInt(v)
+		case *big.Float:
+			fv = *v
+		default:
+			panic("'-': Not a number: " + args[0].String())
+		}
+		return div2(big.NewFloat(1), &fv), 1
+	}
+	r := div2(args[0], args[1])
+	for _, v := range args[2:] {
+		r = div2(r, v)
 	}
 	return r, 1
 }
@@ -249,6 +270,18 @@ func mul2(a Val, b Val) Val {
 	fa, fb := bothFloat(a, b, "*")
 	var z big.Float
 	z.Mul(fa, fb)
+	return &z
+}
+
+var fzero *big.Float = big.NewFloat(0)
+
+func div2(a Val, b Val) Val {
+	fa, fb := bothFloat(a, b, "/")
+	if (fa.IsInf() && fb.IsInf()) || (fa.Cmp(fzero) == 0 && fb.Cmp(fzero) == 0) {
+		panic("/: Result is not a number: (/" + fa.String() + " " + fb.String() + ")")
+	}
+	var z big.Float
+	z.Quo(fa, fb)
 	return &z
 }
 

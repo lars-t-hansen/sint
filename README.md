@@ -37,15 +37,15 @@ some basic ergonomics, and more primitives and library, esp for I/O
 
 High priority
 
-- strings & chars - add enough primitives to make them useful
+- integer division operators and maybe other numerics
+- ports and I/O, including string ports
 - basic error handling & recovery during execution
-- more testing and bugfixing
-- a verb to load and run a file - eases testing, also delve
 
 Medium priority
 
+- more testing and bugfixing
+- a verb to load and run a file - eases testing, also delve
 - a verb to print help
-- ports and I/O, including string ports
 - a number of primitives
 - many more library functions, compiled-in
 - the sint/runtime package could provide a Processor abstraction that encapsulates boilerplate?
