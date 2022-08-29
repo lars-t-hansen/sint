@@ -1,6 +1,6 @@
 # sint
 
-Subset scheme implementation embedded in Go
+Subset R7RS-small Scheme implementation, embedded in Go
 
 ## Mottos
 
@@ -30,6 +30,8 @@ A number of subtractions and weirdnesses:
 
 Standards conformance is not a goal; but progression toward it is desirable.
 
+Performance is not a concern.  Functionality and easy modifiability are.
+
 ## Near-term TODO
 
 The immediate priority is to get this far enough along to be useful.  This means more types,
@@ -38,6 +40,12 @@ some basic ergonomics, and more primitives and library, esp for I/O
 High priority
 
 - integer division operators and maybe other numerics
+- clean up how we do floats.  The exponent range is vast and is not a
+  problem, but the default mantissa is only 53 bits.  We should
+  consider whether this is the best default (maybe 100 bits?) and
+  perhaps also whether it should be configurable somehow.  It's hard
+  to do this from Scheme, since values are created at
+  hard-to-determine times.
 - ports and I/O, including string ports
 - basic error handling & recovery during execution
 
@@ -65,70 +73,4 @@ Medium priority
 
 ### Performance
 
-Performance is not a concern.  Functionality is.
 
-### Strings
-
-Sint strings are Go strings, ie, they are immutable byte slices containing UTF-8 encoded
-Unicode code points.
-
-Go strings can contain invalid encodings, not sure if we want that here.
-By restricting character values to valid Unicode and not allowing non-code point values
-in string literals, and by also checking that on input, we guarantee that there are no
-invalid code points.  Not sure yet if that's worth it - experimenting.  NOTE that substring
-and the substring forms of string-copy and string->list are able to start in the middle
-of an encoding and may thus produce garbage, or they must check that this does not happen. 
-Ditto, string-ref may provide a byte index not at the start of a character.
-
-Thus our strings are immutable and weirdly indexed; ie, they are quite incompatible with
-standard Scheme strings.  So the (unresolved) question is whether to call the type 'string'
-or use a new name, eg 'gstring' (bad), 'str' (why not?), 'gostring', and so on.  For now,
-it is "string".  Another alternative is to give the procedures that have new semantics
-new names.
-
-The library:
-
-These operate on characters and should be indistinguishable from the same-named functions
-in normal Scheme:
-
-(string char ...)
-string?
-make-string  ;; not very useful
-string=?
-string>?
-string>=?
-string<?
-string<=?
-string-ci=?
-string-ci>?
-string-ci>=?
-string-ci<?
-string-ci<=?
-string-append
-string-map
-string-for-each
-string->vector
-vector->string
-string->list (whole-string form)
-string->copy (whole-string form)
-list->string
-string-upcase
-string-downcase
-string-foldcase
-
-These operates on byte indices and lengths and perhaps should have new names
-
-string-length - returns byte length
-string-ref - returns a decoded code point starting at the given byte index
-substring - returns a string if the byte indices are proper for full characters
-string-copy (substring form) - as for substring
-string->list (substring form) - as for substring
-
-Mutators are missing:
-
-string-set!
-string-copy!
-string-fill!
-
-It is likely we would want some new procedures, to compensate for immutability.  Splicing,
-replacing, and searching are obvious.  Decoding an UTF8 char at byte index ditto.
