@@ -376,6 +376,7 @@ func init() {
 	charTable['>'] = kInitial | kSubsequent
 	charTable['='] = kInitial | kSubsequent
 	charTable['?'] = kInitial | kSubsequent
+	charTable['!'] = kInitial | kSubsequent
 	charTable[':'] = kInitial | kSubsequent
 	charTable[','] = kInitial | kSubsequent
 	charTable['@'] = kInitial | kSubsequent
