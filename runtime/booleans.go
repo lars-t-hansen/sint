@@ -113,7 +113,7 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
-&Lexical{Levels:0, Offset:1},
+&Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:2},
 }},
 Alternate:&Quote{Value:c.FalseVal},

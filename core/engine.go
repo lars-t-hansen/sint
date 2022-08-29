@@ -256,6 +256,12 @@ again:
 		expr = instr.Body
 		env = newEnv
 		goto again
+	case *LetValues:
+		// Basically, create a rib with the required number of slots
+		// Then evaluate the exprs in order in the old env and assign values to slots, throwing if
+		// an expression returns the wrong number of values for the corresponding binding
+		// Then evaluate the body in that environment
+		panic("LetValues not implemented")
 	case *Letrec:
 		// TODO: Probably there's a more efficient way to do this?  Note we need
 		// fresh storage, so at a minimum we need to copy out of a master slice of

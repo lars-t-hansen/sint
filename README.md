@@ -28,6 +28,7 @@ A number of subtractions and weirdnesses:
 - no exact rationals or exact complexes - i never found these to be useful in practice
 - call/cc is only one-shot and upwards within the same goroutine
 
+Standards conformance is not a goal; but progression toward it is desirable.
 
 ## Near-term TODO
 

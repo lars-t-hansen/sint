@@ -13,16 +13,14 @@
                   (error "boolean=?: not a boolean: " x))))
            (loop
             (lambda (a xs)
-              (if (null? xs)
-                  #t
-                  (if (eq? a (car xs))
-                      (loop a (cdr xs))
-                      (begin
-                        (check (car xs))
-                        #f))))))
+              (cond ((null? xs)
+                     #t)
+                    ((eq? a (car xs))
+                     (loop a (cdr xs)))
+                    (else
+                     (check (car xs))
+                     #f)))))
     (lambda (a b . xs)
       (check a)
       (check b)
-      (if (eq? a b)
-          (loop b xs)
-          #f))))
+      (and (eq? a b) (loop a xs)))))

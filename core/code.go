@@ -18,6 +18,7 @@ import (
 //   *Lambda,
 //   *Let,
 //   *Letrec,
+//   *LetValues,
 //   *Lexical,
 //   *Setlex,
 //   *Global,
@@ -113,6 +114,18 @@ type Letrec struct {
 
 func (c *Letrec) String() string {
 	return "(letrec (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
+}
+
+type LetValues struct {
+	Exprs    []Code // rhs expressions
+	NumVars  int    // total number of variables bound
+	Bindings []int  // a bitvector <number-of-fixed-args:wordwidth-1><rest-arg:1>, same length as Exprs
+	Body     Code
+	// TODO: Documentation: This should carry the names of locals in the rib
+}
+
+func (c *LetValues) String() string {
+	return "(let-values (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
 }
 
 type Lexical struct {

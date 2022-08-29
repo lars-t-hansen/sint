@@ -48,13 +48,29 @@
 ;; list-tail
 ;; list-ref
 ;; list-set!
-;; memq
-;; memv
-;; member
 ;; assq
 ;; assv
 ;; assoc
 ;; list-copy
+
+(define (memq obj list)
+  (cond ((null? list) #f)
+        ((eq? obj (car list)) list)
+        (else (memq obj (cdr list)))))
+
+(define (memv obj list)
+  (cond ((null? list) #f)
+        ((eqv? obj (car list)) list)
+        (else (memv obj (cdr list)))))
+
+(define member
+  (letrec ((loop
+            (lambda (obj list same?)
+              (cond ((null? list) #f)
+                    ((same? obj (car list)) list)
+                    (else (loop obj (cdr list) same?))))))
+    (lambda (obj list . rest)
+      (loop obj list (if (null? rest) equal? (car rest))))))
 
 (define length
   (letrec ((loop

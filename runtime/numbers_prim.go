@@ -4,8 +4,6 @@
 // TODO: /
 // TODO: quotient
 // TODO: remainder
-// TODO: exact
-// TODO: inexact
 // TODO: (other numerics as required)
 
 package runtime
@@ -14,6 +12,7 @@ import (
 	"fmt"
 	"math/big"
 	. "sint/core"
+	"strconv"
 )
 
 func initNumbersPrimitives(c *Scheme) {
@@ -28,6 +27,9 @@ func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, ">", 2, true, primGreater)
 	addPrimitive(c, ">=", 2, true, primGreaterOrEqual)
 	addPrimitive(c, "number->string", 1, false, primNumber2String)
+	addPrimitive(c, "string->number", 1, true, primString2Number)
+	addPrimitive(c, "inexact", 1, false, primInexact)
+	addPrimitive(c, "exact", 1, false, primExact)
 }
 
 func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
@@ -140,6 +142,7 @@ func primGreaterOrEqual(c *Scheme, args []Val) (Val, int) {
 }
 
 func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
+	// FIXME: Radix!
 	v := args[0]
 	if iv, ok := v.(*big.Int); ok {
 		return &Str{Value: fmt.Sprint(iv)}, 1
@@ -148,6 +151,69 @@ func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
 		return &Str{Value: fmt.Sprint(fv)}, 1
 	}
 	panic("number->string: Not a number: " + v.String())
+}
+
+func primString2Number(ctx *Scheme, args []Val) (Val, int) {
+	var s *Str
+	if v, ok := args[0].(*Str); ok {
+		s = v
+	} else {
+		panic("string->number: bad string: " + args[0].String())
+	}
+	radix := 10
+	if len(args) > 1 {
+		if r, ok := args[1].(*big.Int); ok {
+			radix = int(r.Int64())
+		}
+	}
+	switch radix {
+	case 2, 8, 10, 16:
+		break
+	default:
+		panic("string->number: bad radix: " + strconv.Itoa(radix))
+	}
+	var iv big.Int
+	if _, ok := iv.SetString(s.Value, radix); ok {
+		return &iv, 1
+	}
+	// This is too aggressive.  The string could have been rejected because
+	// there are bad digits for the base.
+	if radix != 10 {
+		panic("string->number: bad radix for inexact number: " + strconv.Itoa(radix))
+	}
+	var fv big.Float
+	if _, ok := fv.SetString(s.Value); ok {
+		return &fv, 1
+	}
+	panic("string->number: bad number: " + s.Value)
+}
+
+func primInexact(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if iv, ok := v.(*big.Int); ok {
+		var n big.Float
+		n.SetInt(iv)
+		return &n, 1
+	}
+	if _, ok := v.(*big.Float); ok {
+		return v, 1
+	}
+	panic("inexact: Not a number: " + v.String())
+}
+
+func primExact(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if _, ok := v.(*big.Int); ok {
+		return v, 1
+	}
+	if fv, ok := v.(*big.Float); ok {
+		iv, _ := fv.Int(nil)
+		if iv == nil {
+			panic("exact: Infinity can't be converted to exact: " + v.String())
+		}
+		return iv, 1
+	}
+	panic("exact: Not a number: " + v.String())
 }
 
 func add2(a Val, b Val) Val {

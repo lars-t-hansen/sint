@@ -1,16 +1,15 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
-;; Probably most of these should be written in Go.
-
-;; TODO: This is just plain slow
-(define (string->vector s)
-  (list->vector (string-map (lambda (c) c) s)))
-
-;; TODO: This conses a lot
-(define (vector->string v)
-  (list->string (vector->list v)))
-
-;; TODO: This conses a lot
-(define (string-for-each fn . args)
-  (apply string-map fn args)
-  (unspecified))
+(define (->string x)
+  (cond ((string? x))
+        ((number? x) (number->string x))
+        ((symbol? x) (symbol->string x))
+        ((procedure? x) "#<procedure>")
+        ((char? x) (string x))
+        ((eq? x #t) "#t")
+        ((eq? x #f) "#f")
+        ((eq? x '()) "()")
+        ((eq? x (unspecified)) "#!unspecified")
+        ((eof-object? x) "#!eof")
+        ((pair? x) ...)
+        (else "#<weird>")))
