@@ -40,12 +40,16 @@
       (error "call-with-values: expected procedure: " receiver))
   (sint:apply receiver (sint:receive-values thunk)))
 
-
+;; TODO:
 ;; filter
 ;; for-each
 ;; every?
 ;; some?
 
+;; TODO: what's the appropriate termination condition for multi-argument map?
+;; Here it's "first list", but spec may have "shortest list".
+;;
+;; TODO: detect non-list arguments.
 
 (define map
   (letrec ((map1

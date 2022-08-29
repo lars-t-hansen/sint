@@ -16,9 +16,6 @@ func InitPrimitives(c *Scheme) {
 	initExceptionsPrimitives(c)
 	initIoPrimitives(c)
 
-	// R7RS 6.13, Input and output, also see io.sch
-	addPrimitive(c, "eof-object?", 1, false, primEofObjectp)
-
 	// See runtime/control.sch.  This treats its argument as a top-level program form
 	// and returns a thunk that evaluates that form.
 	addPrimitive(c, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
@@ -27,13 +24,6 @@ func InitPrimitives(c *Scheme) {
 func addPrimitive(c *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) (Val, int)) {
 	sym := c.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
-}
-
-func primEofObjectp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*EofObject); ok {
-		return ctx.TrueVal, 1
-	}
-	return ctx.FalseVal, 1
 }
 
 func primCompileToplevel(c *Scheme, args []Val) (Val, int) {

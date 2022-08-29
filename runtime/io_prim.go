@@ -1,3 +1,5 @@
+// R7RS 6.13, Input and output, also see io.sch
+
 package runtime
 
 import (
@@ -9,6 +11,8 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "newline", 0, true, primNewline)
 	addPrimitive(ctx, "write", 1, true, primWrite)
 	addPrimitive(ctx, "writeln", 1, true, primWriteln)
+	addPrimitive(ctx, "eof-object", 0, false, primEof)
+	addPrimitive(ctx, "eof-object?", 1, false, primEofObjectp)
 }
 
 func primWrite(ctx *Scheme, args []Val) (Val, int) {
@@ -38,4 +42,15 @@ func primNewline(ctx *Scheme, args []Val) (Val, int) {
 	writer := &StdoutWriter{}
 	writer.WriteRune('\n')
 	return ctx.UnspecifiedVal, 1
+}
+
+func primEof(ctx *Scheme, args []Val) (Val, int) {
+	return ctx.UnspecifiedVal, 1
+}
+
+func primEofObjectp(ctx *Scheme, args []Val) (Val, int) {
+	if _, ok := args[0].(*EofObject); ok {
+		return ctx.TrueVal, 1
+	}
+	return ctx.FalseVal, 1
 }

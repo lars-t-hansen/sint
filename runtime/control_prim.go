@@ -12,6 +12,7 @@ func initControlPrimitives(c *Scheme) {
 	addPrimitive(c, "procedure?", 1, false, primProcedurep)
 	addPrimitive(c, "string-map", 2, true, primStringMap)
 	addPrimitive(c, "values", 0, true, primValues)
+	addPrimitive(c, "unspecified", 0, false, primUnspecified)
 	addPrimitive(c, "sint:receive-values", 1, false, primReceiveValues)
 
 	// See runtime/control.sch.  This is a procedure with the signature (fn l)
@@ -76,4 +77,8 @@ func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
 		l = &Cons{Car: results[i], Cdr: l}
 	}
 	return l, 1
+}
+
+func primUnspecified(ctx *Scheme, args []Val) (Val, int) {
+	return ctx.UnspecifiedVal, 1
 }

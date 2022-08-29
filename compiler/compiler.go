@@ -289,7 +289,7 @@ func (c *Compiler) compileCall(l Val, _ int, env *cenv) (Code, error) {
 }
 
 func (c *Compiler) compileCase(l Val, llen int, env *cenv) (Code, error) {
-	return c.reportError("`case` not implemented") // TODO: msg
+	return c.reportError("`case` not implemented")
 }
 
 func (c *Compiler) compileCond(l Val, llen int, env *cenv) (Code, error) {
@@ -297,14 +297,10 @@ func (c *Compiler) compileCond(l Val, llen int, env *cenv) (Code, error) {
 	// ("cond" clause ... ("else" expr ...))
 	// clause ::= (expr expr  ...)
 	//          | (expr "=>" expr)
-	return c.compileCondClauses(cdr(l), env)
-}
-
-func (c *Compiler) compileCondClauses(clauses Val, env *cenv) (Code, error) {
+	clauses := cdr(l)
 	if clauses == c.s.NullVal {
 		return &Quote{Value: c.s.UnspecifiedVal}, nil
 	}
-
 	clause := car(clauses)
 	rest := cdr(clauses)
 	clauseLen, clauseOk := c.checkProperList(clause)

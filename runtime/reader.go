@@ -61,9 +61,9 @@ func (r *reader) read() Val {
 		if d == 'x' {
 			return r.readHexNumber()
 		}
-		if d == '!' {
+		if d == '/' {
 			// FIXME: Implement this
-			panic("No syntax for #!unspecified and suchlike yet")
+			panic("No syntax for regular expressions yet")
 		}
 		if d == '\\' {
 			return r.readCharacter()
