@@ -1,6 +1,7 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
-;; note map, for-each, et al are in control.sch
+;; R7RS 6.4 "Pairs and lists", and some related non-standard procedures.
+;; cons, car, cdr, set-car!, set-cdr!, null? and pair? are primitive.
 
 (define (caar x) (car (car x)))
 (define (cadr x) (car (cdr x)))
@@ -35,33 +36,87 @@
 
 (define (list . xs) xs)
 
-;; FIXME: Totally insufficient.
+;; FIXME: This is totally insufficient, it needs to deal properly with circular lists.
 
 (define (list? x)
   (cond ((null? x) #t)
         ((pair? x) (list? (cdr x)))
         (else      #f)))
 
-;; list?
-;; make-list
-;; append
-;; list-tail
-;; list-ref
-;; list-set!
-;; assq
-;; assv
-;; assoc
-;; list-copy
+(define make-list
+  (letrec ((loop
+            (lambda (k fill l)
+              (if (<= k 0)
+                  l
+                  (loop (- k 1) fill (cons fill l))))))
+    (lambda (k . rest)
+      (loop k (if (null? rest) (unspecified) (car rest)) '()))))
 
-(define (memq obj list)
-  (cond ((null? list) #f)
-        ((eq? obj (car list)) list)
-        (else (memq obj (cdr list)))))
+;; FIXME: Needs to check that each of its arguments is a list, though arguably for backward
+;; compatibility the last argument should not be checked.
 
-(define (memv obj list)
-  (cond ((null? list) #f)
-        ((eqv? obj (car list)) list)
-        (else (memv obj (cdr list)))))
+(define append
+  (letrec ((loop
+            (lambda (result lists)
+              (if (null? lists)
+                  result
+                  (loop (loop2 (reverse (car lists)) result)
+                        (cdr lists)))))
+           (loop2
+            (lambda (rev result)
+              (if (null? rev)
+                  result
+                  (loop2 (cdr rev) (cons (car rev) result))))))
+    (lambda lists
+      (if (null? lists)
+          '()
+          (let ((r (reverse lists)))
+            (loop (car r) (cdr r)))))))
+
+(define list-tail
+  (letrec ((loop
+            (lambda (l k)
+              (if (<= k 0)
+                  l
+                  (loop (cdr l) (- k 1))))))
+    (lambda (l k)
+      (loop l k))))
+
+(define (list-ref l k)
+  (car (list-tail l k)))
+
+(define (list-set! l k v)
+  (set-car! (list-tail l k) v))
+
+;; FIXME: list-copy is a lot weirder than this
+
+(define (list-copy l)
+  (append l '()))
+
+;; TODO: For efficiency, the list? test could be rolled into the loops below so that we don't need
+;; to loop across the list twice.
+
+(define memq
+  (letrec ((loop
+            (lambda (obj list)
+              (cond ((null? list) #f)
+                    ((eq? obj (car list)) list)
+                    (else (loop obj (cdr list)))))))
+    (lambda (obj list)
+      (if (not (list? list))
+          (error "memq: not a list: " list))
+      (loop obj list))))
+
+(define memv
+  (letrec ((loop
+            (lambda (obj list)
+              (cond ((null? list) #f)
+                    ((eqv? obj (car list)) list)
+                    (else (loop obj (cdr list)))))))
+    (lambda (obj list)
+      (if (not (list? list))
+          (error "memv: not a list: " list))
+      (loop obj list))))
 
 (define member
   (letrec ((loop
@@ -70,7 +125,44 @@
                     ((same? obj (car list)) list)
                     (else (loop obj (cdr list) same?))))))
     (lambda (obj list . rest)
+      (if (not (list? list))
+          (error "member: not a list: " list))
       (loop obj list (if (null? rest) equal? (car rest))))))
+
+(define assq
+  (letrec ((loop
+            (lambda (obj alist)
+              (cond ((null? alist) #f)
+                    ((eq? obj (caar alist)) (car alist))
+                    (else (loop obj (cdr alist)))))))
+    (lambda (obj alist)
+      (if (not (list? alist))
+          (error "assq: not a list: " alist))
+      (loop obj alist))))
+
+(define assv
+  (letrec ((loop
+            (lambda (obj alist)
+              (cond ((null? alist) #f)
+                    ((eqv? obj (caar alist)) (car alist))
+                    (else (loop obj (cdr alist)))))))
+    (lambda (obj alist)
+      (if (not (list? alist))
+          (error "assv: not a list: " alist))
+      (loop obj alist))))
+
+(define assoc
+  (letrec ((loop
+            (lambda (obj alist same?)
+              (cond ((null? alist) #f)
+                    ((same? obj (caar alist)) (car alist))
+                    (else (loop obj (cdr alist) same?))))))
+    (lambda (obj alist . rest)
+      (if (not (list? alist))
+          (error "assoc: not a list: " alist))
+      (loop obj alist (if (null? rest) equal? (car rest))))))
+
+;; FIXME: Arguably this needs to test for list? while it's computing the length.
 
 (define length
   (letrec ((loop
@@ -81,6 +173,8 @@
     (lambda (l)
       (loop l 0))))
 
+;; FIXME: Arguably this needs to test for list?
+
 (define reverse
   (letrec ((loop
             (lambda (l r)
@@ -89,6 +183,8 @@
                   (loop (cdr l) (cons (car l) r))))))
     (lambda (l)
       (loop l '()))))
+
+;; FIXME: Arguably this needs to test for list?
 
 (define reverse-append
   (letrec ((loop

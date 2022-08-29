@@ -469,6 +469,561 @@ Alternate:&Quote{Value:c.FalseVal},
 }}}
 c.EvalToplevel(code30)
 code31 := 
+&Setglobal{Name:c.Intern("make-list"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:3, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("<=")},
+&Lexical{Levels:0, Offset:0},
+&Quote{Value:big.NewInt(0)},
+}},
+Consequent:&Lexical{Levels:0, Offset:2},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("-")},
+&Lexical{Levels:0, Offset:0},
+&Quote{Value:big.NewInt(1)},
+}},
+&Lexical{Levels:0, Offset:1},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cons")},
+&Lexical{Levels:0, Offset:1},
+&Lexical{Levels:0, Offset:2},
+}},
+}},
+}},
+}, Body:&Lambda{
+Fixed:1, Rest:true,
+Body:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("unspecified")},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+},
+&Quote{Value:c.NullVal},
+}}}}}
+c.EvalToplevel(code31)
+code32 := 
+&Setglobal{Name:c.Intern("append"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:1},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("reverse")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+}},
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Lexical{Levels:0, Offset:1},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:1},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cons")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+}},
+}, Body:&Lambda{
+Fixed:0, Rest:true,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Quote{Value:c.NullVal},
+Alternate:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("reverse")},
+&Lexical{Levels:0, Offset:0},
+}},
+}, Body:&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:0},
+}},
+}}},
+}}}}
+c.EvalToplevel(code32)
+code33 := 
+&Setglobal{Name:c.Intern("list-tail"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("<=")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(0)},
+}},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("-")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(1)},
+}},
+}},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}}}}}
+c.EvalToplevel(code33)
+code34 := 
+&Setglobal{Name:c.Intern("list-ref"), Rhs:&Lambda{
+Fixed:2, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list-tail")},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+}}}}
+c.EvalToplevel(code34)
+code35 := 
+&Setglobal{Name:c.Intern("list-set!"), Rhs:&Lambda{
+Fixed:3, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("set-car!")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list-tail")},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+&Lexical{Levels:0, Offset:2},
+}}}}
+c.EvalToplevel(code35)
+code36 := 
+&Setglobal{Name:c.Intern("list-copy"), Rhs:&Lambda{
+Fixed:1, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("append")},
+&Lexical{Levels:0, Offset:0},
+&Quote{Value:c.NullVal},
+}}}}
+c.EvalToplevel(code36)
+code37 := 
+&Setglobal{Name:c.Intern("memq"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eq?")},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Lexical{Levels:0, Offset:1},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"memq: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+}}}}}
+c.EvalToplevel(code37)
+code38 := 
+&Setglobal{Name:c.Intern("memv"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eqv?")},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Lexical{Levels:0, Offset:1},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"memv: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+}}}}}
+c.EvalToplevel(code38)
+code39 := 
+&Setglobal{Name:c.Intern("member"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:3, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Lexical{Levels:0, Offset:2},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Lexical{Levels:0, Offset:1},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+&Lexical{Levels:0, Offset:2},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:true,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"member: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:2},
+}},
+Consequent:&Global{Name:c.Intern("equal?")},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:2},
+}},
+},
+}},
+}}}}}
+c.EvalToplevel(code39)
+code40 := 
+&Setglobal{Name:c.Intern("assq"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eq?")},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("caar")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"assq: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+}}}}}
+c.EvalToplevel(code40)
+code41 := 
+&Setglobal{Name:c.Intern("assv"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eqv?")},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("caar")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"assv: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+}}}}}
+c.EvalToplevel(code41)
+code42 := 
+&Setglobal{Name:c.Intern("assoc"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:3, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Lexical{Levels:0, Offset:2},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("caar")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+&Lexical{Levels:0, Offset:2},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:true,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"assoc: not a list: "}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:2},
+}},
+Consequent:&Global{Name:c.Intern("equal?")},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:2},
+}},
+},
+}},
+}}}}}
+c.EvalToplevel(code42)
+code43 := 
 &Setglobal{Name:c.Intern("length"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -498,8 +1053,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }}}}}
-c.EvalToplevel(code31)
-code32 := 
+c.EvalToplevel(code43)
+code44 := 
 &Setglobal{Name:c.Intern("reverse"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -532,8 +1087,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:c.NullVal},
 }}}}}
-c.EvalToplevel(code32)
-code33 := 
+c.EvalToplevel(code44)
+code45 := 
 &Setglobal{Name:c.Intern("reverse-append"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -566,5 +1121,5 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code33)
+c.EvalToplevel(code45)
 }
