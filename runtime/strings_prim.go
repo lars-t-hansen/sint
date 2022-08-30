@@ -18,6 +18,8 @@ func initStringPrimitives(c *Scheme) {
 	addPrimitive(c, "string-ref", 2, false, primStringRef)
 	addPrimitive(c, "sint:string-compare", 2, false, primStringCompare)
 	addPrimitive(c, "string-append", 0, true, primStringAppend)
+	addPrimitive(c, "substring", 3, false, primSubstring)
+	addPrimitive(c, "sint:list->string", 1, false, primList2String)
 }
 
 func primStringp(ctx *Scheme, args []Val) (Val, int) {
@@ -80,4 +82,45 @@ func primStringAppend(ctx *Scheme, args []Val) (Val, int) {
 		s = s + s2.Value
 	}
 	return &Str{Value: s}, 1
+}
+
+func primSubstring(ctx *Scheme, args []Val) (Val, int) {
+	v0 := args[0]
+	v1 := args[1]
+	v2 := args[2]
+	s0, ok0 := v0.(*Str)
+	if !ok0 {
+		panic("substring: not a string: " + v0.String())
+	}
+	i1, i2, ok := bothInt(v1, v2)
+	if !ok {
+		panic("substring: invalid indices: " + v1.String() + " " + v2.String())
+	}
+	if i1.IsInt64() && i1.Int64() >= 0 && i1.Int64() < int64(len(s0.Value)) &&
+		i2.IsInt64() && i2.Int64() >= 0 && i2.Int64() < int64(len(s0.Value)) &&
+		i1.Int64() <= i2.Int64() {
+		return &Str{Value: s0.Value[i1.Int64():i2.Int64()]}, 1
+	} else {
+		panic("substring: indices out of range: " + v1.String() + " " + v2.String())
+	}
+}
+
+// sint:list->string assumes the list is proper, but it does check that each value
+// is a char.
+
+func primList2String(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	s := ""
+	for {
+		if v == ctx.NullVal {
+			return &Str{Value: s}, 1
+		}
+		c := v.(*Cons)
+		ch, ok := c.Car.(*Char)
+		if !ok {
+			panic("sint:list->string: not a character: " + c.Car.String())
+		}
+		s = s + string(ch.Value)
+		v = c.Cdr
+	}
 }

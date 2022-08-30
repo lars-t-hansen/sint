@@ -1,5 +1,17 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
+;; This would be more efficient as a primitive, but it's likely used for very short strings and only
+;; infrequently.
+
+(define (string . cs)
+  (sint:list->string cs))
+
+;; Nobody cares about the perf of this
+
+(define (make-string k . rest)
+  (let ((fill (if (null? rest) #\space (car fill))))
+    (sint:list->string (make-list k fill))))
+
 ;; Note sint:string-compare checks that both operands are strings, we don't need to check that here.
 
 (define string=?
@@ -91,16 +103,7 @@
           (substring s (car rest)))
       (substring s 0 (string-length s))))
 
-;; (define (->string x)
-;;   (cond ((string? x))
-;;         ((number? x) (number->string x))
-;;         ((symbol? x) (symbol->string x))
-;;         ((procedure? x) "#<procedure>")
-;;         ((char? x) (string x))
-;;         ((eq? x #t) "#t")
-;;         ((eq? x #f) "#f")
-;;         ((eq? x '()) "()")
-;;         ((eq? x (unspecified)) "#!unspecified")
-;;         ((eof-object? x) "#!eof")
-;;         ((pair? x) ...)
-;;         (else "#<weird>")))
+(define (list->string cs)
+  (if (not (list? cs))
+      (error "list->string: not a proper list: " cs))
+  (sint:list->string cs))

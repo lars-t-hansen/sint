@@ -11,6 +11,38 @@ func dummyStrings() {
 }
 func initStrings(c *Scheme) {
 code1 := 
+&Setglobal{Name:c.Intern("string"), Rhs:&Lambda{
+Fixed:0, Rest:true,
+Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:list->string")},
+&Lexical{Levels:0, Offset:0},
+}}}}
+c.EvalToplevel(code1)
+code2 := 
+&Setglobal{Name:c.Intern("make-string"), Rhs:&Lambda{
+Fixed:1, Rest:true,
+Body:&Let{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:&Char{Value:32}},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Global{Name:c.Intern("fill")},
+}},
+},
+}, Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:list->string")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("make-list")},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+}},
+}}}}}
+c.EvalToplevel(code2)
+code3 := 
 &Setglobal{Name:c.Intern("string=?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -55,8 +87,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }}}}}
-c.EvalToplevel(code1)
-code2 := 
+c.EvalToplevel(code3)
+code4 := 
 &Setglobal{Name:c.Intern("string<?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -101,8 +133,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }}}}}
-c.EvalToplevel(code2)
-code3 := 
+c.EvalToplevel(code4)
+code5 := 
 &Setglobal{Name:c.Intern("string<=?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -147,8 +179,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }}}}}
-c.EvalToplevel(code3)
-code4 := 
+c.EvalToplevel(code5)
+code6 := 
 &Setglobal{Name:c.Intern("string>?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -193,8 +225,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }}}}}
-c.EvalToplevel(code4)
-code5 := 
+c.EvalToplevel(code6)
+code7 := 
 &Setglobal{Name:c.Intern("string>=?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -239,8 +271,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }}}}}
-c.EvalToplevel(code5)
-code6 := 
+c.EvalToplevel(code7)
+code8 := 
 &Setglobal{Name:c.Intern("string->list"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:4, Rest:false,
@@ -351,8 +383,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Quote{Value:big.NewInt(0)},
 }},
 }}}}}
-c.EvalToplevel(code6)
-code7 := 
+c.EvalToplevel(code8)
+code9 := 
 &Setglobal{Name:c.Intern("string-copy"), Rhs:&Lambda{
 Fixed:1, Rest:true,
 Body:&If{
@@ -405,5 +437,30 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }}}
-c.EvalToplevel(code7)
+c.EvalToplevel(code9)
+code10 := 
+&Setglobal{Name:c.Intern("list->string"), Rhs:&Lambda{
+Fixed:1, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list?")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"list->string: not a proper list: "}},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:list->string")},
+&Lexical{Levels:0, Offset:0},
+}},
+}}}}
+c.EvalToplevel(code10)
 }
