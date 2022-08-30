@@ -8,12 +8,15 @@ package runtime
 import (
 	"math/big"
 	. "sint/core"
+	"strings"
+	"unicode/utf8"
 )
 
 func initStringPrimitives(c *Scheme) {
 	addPrimitive(c, "string?", 1, false, primStringp)
 	addPrimitive(c, "string-length", 1, false, primStringLength)
-	addPrimitive(c, "string=?", 2, true, primStringEq)
+	addPrimitive(c, "string-ref", 2, false, primStringRef)
+	addPrimitive(c, "sint:string-compare", 2, false, primStringCompare)
 	addPrimitive(c, "string-append", 0, true, primStringAppend)
 }
 
@@ -32,23 +35,39 @@ func primStringLength(ctx *Scheme, args []Val) (Val, int) {
 	panic("string-length: Not a string: " + v0.String())
 }
 
-func primStringEq(ctx *Scheme, args []Val) (Val, int) {
-	s0, ok := args[0].(*Str)
-	if !ok {
-		panic("string=?: not a string: " + args[0].String())
-	}
-	// Not sure if we ought to check the types of all the arguments here even
-	// if the equality test has already failed.
-	for _, v := range args[1:] {
-		s1, ok := v.(*Str)
-		if !ok {
-			panic("string=?: not a string: " + v.String())
+func primStringRef(ctx *Scheme, args []Val) (Val, int) {
+	v0 := args[0]
+	v1 := args[1]
+	if s, ok := v0.(*Str); ok {
+		if ix, ok := v1.(*big.Int); ok {
+			if ix.IsInt64() && ix.Int64() >= 0 && ix.Int64() < int64(len(s.Value)) {
+				ch, size := utf8.DecodeRuneInString(s.Value[int(ix.Int64()):])
+				if ch == utf8.RuneError {
+					// This can happen when indexing into the middle of a char, for example.
+					panic("string-ref: Invalid code point in string at index: " + v1.String())
+				}
+				ctx.MultiVals = []Val{big.NewInt(int64(size))}
+				return &Char{Value: ch}, 2
+			}
+			panic("string-ref: Out of range: " + v1.String())
 		}
-		if s0.Value != s1.Value {
-			return ctx.FalseVal, 1
-		}
+		panic("string-ref: Not an exact integer index: " + v1.String())
 	}
-	return ctx.TrueVal, 1
+	panic("string-ref: Not a string: " + v0.String())
+}
+
+func primStringCompare(ctx *Scheme, args []Val) (Val, int) {
+	v0 := args[0]
+	v1 := args[1]
+	s0, ok0 := v0.(*Str)
+	if !ok0 {
+		panic("sint:string-compare: not a string: " + v0.String())
+	}
+	s1, ok1 := v1.(*Str)
+	if !ok1 {
+		panic("sint:string-compare: not a string: " + v1.String())
+	}
+	return big.NewInt(int64(strings.Compare(s0.Value, s1.Value))), 1
 }
 
 func primStringAppend(ctx *Scheme, args []Val) (Val, int) {

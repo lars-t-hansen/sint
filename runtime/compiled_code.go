@@ -15,4 +15,5 @@ func InitCompiled(c *Scheme) {
 	initNumbers(c)
 	initPairs(c)
 	initSymbols(c)
+	initStrings(c)
 }

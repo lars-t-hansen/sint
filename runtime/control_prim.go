@@ -11,6 +11,7 @@ import (
 func initControlPrimitives(c *Scheme) {
 	addPrimitive(c, "procedure?", 1, false, primProcedurep)
 	addPrimitive(c, "string-map", 2, true, primStringMap)
+	addPrimitive(c, "string-for-each", 2, true, primStringForEach)
 	addPrimitive(c, "values", 0, true, primValues)
 	addPrimitive(c, "unspecified", 0, false, primUnspecified)
 	addPrimitive(c, "sint:receive-values", 1, false, primReceiveValues)
@@ -61,6 +62,25 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 	return &Str{Value: result}, 1
 }
 
+func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
+	if len(args) > 2 {
+		panic("string-for-each: Only supported for one string for now")
+	}
+	p, pOk := args[0].(*Procedure)
+	if !pOk {
+		panic("string-for-each: Not a procedure: " + args[0].String())
+	}
+	s, sOk := args[1].(*Str)
+	if !sOk {
+		panic("string-for-each: Not a string: " + args[1].String())
+	}
+	var callArgs [1]Val
+	for _, ch := range s.Value {
+		callArgs[0] = &Char{Value: ch}
+		ctx.Invoke(p, callArgs[:])
+	}
+	return ctx.UnspecifiedVal, 1
+}
 func primValues(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) == 0 {
 		ctx.MultiVals = []Val{}

@@ -1,90 +1,76 @@
 # sint User Manual
 
-`sint` is an evolving variant of Scheme, embedded in Go.  Eventually
+`sint` is an evolving variant of R7RS-small Scheme, embedded in Go.  Eventually
 it will have a Go FFI, regular expressions, and many other facilities.
 
 `sint` is not meant to be performant (yet), it is more important that
 it is easy to evolve and play with.
 
+`sint` is not meant to be all of R7RS-small, or to be completely compatible
+with it ever, but is meant to approach R7RS-small over time, to the extent
+possible.
+
 ## Deliberate restrictions to and incompatibilities with R7RS-small Scheme
 
-Numbers are only exact integers (math/big.Int) and inexact rationals
-(math/big.Float).
+Numbers are exact integers (math/big.Int) and inexact rationals (math/big.Float).
 
-`call-with-current-continuation` produces continuations that are
-one-shot, upward-only, and (eventually) only usable within the same
-goroutine.  That is, these are strictly for same-thread nonlocal
-jumps.  Many other uses of first-class continuations, eg generators
-and threads, can be implemented using goroutines.
+`call-with-current-continuation` produces continuations that are one-shot, upward-only, and only usable within the same goroutine.  That is, these are strictly for same-thread nonlocal jumps.  Many other uses of first-class continuations, eg generators and threads, can be implemented using goroutines.
 
-Strings are Go strings, ie, they are immutable byte-indexed byte
-arrays holding UTF8-encoded Unicode text.  Read more about this below.
+Strings are Go strings, ie, they are immutable byte arrays holding UTF8-encoded Unicode text, and indices into strings are byte indices, not character indices.  Read more about this below.
 
 ## Strings
 
-`sint` strings are Go strings, ie, they are immutable byte slices
-containing UTF-8 encoded Unicode code points.
+`sint` strings are Go strings, ie, they are immutable byte slices containing UTF-8 encoded Unicode code points and possibly other values.  They are indexed using byte indices, which means it's possible to index a string in the middle of a code point.  `sint` characters are however restricted to be valid code points always.  `sint` character accessors (actually most string operations, essentially anything that can't be an operation on byte slices) will throw if encountering an invalid encoding; non-character accessors `string=?`, `string>?`, `string>=?`, `string<?`, `string<=?`, `string-append` and `string-copy` in principle need not check that the encoding is valid and probably should not.
 
-Go strings can contain invalid encodings, not sure if we want that
-here.  By restricting character values to valid Unicode and not
-allowing non-code point values in string literals, and by also
-checking that on input, we guarantee that there are no invalid code
-points.  Not sure yet if that's worth it - experimenting.  NOTE that
-substring and the substring forms of string-copy and string->list are
-able to start in the middle of an encoding and may thus produce
-garbage, or they must check that this does not happen.  Ditto,
-string-ref may provide a byte index not at the start of a character.
+Since strings are immutable, all the string update functions -- `string-set!`, `string-fill!`, and `string-copy!` -- are missing.
 
-Thus our strings are immutable and weirdly indexed; ie, they are quite
-incompatible with standard Scheme strings.  So the (unresolved)
-question is whether to call the type 'string' or use a new name, eg
-'gstring' (bad), 'str' (why not?), 'gostring', and so on.  For now, it
-is "string".  Another alternative is to give the procedures that have
-new semantics new names.
+### Whole-string operations
 
-The library:
+The following operate on whole strings and have the same semantics as the same-named functions in R7RS Scheme, except that those that need to access individual characters will throw if encountering invalid code points, as noted above:
 
-These operate on characters and should be indistinguishable from the
-same-named functions in normal Scheme:
+* (string char ...)
+* string?
+* make-string
+* string=?
+* string>?
+* string>=?
+* string<?
+* string<=?
+* string-ci=?
+* string-ci>?
+* string-ci>=?
+* string-ci<?
+* string-ci<=?
+* string-append
+* string-map
+* string-for-each
+* string->vector
+* vector->string
+* string->list (whole-string form)
+* string->copy (whole-string form)
+* list->string
+* string-upcase
+* string-downcase
+* string-foldcase
 
-(string char ...)
-string?
-make-string  ;; not very useful
-string=?
-string>?
-string>=?
-string<?
-string<=?
-string-ci=?
-string-ci>?
-string-ci>=?
-string-ci<?
-string-ci<=?
-string-append
-string-map
-string-for-each
-string->vector
-vector->string
-string->list (whole-string form)
-string->copy (whole-string form)
-list->string
-string-upcase
-string-downcase
-string-foldcase
+### Byte-index operations
 
-These operates on byte indices and lengths and perhaps should have new names
+The following operate on byte indices and lengths and perhaps should have new names
 
-string-length - returns byte length
-string-ref - returns a decoded code point starting at the given byte index
-substring - returns a string if the byte indices are proper for full characters
-string-copy (substring form) - as for substring
-string->list (substring form) - as for substring
+* string-length - returns byte length
+* string-ref - returns a decoded code point starting at the given byte index AND the size in bytes of that code point's encoding
+* substring - returns a string if the byte indices are proper for full characters
+* string-copy (substring form) - as for substring
+* string->list (substring form) - as for substring
 
-Mutators are missing:
+### Mutators
 
-string-set!
-string-copy!
-string-fill!
+The mutators operators are missing:
 
-It is likely we would want some new procedures, to compensate for immutability.  Splicing,
-replacing, and searching are obvious.  Decoding an UTF8 char at byte index ditto.
+* string-set!
+* string-copy!
+* string-fill!
+
+### New procedures
+
+Not sure what we want here.  We may want a `string-ref` that can report a decoding error rather than failing.  We may want to surface some of the Go string operations (searching, replacing, slicing).
