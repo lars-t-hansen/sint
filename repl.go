@@ -1,17 +1,3 @@
-// Usage:
-//
-//  sint
-//  sint repl
-//    Enter the interactive repl
-//
-//  sint eval expr
-//    Evaluate the expression, print its result, and exit
-//
-//  sint compile filename.sch
-//    Compile filename.sch into filename.go with a function initFilename() that
-//    takes a *Scheme and evaluates the expressions and definitions of filename.sch
-//    in order in that runtime.  Punctuation in the filename is removed.
-
 package main
 
 import (
@@ -24,9 +10,26 @@ import (
 	"strings"
 )
 
+var HelpText string = `
+Usage:
+
+  sint
+  sint repl
+    Enter the interactive repl
+
+  sint eval expr
+    Evaluate the expression, print its result, and exit
+
+  sint compile filename.sch
+    Compile filename.sch into filename.go and exit.  The output will have
+	a function initFilename() that takes a *Scheme and evaluates the
+	expressions and definitions of filename.sch in order in that runtime.
+	Punctuation in the filename is removed.
+`
+
 func main() {
-	engine := core.NewScheme()
-	comp := compiler.NewCompiler(engine)
+	engine := core.NewScheme(nil)
+	comp := compiler.NewCompiler(engine.Shared)
 
 	args := os.Args[1:]
 	if len(args) > 0 {
@@ -45,6 +48,10 @@ func main() {
 			evalExpr(engine, comp, args[1])
 			return
 		}
+		if args[0] == "help" {
+			help()
+			return
+		}
 		if args[0] == "repl" {
 			enterRepl(engine, comp)
 			return
@@ -53,6 +60,10 @@ func main() {
 	} else {
 		enterRepl(engine, comp)
 	}
+}
+
+func help() {
+	fmt.Print(HelpText)
 }
 
 func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {

@@ -36,17 +36,17 @@ func (r *reader) read() Val {
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
 			r.handleErrorIgnoreEOF(err)
-			return r.s.DotSym
+			return r.s.Shared.DotSym
 		}
 		r.rdr.UnreadRune()
 		// TODO: Maybe .37 is valid syntax for 0.37
 		if isSymbolSubsequent(d) {
 			return r.readSymbol(c)
 		}
-		return r.s.DotSym
+		return r.s.Shared.DotSym
 	case '\'':
 		v := r.read()
-		return &Cons{Car: r.s.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}
+		return &Cons{Car: r.s.Shared.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}
 	case '#':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
@@ -99,7 +99,7 @@ func (r *reader) readList() Val {
 			break
 		}
 		v := r.readNotEOF()
-		if v == r.s.DotSym {
+		if v == r.s.Shared.DotSym {
 			if last == nil {
 				panic("Illegal '.' in list")
 			}
@@ -246,16 +246,16 @@ func (r *reader) readCharacter() Val {
 			break
 		}
 		name := r.readSymbol(e)
-		if name == r.s.NewlineSym {
+		if name == r.s.Shared.NewlineSym {
 			return &Char{Value: '\n'}
 		}
-		if name == r.s.ReturnSym {
+		if name == r.s.Shared.ReturnSym {
 			return &Char{Value: '\r'}
 		}
-		if name == r.s.TabSym {
+		if name == r.s.Shared.TabSym {
 			return &Char{Value: '\t'}
 		}
-		if name == r.s.SpaceSym {
+		if name == r.s.Shared.SpaceSym {
 			return &Char{Value: ' '}
 		}
 		panic("Illegal character name: " + name.Name)

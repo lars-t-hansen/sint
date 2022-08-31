@@ -1,10 +1,11 @@
 // Simple compiler from standard sexpr form to internal Code form.
 //
 // Built-in syntactic forms have reserved names, which is not very "Scheme"
-// but is just fine in practice.  There are no user-defined macros here.
+// but is just fine in practice, and the compiler is also a macro-expander
+// for these forms.  There are no user-defined macros at this time.
 //
-// A more sophisticated compiler would take an AST form that also carries source
-// location information, or at least a map of such information on the side.
+// TODO: A more sophisticated compiler would take an AST form that also carries
+// source location information, or at least a map of such information on the side.
 
 package compiler
 
@@ -14,24 +15,27 @@ import (
 )
 
 type Compiler struct {
-	s        *Scheme
+	s        *SharedScheme
 	keywords map[*Symbol]bool
 }
 
 // A Compiler currently has no interesting mutable state, it can be reused for
 // multiple compilations.
 
-func NewCompiler(s *Scheme) *Compiler {
+func NewCompiler(s *SharedScheme) *Compiler {
 	c := &Compiler{
 		s:        s,
 		keywords: make(map[*Symbol]bool),
 	}
+
+	// These symbols cannot be used as variable names
 	c.keywords[s.AndSym] = true
 	c.keywords[s.BeginSym] = true
 	c.keywords[s.CaseSym] = true
 	c.keywords[s.CondSym] = true
 	c.keywords[s.DefineSym] = true
 	c.keywords[s.DoSym] = true
+	c.keywords[s.GoSym] = true
 	c.keywords[s.IfSym] = true
 	c.keywords[s.LambdaSym] = true
 	c.keywords[s.LetSym] = true
@@ -43,6 +47,7 @@ func NewCompiler(s *Scheme) *Compiler {
 	c.keywords[s.QuoteSym] = true
 	c.keywords[s.SetSym] = true
 	// arrowSym and elseSym are not reserved
+
 	return c
 }
 
@@ -90,7 +95,6 @@ func lookup(env *cenv, s *Symbol) (int, int, bool) {
 	return 0, 0, false
 }
 
-// This always returns nil
 func (c *Compiler) reportError(msg string) (Code, error) {
 	return nil, &CompilerError{msg}
 }
@@ -179,6 +183,9 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			}
 			if kwd == c.s.DoSym {
 				return c.compileDo(e, llen, env)
+			}
+			if kwd == c.s.GoSym {
+				return c.compileGo(e, llen, env)
 			}
 			if kwd == c.s.LambdaSym {
 				return c.compileLambda(e, llen, env)
@@ -340,6 +347,53 @@ func (c *Compiler) compileCond(l Val, llen int, env *cenv) (Code, error) {
 
 func (c *Compiler) compileDo(l Val, llen int, env *cenv) (Code, error) {
 	return c.reportError("`do` not implemented")
+}
+
+func (c *Compiler) compileGo(l Val, llen int, env *cenv) (Code, error) {
+	// (go (expr0 expr1 ...)) becomes (sint:go (let ((v0 expr0) (v1 expr1) ...) (lambda () (v0 v1 ...))))
+	if llen != 2 {
+		panic("go: invalid syntax: " + l.String())
+	}
+	callExpr := cadr(l)
+	cLen, cOk := c.checkProperList(callExpr)
+	if !cOk || cLen == 0 {
+		panic("go: invalid call syntax: " + l.String())
+	}
+	var fstBinding *Cons
+	var lastBinding *Cons
+	var fstArg *Cons
+	var lastArg *Cons
+	e := callExpr
+	for i := 0; i < cLen; i++ {
+		// A temporary name for the value
+		v := c.s.Gensym("GO")
+
+		// A new binding for the introduced `let`
+		b := c.list(v, car(e))
+		bCell := &Cons{Car: b, Cdr: c.s.NullVal}
+		e = cdr(e)
+		if fstBinding == nil {
+			fstBinding = bCell
+		} else {
+			lastBinding.Cdr = bCell
+		}
+		lastBinding = bCell
+
+		// Another expr on the call
+		aCell := &Cons{Car: v, Cdr: c.s.NullVal}
+		if fstArg == nil {
+			fstArg = aCell
+		} else {
+			lastArg.Cdr = aCell
+		}
+		lastArg = aCell
+	}
+	if e != c.s.NullVal {
+		panic("Inconsistency in implementation of GO")
+	}
+	lambdaExpr := c.list(c.s.LambdaSym, c.s.NullVal, fstArg)
+	letExpr := c.list(c.s.LetSym, fstBinding, lambdaExpr)
+	return c.compileExpr(c.list(c.s.Intern("sint:go"), letExpr), env)
 }
 
 func (c *Compiler) compileIf(l *Cons, llen int, env *cenv) (Code, error) {
@@ -553,7 +607,7 @@ func (c *Compiler) checkDefinitionSignature(sig Val) (fixed int, rest bool, glob
 	if !k {
 		return
 	}
-	fixed = f - 1 // hi
+	fixed = f - 1
 	rest = r
 	globName = names[0]
 	formals = names[1:]

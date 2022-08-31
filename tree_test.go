@@ -26,7 +26,7 @@ func exact(n int64) Code {
 }
 
 func TestFibTree(t *testing.T) {
-	c := NewScheme()
+	c := NewScheme(nil)
 	runtime.InitPrimitives(c)
 	runtime.InitCompiled(c)
 	n := &Lexical{Levels: 0, Offset: 0}

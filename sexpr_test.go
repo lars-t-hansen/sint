@@ -13,9 +13,9 @@ import (
 var nullVal Val
 
 func TestFibSexpr(t *testing.T) {
-	c := NewScheme()
+	c := NewScheme(nil)
 	nullVal = c.NullVal
-	comp := compiler.NewCompiler(c)
+	comp := compiler.NewCompiler(c.Shared)
 	runtime.InitPrimitives(c)
 	runtime.InitCompiled(c)
 	symDefine := c.Intern("define")

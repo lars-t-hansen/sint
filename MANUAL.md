@@ -74,3 +74,27 @@ The mutators operators are missing:
 ### New procedures
 
 Not sure what we want here.  We may want a `string-ref` that can report a decoding error rather than failing.  We may want to surface some of the Go string operations (searching, replacing, slicing).
+
+## Goroutines (evolving)
+
+The form `(go (expr expr ...))` is syntax.  The exprs are evaluated on the current thread; the first expr must evaluate to a procedure of the appropriate arity; the procedure is invoked on the argument values on a new, concurrent thread.  If the procedure returns, its thread terminates and any return value is discarded.
+
+The memory model is that of Go.  All Scheme values are word-sized and racy accesses have sensible outcomes with no torn values, provided the implementation does not detect the race and terminate the program.  Atomic operations and channels (see subsequent sections) can be used to synchronize concurrent access to avoid races.
+
+TODO: It's possible we want some type of primitive to identify the goroutine we're in, like a thread ID?
+
+## Channels (evolving)
+
+There are channels that can transmit all scheme values.  `(make-input-channel capacity)`, `(make-output-channel capacity)`, and `(make-channel capacity)` create the channels.  The capacity is optional.
+
+Channels are closed with the `(close-channel ch)` operator.
+
+TODO: The GC must close a channel when the channel is reaped.  Don't know how to do that (yet), maybe it happens already.
+
+Operations on channels: `(send ch val)`, `(receive ch)`.
+
+The `select` operation is however tricky.  It can use an arbitrary number of channels but those must be written into the statement, there isn't a notion of higher-order select clauses.  We could probably have a hack where we have "up to n" but the combinations of sends and receives means the number of variants is exponential in n.  And it's not obvious to me yet that it's possible to have an array of channels?  It ought to be...
+
+## Atomics (evolving)
+
+TBD.

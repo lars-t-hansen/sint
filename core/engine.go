@@ -5,30 +5,43 @@ package core
 import (
 	"math/big"
 	"strconv"
+	"sync"
+	"sync/atomic"
 )
 
-type Scheme struct {
+// State shared between goroutines of the same Scheme instance.  Some of these
+// values are copied into the per-goroutine state for easy access.
+type SharedScheme struct {
+	/////////////////////////////////////////////////////////////////////////
+	//
+	// oblist and nextGenSym are shared mutable state.
+
 	// Symbol table
-	oblist map[string]*Symbol
+	//
+	// The oblist uses a sync.Map because its behavior -- ever-growing cache
+	// that is read much more than it is written -- fits well with that.
+	oblist sync.Map // string -> symbol
 
 	// Counter for non-interned symbol name generation
-	nextGensym int
+	//
+	// The counter uses atomic increment operations since those work very
+	// well for it.
+	//
+	// For Go 1.19 we can upgrade to atomic.Int32 here; for now, just use
+	// atomic operators on a plain int32.
+	nextGensym int32
 
-	// Singleton values
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// Immutable state
+
+	// Singleton values, these are copied into the Scheme structure
 	UnspecifiedVal Val
 	UndefinedVal   Val
 	NullVal        Val
 	TrueVal        Val
 	FalseVal       Val
 	EofVal         Val
-
-	// Useful values.  TODO: Flesh this out, and use it in the emitter: Most
-	// literal values in programs are 0, 1, and 2, and we could have them
-	// all predefined here and could just use them rather than cons them
-	// up anew every time.  That said, those are *constant* values and
-	// are only consed up when the program is deserialized, not at runtime,
-	// so they probably are not all that useful frankly.
-	Zero *big.Int
 
 	// Well-known symbols.
 	AndSym           *Symbol
@@ -38,6 +51,7 @@ type Scheme struct {
 	DefineSym        *Symbol
 	DoSym            *Symbol
 	ElseSym          *Symbol
+	GoSym            *Symbol
 	IfSym            *Symbol
 	LambdaSym        *Symbol
 	LetSym           *Symbol
@@ -54,24 +68,16 @@ type Scheme struct {
 	ReturnSym        *Symbol
 	TabSym           *Symbol
 	SpaceSym         *Symbol
-
-	// Per-thread state that should be handled differently
-
-	// This is interpreted in the context of the number-of-values flag passed back
-	// in the evaluator
-	MultiVals []Val
 }
 
-func NewScheme() *Scheme {
-	s := &Scheme{
+func newSharedScheme() *SharedScheme {
+	s := &SharedScheme{
 		UnspecifiedVal: &Unspecified{},
 		UndefinedVal:   &Undefined{},
 		NullVal:        &Null{},
 		TrueVal:        &True{},
 		FalseVal:       &False{},
 		EofVal:         &EofObject{},
-		Zero:           big.NewInt(0),
-		oblist:         map[string]*Symbol{},
 		nextGensym:     1000,
 	}
 
@@ -82,6 +88,7 @@ func NewScheme() *Scheme {
 	s.DefineSym = s.Intern("define")
 	s.DoSym = s.Intern("do")
 	s.ElseSym = s.Intern("else")
+	s.GoSym = s.Intern("go")
 	s.IfSym = s.Intern("if")
 	s.LambdaSym = s.Intern("lambda")
 	s.LetSym = s.Intern("let")
@@ -102,19 +109,80 @@ func NewScheme() *Scheme {
 	return s
 }
 
-func (c *Scheme) Intern(s string) *Symbol {
-	if v, ok := c.oblist[s]; ok {
-		return v
+// There is one new Scheme instance per goroutine, so it needs to be fairly
+// lightweight.
+type Scheme struct {
+	Shared *SharedScheme
+
+	// Singleton values, lifted from "Shared"
+	UnspecifiedVal Val
+	UndefinedVal   Val
+	NullVal        Val
+	TrueVal        Val
+	FalseVal       Val
+	EofVal         Val
+
+	// Useful(?) values.  TODO: Flesh this out, and use it in the emitter: Most
+	// literal values in programs are 0, 1, and 2, and we could have them
+	// all predefined here and could just use them rather than cons them
+	// up anew every time.  That said, those are *constant* values and
+	// are only consed up when the program is deserialized, not at runtime,
+	// so they probably are not all that useful frankly.
+	Zero *big.Int
+
+	///////////////////////////////////////////////////////////////////////////////
+	//
+	// Per-thread mutable state
+
+	// This is interpreted in the context of the number-of-values flag passed back
+	// in the evaluator
+	MultiVals []Val
+}
+
+// oldScheme can be nil, in which case we create a new globally shared
+// SharedScheme instance.  For new goroutines, oldScheme must never be nil.
+func NewScheme(oldScheme *Scheme) *Scheme {
+	var ss *SharedScheme
+	if oldScheme != nil {
+		ss = oldScheme.Shared
+	} else {
+		ss = newSharedScheme()
+	}
+	s := &Scheme{
+		Shared:         ss,
+		UnspecifiedVal: ss.UnspecifiedVal,
+		UndefinedVal:   ss.UndefinedVal,
+		NullVal:        ss.NullVal,
+		TrueVal:        ss.TrueVal,
+		FalseVal:       ss.FalseVal,
+		EofVal:         ss.EofVal,
+		Zero:           big.NewInt(0),
+	}
+
+	return s
+}
+
+func (c *SharedScheme) Intern(s string) *Symbol {
+	if v, ok := c.oblist.Load(s); ok {
+		return v.(*Symbol)
 	}
 	sym := &Symbol{Name: s, Value: c.UndefinedVal}
-	c.oblist[s] = sym
+	c.oblist.Store(s, sym)
 	return sym
 }
 
-func (c *Scheme) Gensym(s string) *Symbol {
-	name := ".G" + strconv.Itoa(c.nextGensym) + "." + s
-	c.nextGensym++
+func (c *Scheme) Intern(s string) *Symbol {
+	return c.Shared.Intern(s)
+}
+
+func (c *SharedScheme) Gensym(s string) *Symbol {
+	n := atomic.AddInt32(&c.nextGensym, 1)
+	name := ".G" + strconv.Itoa(int(n)) + "." + s
 	return &Symbol{Name: name, Value: c.UndefinedVal}
+}
+
+func (c *Scheme) Gensym(s string) *Symbol {
+	return c.Shared.Gensym(s)
 }
 
 func (c *Scheme) EvalToplevel(expr Code) []Val {
@@ -131,6 +199,17 @@ func (c *Scheme) Invoke(proc Val, args []Val) []Val {
 		v, k = c.eval(newCode, newEnv)
 	}
 	return c.captureValues(v, k)
+}
+
+func (c *Scheme) InvokeConcurrent(proc Val) {
+	// This is always (sint:go thunk) and there are "no" nullary primitive
+	// procedures, so let's keep it simple and ban primitive procedures from
+	// being used here.
+	newCode, newEnv, prim := c.invokeSetup(proc, []Val{})
+	if prim != nil {
+		panic("Primitive procedures cannot be invoked concurrently")
+	}
+	go NewScheme(c).eval(newCode, newEnv)
 }
 
 func (c *Scheme) captureValues(v Val, numVal int) []Val {

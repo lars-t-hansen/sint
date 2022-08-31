@@ -12,7 +12,7 @@ import (
 // to avoid polluting it.
 
 func TestReader(t *testing.T) {
-	c := NewScheme()
+	c := NewScheme(nil)
 	{
 		in := strings.NewReader(" \t\n\r")
 		expectEOF(c, in, t)

@@ -15,6 +15,7 @@ func InitPrimitives(c *Scheme) {
 	initControlPrimitives(c)
 	initExceptionsPrimitives(c)
 	initIoPrimitives(c)
+	initConcurrencyPrimitives(c)
 
 	// See runtime/control.sch.  This treats its argument as a top-level program form
 	// and returns a thunk that evaluates that form.
@@ -30,7 +31,7 @@ func primCompileToplevel(c *Scheme, args []Val) (Val, int) {
 	// Compiles args[0] into a lambda and then creates a toplevel procedure
 	// from that lambda, and returns the procedure
 	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
-	comp := compiler.NewCompiler(c)
+	comp := compiler.NewCompiler(c.Shared)
 	prog, err := comp.CompileToplevel(args[0])
 	if err != nil {
 		panic(err.Error())
