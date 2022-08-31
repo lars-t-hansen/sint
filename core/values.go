@@ -6,6 +6,9 @@ import "fmt"
 
 // Values.
 //
+// Values are represented as pointers, ensuring that data races at least will
+// not expose torn values.
+//
 // type Val union {
 //   *Cons,
 //   *Symbol,
@@ -54,9 +57,12 @@ func (c *Procedure) String() string {
 	return "procedure"
 }
 
+// A char value is a Unicode code point always: character literals are
+// restricted to code points, individual-char getters from strings
+// will never return non-code points, integer->char checks that its
+// input is a valid code point, and (in the future) read-char checks
+// that it is reading a code point.
 type Char struct {
-	// The value may not be a unicode code point, so 'rune' is only suggestive.
-	// Also see Str below.
 	Value rune
 }
 
@@ -65,8 +71,7 @@ func (c *Char) String() string {
 }
 
 // Sint strings are Go strings, ie, they are immutable byte slices holding
-// UTF-8 encoded Unicode code points.  This is nonstandard.  See the Design
-// section of README.md.
+// UTF-8 encoded Unicode code points.  This is nonstandard.  See MANUAL.md.
 type Str struct {
 	Value string
 }
