@@ -54,6 +54,8 @@ func Write(v Val, quoted bool, w Writer) {
 		} else {
 			w.WriteString(x.Value)
 		}
+	case *Chan:
+		w.WriteString(fmt.Sprintf("#<channel %d>", cap(x.Ch)))
 	case *True:
 		w.WriteString("#t")
 	case *False:

@@ -10,19 +10,20 @@ import "fmt"
 // not expose torn values.
 //
 // type Val union {
-//   *Cons,
-//   *Symbol,
-//   *Procedure,
-//   *Char,
-//   *Str,
-//   *Null,			// Singleton
-//   *True			// Singleton
-//   *False			// Singleton
-//   *Unspecified,	// Singleton
-//   *Undefined		// Singleton
-//   *EofObject     // Singleton
-//   *big.Int,      // Exact integer
-//   *big.Float,    // Inexact real (rational?)
+//   *Cons,			// Pair
+//   *Symbol,		// Symbol (interned or not)
+//   *Procedure,	// Procedure: lambda + environment
+//   *Char,			// Unicode character
+//   *Str,			// Immutable UTF-8 encoded Unicode code points
+//   *Chan,			// Channel that can transmit any Val
+//   *Null,			// The () singleton
+//   *True,			// The #t singleton
+//   *False,		// The #f singleton
+//   *Unspecified,  // The #!unspecified singleton
+//   *Undefined,    // The undefined value singleton
+//   *EofObject,    // The #!eof singleton
+//   *big.Int,		// Exact integer
+//   *big.Float,    // Inexact rational
 // }
 
 type Val interface {
@@ -78,6 +79,14 @@ type Str struct {
 
 func (s *Str) String() string {
 	return fmt.Sprint("[string ", s.Value, "]")
+}
+
+type Chan struct {
+	Ch chan Val
+}
+
+func (s *Chan) String() string {
+	return "channel"
 }
 
 type Null struct{}

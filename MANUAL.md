@@ -75,7 +75,7 @@ The mutators operators are missing:
 
 Not sure what we want here.  We may want a `string-ref` that can report a decoding error rather than failing.  We may want to surface some of the Go string operations (searching, replacing, slicing).
 
-## Goroutines (evolving)
+## Goroutines
 
 The form `(go (expr expr ...))` is syntax.  The exprs are evaluated on the current thread; the first expr must evaluate to a procedure of the appropriate arity; the procedure is invoked on the argument values on a new, concurrent thread.  If the procedure returns, its thread terminates and any return value is discarded.
 
@@ -83,18 +83,43 @@ The memory model is that of Go.  All Scheme values are word-sized and racy acces
 
 TODO: It's possible we want some type of primitive to identify the goroutine we're in, like a thread ID?
 
-## Channels (evolving)
+## Channels and communication (evolving)
 
-There are channels that can transmit all scheme values.  `(make-input-channel capacity)`, `(make-output-channel capacity)`, and `(make-channel capacity)` create the channels.  The capacity is optional.
+### Channel primitives
 
-Channels are closed with the `(close-channel ch)` operator.
+The channels can transmit all scheme values.  Operations on channels:
 
-TODO: The GC must close a channel when the channel is reaped.  Don't know how to do that (yet), maybe it happens already.
+* `(make-input-channel [capacity])` -> bidirectional channel, default capacity is 0
+* `(channel? obj)` -> boolean
+* `(channel-send ch val)` -> unspecified; panics if the channel is closed
+* `(channel-receive ch)` -> (value, status) as in Go
+* `(channel-length ch)` -> number of items in the channel
+* `(channel-capacity ch)` -> capacity of channel's buffer
+* `(close-channel ch)` -> unspecified
 
-Operations on channels: `(send ch val)`, `(receive ch)`.
+In Go there is additionally a type system to constrain the view of a channel to the input side or the output side, but I've not implemented that here.  If we were to do it, it would be a `(make-input-channel channel)` type of operation,
+and there would be additional predicates.
 
-The `select` operation is however tricky.  It can use an arbitrary number of channels but those must be written into the statement, there isn't a notion of higher-order select clauses.  We could probably have a hack where we have "up to n" but the combinations of sends and receives means the number of variants is exponential in n.  And it's not obvious to me yet that it's possible to have an array of channels?  It ought to be...
+TODO: The GC must close a channel when the channel object is reaped.  Don't know how to do that (yet), maybe it happens already.
 
-## Atomics (evolving)
+### Select (not yet implemented)
+
+In principle there should be a `select` as in Go to allow communication to proceed on some channel that is ready:
+
+```
+(select ((send send-ch-expr send-value-expr) send-body-expr ...)
+        (((recv-value-var recv-status-var) receive recv-ch-expr) receive-body-expr ...)
+        (else else-expr ...))
+```
+
+In the case of receive, either variable can be the identifier _.  (Generally, a binding for name _ should be a shorthand for a gensym'd name.)
+
+As in Go, this would evaluate the send-ch-expr, the send-value-expr, and the recv-ch-expr, and only when everything has been evaluated would it pick a channel, if any, to operate on, and then to evaluate the body expressions of.
+
+Implementing this is a little tricky.  It can use an arbitrary number of channels but those must be written into the statement in Go, there isn't a notion of higher-order select clauses.  We could probably have a hack where we have "up to n" but the combinations of sends and receives means the number of variants is exponential in n, so this is limited to about five, in practice.
+
+If we have a channel that always delivers a value then it may be possible to chain those fixed-size nests.  Closed channels deliver the null value, ie, nil, which is basically perfect for this.  This dummy channel will be selected with probability 1/n for n-1 cases.  Thus a second-level chain is selected with probability 1/n, and the cases in that will have probability 1/n*1/m where m is the size of the second level - ie, the probabilities are not going to be uniform.   To fix that, if we need more than one level then the leaves - the true channels - must all be at the same level, ie, say we have up to five for a baked in select stmt and we have seven channels to select from.  Then a first-level switch will have two dummy input channels, selecting one of two lower-level switches with equal priority, and these (one of size four, the other of size three, maybe) will then select on the true channels.  It is true that the priorities will still not be the same, but they will be close to each other.
+
+## Synchronization and atomics (evolving)
 
 TBD.

@@ -22,9 +22,9 @@ Usage:
 
   sint compile filename.sch
     Compile filename.sch into filename.go and exit.  The output will have
-	a function initFilename() that takes a *Scheme and evaluates the
-	expressions and definitions of filename.sch in order in that runtime.
-	Punctuation in the filename is removed.
+    a function initFilename() that takes a *Scheme and evaluates the
+    expressions and definitions of filename.sch in order in that runtime.
+    Punctuation in the filename is removed.
 `
 
 func main() {
@@ -44,6 +44,8 @@ func main() {
 		// it is the default verb if the first letter of the verb
 		// is left paren.  That way, `sint 'some expr'` will evaluate
 		// and print it.
+		//
+		// Another idea is that there could be a sequence of expressions.
 		if args[0] == "eval" {
 			evalExpr(engine, comp, args[1])
 			return
