@@ -1,6 +1,6 @@
 # sint
 
-Subset R7RS-small Scheme implementation embedded in Go, with many Go facilities
+Subset R7RS-small Scheme dialect implementation embedded in Go, with many Go facilities
 
 ## Mottos
 
@@ -8,7 +8,9 @@ Subset R7RS-small Scheme implementation embedded in Go, with many Go facilities
 
 "LISP programmers know the value of everything, and the cost of nothing."  --Alan Perlis
 
-"Learn more Go" --me
+## Status
+
+Pre-MVP (see to-do list below)
 
 ## Some details
 
@@ -17,11 +19,11 @@ R7RS-small Scheme embedded in Go with some features (evolving):
 - arbitrary precision exact integers (big.Int)
 - arbitrary precision inexact rationals (big.Float)
 - unicode
-- Goroutines
-- Channels (in progress)
-- Go RegExes (soon)
+- goroutines
+- channels
+- Go regexes (soon)
 - synchronization (eventually)
-- most standard built-ins (eventually)
+- most standard Scheme built-ins (eventually)
 - Go FFI (eventually)
 
 A number of subtractions and weirdnesses:
@@ -30,9 +32,9 @@ A number of subtractions and weirdnesses:
 - no exact rationals or exact complexes - I never found these to be useful in practice
 - call/cc (not actually implemented yet) is only one-shot and upwards within the same goroutine
 
-Standards conformance is not a goal; but progression toward it is desirable.
+R7RS conformance is not a goal; but progression toward it is desirable.
 
-Performance is not a concern.  Functionality and easy modifiability are.
+Performance is not a concern (modulo obvious stupidity).  Functionality and easy modifiability are.
 
 ## Installation
 
@@ -42,28 +44,24 @@ After cloning the repo, just `go install sint`
 
 Try `sint help`
 
-## Near-term TODO
+## MVP to-do list
 
-The immediate priority is to get this far enough along to be useful.  This means more types,
-some basic ergonomics, and more primitives and library, esp for I/O
-
-### High priority (for MVP)
-
-- implement let-values, because multiple values are ubiquitous
-- ports and some I/O
-- regexes and string matching.  Syntax for literal regex could be #/.../ for example
+- implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
+- ports and basic text I/O
 - high-value number operations, see numbers.sch
 - high-value control operations, see control.sch
+- regexes and string matching.  Syntax for literal regex could be #/.../ for example
+- high-value nonstandard string operations, taken from the Go library
 - basic error handling & recovery during execution; document it too.  this includes what happens when we panic in a goroutine, and when a Go builtin panics.
-- a verb to load and run a file
-- clean up repl.go
+- fix error reporting: the pretty printer in `error` is really dumb
 
 Maybe also:
 
 - implement select, at least in a limited form
 
-### Backlog (this is actually much longer)
+## Backlog (this is actually much longer)
 
+- a verb to load and run a file
 - vectors
 - bytevectors
 - `dynamic-wind` and its abbreviation (in sint) `unwind-protect`

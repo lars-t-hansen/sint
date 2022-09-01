@@ -1,3 +1,5 @@
+// Command line parsing and command implementation.  This is still pretty rough.
+
 package main
 
 import (
@@ -18,13 +20,16 @@ Usage:
     Enter the interactive repl
 
   sint eval expr
-    Evaluate the expression, print its result, and exit
+    Evaluate the expression, print its result(s), and exit
 
   sint compile filename.sch
     Compile filename.sch into filename.go and exit.  The output will have
     a function initFilename() that takes a *Scheme and evaluates the
     expressions and definitions of filename.sch in order in that runtime.
     Punctuation in the filename is removed.
+
+  sint help
+    Print help (this text)
 `
 
 func main() {
@@ -32,40 +37,36 @@ func main() {
 	comp := compiler.NewCompiler(engine.Shared)
 
 	args := os.Args[1:]
-	if len(args) > 0 {
-		if args[0] == "compile" {
-			if len(args) == 2 {
-				compileFile(engine, comp, args[1])
-				return
-			}
-			panic("Bad 'compile' command")
+
+	if len(args) == 0 {
+		enterRepl(engine, comp)
+		return
+	}
+
+	switch args[0] {
+	case "compile":
+		// Obviously it would be meaningful to have multiple file names.
+		if len(args) != 2 {
+			panic("Bad 'compile' command, one file name argument required")
 		}
-		// An idea is that "eval" is the default verb, or perhaps,
-		// it is the default verb if the first letter of the verb
-		// is left paren.  That way, `sint 'some expr'` will evaluate
+		compileFile(engine, comp, args[1])
+	case "eval":
+		// An idea is that "eval" is the default verb if the first letter of
+		// the verb is left paren.  That way, `sint 'some expr'` will evaluate
 		// and print it.
 		//
-		// Another idea is that there could be a sequence of expressions.
-		if args[0] == "eval" {
-			evalExpr(engine, comp, args[1])
-			return
+		// Another idea is that there could be a sequence of expressions, not just one.
+		if len(args) != 2 {
+			panic("Bad 'eval' command, exactly one expression argument required")
 		}
-		if args[0] == "help" {
-			help()
-			return
-		}
-		if args[0] == "repl" {
-			enterRepl(engine, comp)
-			return
-		}
-		panic("Bad arguments")
-	} else {
+		evalExpr(engine, comp, args[1])
+	case "help":
+		fmt.Print(HelpText)
+	case "repl":
 		enterRepl(engine, comp)
+	default:
+		panic("Bad command arguments, try `sint help`")
 	}
-}
-
-func help() {
-	fmt.Print(HelpText)
 }
 
 func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
