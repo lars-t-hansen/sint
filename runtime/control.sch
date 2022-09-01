@@ -1,8 +1,13 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
-;; TODO: High-value number operations
+;; TODO: High-value control operations
 ;;
 ;; call/cc but only one-shot, same-goroutine, upward
+;; dynamic-wind, it is used by the I/O system
+;; for-each
+;; filter
+;; every?
+;; some?
 
 ;; (sint:compile-toplevel-phrase x) interprets the datum `x` as top-level source code and returns a
 ;; thunk that evaluates that code and returns its result.
@@ -43,12 +48,6 @@
   (if (not (procedure? receiver))
       (error "call-with-values: expected procedure: " receiver))
   (sint:apply receiver (sint:receive-values thunk)))
-
-;; TODO:
-;; filter
-;; for-each
-;; every?
-;; some?
 
 ;; TODO: what's the appropriate termination condition for multi-argument map?
 ;; Here it's "first list", but spec may have "shortest list".

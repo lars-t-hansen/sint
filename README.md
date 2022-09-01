@@ -50,14 +50,11 @@ some basic ergonomics, and more primitives and library, esp for I/O
 ### High priority (for MVP)
 
 - implement let-values, because multiple values are ubiquitous
-- ports and some I/O, possibly including string ports
+- ports and some I/O
 - regexes and string matching.  Syntax for literal regex could be #/.../ for example
 - high-value number operations, see numbers.sch
 - high-value control operations, see control.sch
-- load procedure
-- exit procedure and maybe emergency-exit
-- features, for hack value
-- basic error handling & recovery during execution; document it too
+- basic error handling & recovery during execution; document it too.  this includes what happens when we panic in a goroutine, and when a Go builtin panics.
 - a verb to load and run a file
 - clean up repl.go
 
@@ -95,3 +92,5 @@ Maybe also:
 - lots of documentation: variable names, function names, function comments, doc strings, ...
 - inexact complexes
 - all missing special forms
+- compiled code can probably use init() to register an init callback that will be invoked by initCompiledCode, so that the latter need not be updated every time we add a new file
+- string ports

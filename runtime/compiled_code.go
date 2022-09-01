@@ -12,8 +12,10 @@ func InitCompiled(c *Scheme) {
 	initControl(c)
 	initEquivalence(c)
 	initExceptions(c)
+	initIo(c)
 	initNumbers(c)
 	initPairs(c)
-	initSymbols(c)
 	initStrings(c)
+	initSymbols(c)
+	initSystem(c)
 }
