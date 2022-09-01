@@ -48,16 +48,17 @@ Try `sint help`
 
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
 - ports and basic text I/O
+- basic error handling & recovery during execution; document it too.  this includes what
+  happens when we panic in a goroutine, and when a Go builtin panics.
+- fix error reporting: the pretty printer in `error` is really dumb
 - high-value number operations, see numbers.sch
 - high-value control operations, see control.sch
-- regexes and string matching.  Syntax for literal regex could be #/.../ for example
 - high-value nonstandard string operations, taken from the Go library
-- basic error handling & recovery during execution; document it too.  this includes what happens when we panic in a goroutine, and when a Go builtin panics.
-- fix error reporting: the pretty printer in `error` is really dumb
 
 Maybe also:
 
-- implement select, at least in a limited form
+- regexes and string matching.  Syntax for literal regex could be #/.../ for example
+- implement `select`, at least in a limited form
 
 ## Backlog (this is actually much longer)
 
