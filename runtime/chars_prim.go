@@ -1,12 +1,6 @@
 // Character primitive procedures.
 //
 // R7RS 6.6, Characters
-// TODO: char=?
-// TODO: char>?
-// TODO: char>=?
-// TODO: char<?
-// TODO: char<=?
-// TODO: (and probably many others)
 
 package runtime
 
@@ -19,7 +13,11 @@ func initCharPrimitives(c *Scheme) {
 	addPrimitive(c, "char?", 1, false, primCharp)
 	addPrimitive(c, "char->integer", 1, false, primChar2Int)
 	addPrimitive(c, "integer->char", 1, false, primInt2Char)
-
+	addPrimitive(c, "char=?", 1, false, primCharEq)
+	addPrimitive(c, "char>?", 1, false, primCharGt)
+	addPrimitive(c, "char>=?", 1, false, primCharGe)
+	addPrimitive(c, "char<?", 1, false, primCharLt)
+	addPrimitive(c, "char<=?", 1, false, primCharLe)
 }
 
 func primCharp(ctx *Scheme, args []Val) (Val, int) {
@@ -49,4 +47,56 @@ func primInt2Char(c *Scheme, args []Val) (Val, int) {
 		return &Char{Value: rune(n.Int64())}, 1
 	}
 	panic("char->integer: Not an exact integer: " + args[0].String())
+}
+
+func primCharEq(c *Scheme, args []Val) (Val, int) {
+	c1, c2 := checkBothChars(args[0], args[1], "char=?")
+	if c1 == c2 {
+		return c.TrueVal, 1
+	}
+	return c.FalseVal, 1
+}
+
+func primCharGt(c *Scheme, args []Val) (Val, int) {
+	c1, c2 := checkBothChars(args[0], args[1], "char>?")
+	if c1 > c2 {
+		return c.TrueVal, 1
+	}
+	return c.FalseVal, 1
+}
+
+func primCharGe(c *Scheme, args []Val) (Val, int) {
+	c1, c2 := checkBothChars(args[0], args[1], "char>=?")
+	if c1 >= c2 {
+		return c.TrueVal, 1
+	}
+	return c.FalseVal, 1
+}
+
+func primCharLt(c *Scheme, args []Val) (Val, int) {
+	c1, c2 := checkBothChars(args[0], args[1], "char<?")
+	if c1 < c2 {
+		return c.TrueVal, 1
+	}
+	return c.FalseVal, 1
+}
+
+func primCharLe(c *Scheme, args []Val) (Val, int) {
+	c1, c2 := checkBothChars(args[0], args[1], "char<=?")
+	if c1 <= c2 {
+		return c.TrueVal, 1
+	}
+	return c.FalseVal, 1
+}
+
+func checkBothChars(v0 Val, v1 Val, name string) (rune, rune) {
+	c0, ok0 := v0.(*Char)
+	if !ok0 {
+		panic(name + ": not a character: " + v0.String())
+	}
+	c1, ok1 := v1.(*Char)
+	if !ok1 {
+		panic(name + ": not a character: " + v1.String())
+	}
+	return c0.Value, c1.Value
 }

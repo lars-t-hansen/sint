@@ -52,9 +52,12 @@ some basic ergonomics, and more primitives and library, esp for I/O
 - implement let-values, because multiple values are ubiquitous
 - ports and some I/O, possibly including string ports
 - regexes and string matching.  Syntax for literal regex could be #/.../ for example
-- high-value library operations, there are quite a few
-- basic error handling & recovery during execution
-- integer division operators and maybe a few other other numerics
+- high-value number operations, see numbers.sch
+- high-value control operations, see control.sch
+- load procedure
+- exit procedure and maybe emergency-exit
+- features, for hack value
+- basic error handling & recovery during execution; document it too
 - a verb to load and run a file
 - clean up repl.go
 
@@ -64,6 +67,12 @@ Maybe also:
 
 ### Backlog (this is actually much longer)
 
+- vectors
+- bytevectors
+- `dynamic-wind` and its abbreviation (in sint) `unwind-protect`
+- everything to do with exceptions
+- parameters - these are per-goroutine unwind-protected globals...
+- everything to do with environments, if we care
 - locks, for safe concurrent access to variables
 - maybe some notion of atomic operation, though in scheme this means atomic-set-car!,
   vector-set-car!, etc, and also data-structure specific cmpxchg operations, and

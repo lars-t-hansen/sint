@@ -1,5 +1,9 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
+;; TODO: High-value number operations
+;;
+;; call/cc but only one-shot, same-goroutine, upward
+
 ;; (sint:compile-toplevel-phrase x) interprets the datum `x` as top-level source code and returns a
 ;; thunk that evaluates that code and returns its result.
 

@@ -3,6 +3,20 @@
 ;; (sint:exact-integer? obj) => bool is a primitive
 ;; (sint:inexact-float? obj) => bool is a primitive
 
+;; High-value primitives:
+;; finite?
+;; infinite?
+;; abs
+;; quotient
+;; remainder
+;; floor
+;; ceiling
+;; truncate
+;; round
+;; expt
+;; square
+;; sqrt
+
 (define (number? obj)
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
 
@@ -55,9 +69,6 @@
   (if (not (number? z))
       (error "nan?: not a number: " z))
   #f)
-
-;; finite?
-;; infinite?
 
 (define (zero? z)
   (= z 0))

@@ -1,7 +1,6 @@
 // String primitive procedures.
 //
 // R7RS 6.7, Strings
-// TODO: Lots.  See README.md
 
 package runtime
 
