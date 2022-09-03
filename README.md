@@ -46,6 +46,8 @@ Try `sint help`
 
 ## MVP to-do list
 
+- Number syntax is really wonky, "-1" doesn't work.  Clean this up.
+- "round" needs to round, not truncate
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
 - ports and basic text I/O
 - basic error handling & recovery during execution; document it too.  this includes what
@@ -54,14 +56,12 @@ Try `sint help`
 - high-value number operations, see numbers.sch
 - high-value control operations, see control.sch
 - high-value nonstandard string operations, taken from the Go library
-
-Maybe also:
-
-- regexes and string matching.  Syntax for literal regex could be #/.../ for example
-- implement `select`, at least in a limited form
+- clean up documentation
 
 ## Backlog (this is actually much longer)
 
+- regexes and string matching.  Syntax for literal regex could be #/.../ for example
+- implement `select`, at least in a limited form
 - a verb to load and run a file
 - vectors
 - bytevectors

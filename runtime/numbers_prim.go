@@ -18,6 +18,8 @@ import (
 func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "sint:inexact-float?", 1, false, primInexactFloatp)
 	addPrimitive(c, "sint:exact-integer?", 1, false, primExactIntegerp)
+	addPrimitive(c, "finite?", 1, false, primFinitep)
+	addPrimitive(c, "infinite?", 1, false, primInfinitep)
 	addPrimitive(c, "+", 0, true, primAdd)
 	addPrimitive(c, "-", 1, true, primSub)
 	addPrimitive(c, "*", 0, true, primMul)
@@ -31,6 +33,11 @@ func initNumbersPrimitives(c *Scheme) {
 	addPrimitive(c, "string->number", 1, true, primString2Number)
 	addPrimitive(c, "inexact", 1, false, primInexact)
 	addPrimitive(c, "exact", 1, false, primExact)
+	addPrimitive(c, "abs", 1, false, primAbs)
+	addPrimitive(c, "floor", 1, false, primFloor)
+	addPrimitive(c, "ceiling", 1, false, primCeiling)
+	addPrimitive(c, "truncate", 1, false, primTruncate)
+	addPrimitive(c, "round", 1, false, primRound)
 }
 
 func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
@@ -45,6 +52,34 @@ func primExactIntegerp(ctx *Scheme, args []Val) (Val, int) {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
+}
+
+func primFinitep(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if _, ok := v.(*big.Int); ok {
+		return ctx.TrueVal, 1
+	}
+	if fv, ok := v.(*big.Float); ok {
+		if fv.IsInf() {
+			return ctx.FalseVal, 1
+		}
+		return ctx.TrueVal, 1
+	}
+	panic("finite?: not a number: " + v.String())
+}
+
+func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if _, ok := v.(*big.Int); ok {
+		return ctx.TrueVal, 1
+	}
+	if fv, ok := v.(*big.Float); ok {
+		if fv.IsInf() {
+			return ctx.TrueVal, 1
+		}
+		return ctx.FalseVal, 1
+	}
+	panic("infinite?: not a number: " + v.String())
 }
 
 func primAdd(c *Scheme, args []Val) (Val, int) {
@@ -235,6 +270,66 @@ func primExact(ctx *Scheme, args []Val) (Val, int) {
 		return iv, 1
 	}
 	panic("exact: Not a number: " + v.String())
+}
+
+func primAbs(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if iv, ok := v.(*big.Int); ok {
+		var r *big.Int
+		return r.Abs(iv), 1
+	}
+	if fv, ok := v.(*big.Float); ok {
+		var r *big.Float
+		return r.Abs(fv), 1
+	}
+	panic("abs: Not a number: " + v.String())
+}
+
+const (
+	TowardNegativeInfinity = iota
+	TowardPositiveInfinity
+	None
+	Round
+)
+
+func primFloor(ctx *Scheme, args []Val) (Val, int) {
+	return roundToInteger(ctx, args[0], "floor", TowardNegativeInfinity)
+}
+
+func primCeiling(ctx *Scheme, args []Val) (Val, int) {
+	return roundToInteger(ctx, args[0], "ceiling", TowardPositiveInfinity)
+}
+
+func primTruncate(ctx *Scheme, args []Val) (Val, int) {
+	return roundToInteger(ctx, args[0], "truncate", None)
+}
+
+func primRound(ctx *Scheme, args []Val) (Val, int) {
+	return roundToInteger(ctx, args[0], "round", Round)
+}
+
+func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
+	if _, ok := v.(*big.Int); ok {
+		return v, 1
+	}
+	if fv, ok := v.(*big.Float); ok {
+		iv, acc := fv.Int(nil)
+		if iv == nil {
+			return fv, 1
+		}
+		if adjust == TowardNegativeInfinity && acc == big.Above {
+			// TODO: Cache the "1"
+			iv.Sub(iv, big.NewInt(1))
+		} else if adjust == TowardPositiveInfinity && acc == big.Below {
+			// TODO: Cache the "1"
+			iv.Add(iv, big.NewInt(1))
+		} else if adjust == Round && acc != big.Exact {
+			// FIXME: need to look at the difference between the rounded value and
+			// the original value, and round to even
+		}
+		return iv, 1
+	}
+	panic(name + ": Not a number: " + v.String())
 }
 
 func add2(a Val, b Val) Val {

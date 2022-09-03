@@ -4,10 +4,6 @@
 ;;
 ;; call/cc but only one-shot, same-goroutine, upward
 ;; dynamic-wind, it is used by the I/O system
-;; for-each
-;; filter
-;; every?
-;; some?
 
 ;; (sint:compile-toplevel-phrase x) interprets the datum `x` as top-level source code and returns a
 ;; thunk that evaluates that code and returns its result.
@@ -49,9 +45,6 @@
       (error "call-with-values: expected procedure: " receiver))
   (sint:apply receiver (sint:receive-values thunk)))
 
-;; TODO: what's the appropriate termination condition for multi-argument map?
-;; Here it's "first list", but spec may have "shortest list".
-;;
 ;; TODO: detect non-list arguments.
 
 (define map
@@ -63,19 +56,90 @@
                         (map1 fn (cdr l0))))))
            (map2
             (lambda (fn l0 l1)
-              (if (null? l0)
+              (if (or (null? l0) (null? l1))
                   '()
                   (cons (fn (car l0) (car l1))
                         (map2 fn (cdr l0) (cdr l1))))))
            (mapn
             (lambda (fn ls)
-              (if (null? (car ls))
+              (if (some? null? ls)
                   '()
                   (cons (apply fn (map1 car ls))
                         (mapn fn (map1 cdr ls)))))))
     (lambda (fn l0 . rest)
-      (if (null? rest)
-          (map1 fn l0)
-          (if (null? (cdr rest))
-              (map2 fn l0 (car rest))
+      (cond ((null? rest)
+             (map1 fn l0))
+            ((null? (cdr rest))
+             (map2 fn l0 (car rest)))
+            (else
               (mapn fn (cons l0 rest)))))))
+
+;; TODO: detect non-list arguments.
+
+(define for-each
+  (letrec ((each1
+            (lambda (fn l0)
+              (if (null? l0)
+                  (unspecified)
+                  (begin
+                    (fn (car l0))
+                    (each1 fn (cdr l0))))))
+           (each2
+            (lambda (fn l0 l1)
+              (if (or (null? l0) (null? l1))
+                  (unspecified)
+                  (begin
+                    (fn (car l0) (car l1))
+                    (each2 fn (cdr l0) (cdr l1))))))
+           (eachn
+            (lambda (fn ls)
+              (if (some? null? ls)
+                  (unspecified)
+                  (begin
+                    (apply fn (each1 car ls))
+                    (eachn fn (each1 cdr ls)))))))
+    (lambda (fn l0 . rest)
+      (cond ((null? rest)
+             (each1 fn l0))
+            ((null? (cdr rest))
+             (each2 fn l0 (car rest)))
+            (else
+             (eachn fn (cons l0 rest)))))))
+
+;; TODO: Multi-list version?
+;; TODO: detect non-list argument
+
+(define every?
+  (letrec ((loop
+            (lambda (p l)
+              (cond ((null? l) #t)
+                    ((not (p (car l))) #f)
+                    (else (loop p (cdr l)))))))
+    (lambda (p l)
+      (loop p l))))
+
+;; TODO: Multi-list version?
+;; TODO: detect non-list argument
+
+(define some?
+  (letrec ((loop
+            (lambda (p l)
+              (cond ((null? l) #f)
+                    ((p (car l)) #t)
+                    (else (loop p (cdr l)))))))
+    (lambda (p l)
+      (loop p l))))
+
+;; TODO: Multi-list version?
+;; TODO: detect non-list argument
+
+(define filter
+  (letrec ((loop
+            (lambda (p l)
+              (cond ((null? l) '())
+                    ((p (car l))
+                     (cons (car l) (loop p (cdr l))))
+                    (else
+                     (loop p (cdr l)))))))
+    (lambda (p l)
+      (loop p l))))

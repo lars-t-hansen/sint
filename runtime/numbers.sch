@@ -1,20 +1,11 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
-;; (sint:exact-integer? obj) => bool is a primitive
-;; (sint:inexact-float? obj) => bool is a primitive
+;; R7RS 6.2 - Numbers
 
 ;; High-value primitives:
-;; finite?
-;; infinite?
-;; abs
 ;; quotient
 ;; remainder
-;; floor
-;; ceiling
-;; truncate
-;; round
 ;; expt
-;; square
 ;; sqrt
 
 (define (number? obj)
@@ -26,8 +17,6 @@
 (define (real? obj)
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
 
-;; The floats are technically always rational though this is not
-;; a useful fact.
 (define (rational? obj)
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
 
