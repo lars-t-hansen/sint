@@ -31,6 +31,9 @@ type SharedScheme struct {
 	// atomic operators on a plain int32.
 	nextGensym int32
 
+	// Counter for parameters.  Atomic as for gensym.
+	nextParameterId int32
+
 	//////////////////////////////////////////////////////////////////////////
 	//
 	// Immutable state
@@ -68,17 +71,23 @@ type SharedScheme struct {
 	ReturnSym        *Symbol
 	TabSym           *Symbol
 	SpaceSym         *Symbol
+
+	// Well-known parameter IDs
+	CurrentInputPortId  int32
+	CurrentOutputPortId int32
+	CurrentErrorPortId  int32
 }
 
 func newSharedScheme() *SharedScheme {
 	s := &SharedScheme{
-		UnspecifiedVal: &Unspecified{},
-		UndefinedVal:   &Undefined{},
-		NullVal:        &Null{},
-		TrueVal:        &True{},
-		FalseVal:       &False{},
-		EofVal:         &EofObject{},
-		nextGensym:     1000,
+		UnspecifiedVal:  &Unspecified{},
+		UndefinedVal:    &Undefined{},
+		NullVal:         &Null{},
+		TrueVal:         &True{},
+		FalseVal:        &False{},
+		EofVal:          &EofObject{},
+		nextGensym:      1000,
+		nextParameterId: 100,
 	}
 
 	s.AndSym = s.Intern("and")
@@ -105,6 +114,11 @@ func newSharedScheme() *SharedScheme {
 	s.ReturnSym = s.Intern("return")
 	s.TabSym = s.Intern("tab")
 	s.SpaceSym = s.Intern("space")
+
+	// Scheme code knows these values
+	s.CurrentInputPortId = 1
+	s.CurrentOutputPortId = 2
+	s.CurrentErrorPortId = 3
 
 	return s
 }
@@ -137,6 +151,11 @@ type Scheme struct {
 	// This is interpreted in the context of the number-of-values flag passed back
 	// in the evaluator
 	MultiVals []Val
+
+	// Parameters are per-thread.  These are keyed by the parameter identifier, which
+	// is globally unique.  Since this is per-thread it does not need to be synchronized,
+	// but it must be initialized properly from the parent map.
+	Parameters map[int]Val
 }
 
 // oldScheme can be nil, in which case we create a new globally shared
@@ -157,8 +176,16 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 		FalseVal:       ss.FalseVal,
 		EofVal:         ss.EofVal,
 		Zero:           big.NewInt(0),
+		Parameters:     make(map[int]Val),
 	}
 
+	// Inherit initial parameter values from oldScheme.
+	// We're currently on oldScheme's thread and can copy without synchronization.
+	if oldScheme != nil {
+		for k, v := range oldScheme.Parameters {
+			s.Parameters[k] = v
+		}
+	}
 	return s
 }
 
