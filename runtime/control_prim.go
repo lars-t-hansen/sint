@@ -5,6 +5,8 @@
 package runtime
 
 import (
+	"math"
+	"math/big"
 	. "sint/core"
 )
 
@@ -15,6 +17,9 @@ func initControlPrimitives(c *Scheme) {
 	addPrimitive(c, "values", 0, true, primValues)
 	addPrimitive(c, "unspecified", 0, false, primUnspecified)
 	addPrimitive(c, "sint:receive-values", 1, false, primReceiveValues)
+	addPrimitive(c, "sint:new-tls-key", 0, false, primNewTlsKey)
+	addPrimitive(c, "sint:read-tls-value", 1, false, primReadTlsValue)
+	addPrimitive(c, "sint:write-tls-value", 2, false, primWriteTlsValue)
 
 	// See runtime/control.sch.  This is a procedure with the signature (fn l)
 	// where the `fn` must be a procedure and `l` must be a proper list.
@@ -101,4 +106,37 @@ func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
 
 func primUnspecified(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
+}
+
+func primNewTlsKey(ctx *Scheme, args []Val) (Val, int) {
+	return big.NewInt(int64(ctx.AllocateTlsKey())), 1
+}
+
+func primReadTlsValue(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	if iv, ok := v.(*big.Int); ok {
+		if iv.IsInt64() {
+			n := iv.Int64()
+			if n >= 0 && n <= math.MaxInt32 {
+				return ctx.GetTlsValue(int32(n)), 1
+			}
+		}
+		return ctx.UnspecifiedVal, 1
+	}
+	panic("sint:read-tls-value: key must be exact integer: " + v.String())
+}
+
+func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
+	v0 := args[0]
+	v1 := args[1]
+	if iv, ok := v0.(*big.Int); ok {
+		if iv.IsInt64() {
+			n := iv.Int64()
+			if n >= 0 && n <= math.MaxInt32 {
+				ctx.SetTlsValue(int32(n), v1)
+			}
+		}
+		return ctx.UnspecifiedVal, 1
+	}
+	panic("sint:write-tls-value: key must be exact integer: " + v0.String())
 }

@@ -46,6 +46,9 @@ Try `sint help`
 
 ## MVP to-do list
 
+- parameters:
+  - support parameterize in the compiler
+  - test more
 - Number syntax is really wonky, "-1" doesn't work.  Clean this up.
 - "round" needs to round, not truncate
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)

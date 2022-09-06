@@ -45,6 +45,25 @@
       (error "call-with-values: expected procedure: " receiver))
   (sint:apply receiver (sint:receive-values thunk)))
 
+;; A parameter function takes zero or one arguments.  When called with zero, it returns the current
+;; value.  When called with one, it sets the value to its argument after applying the conversion
+;; function.
+;;
+;; TODO: We should mark the parameter object as a parameter, somehow.  This could be done by keeping
+;; it in a weak table, or by setting a flag on it.  Parameterize would then check that flag.
+
+(define (make-parameter init . rest)
+  (let ((conv (if (null? rest) (lambda (x) x) (car rest)))
+        (key  (sint:new-tls-key)))
+    (sint:write-tls-value key (conv init))
+    (lambda args
+      (cond ((null? args)
+             (sint:read-tls-value key))
+            ((null? cdr rest)
+             (sint:write-tls-value key (conv (car rest))))
+            (else
+             (error "Invalid call to parameter function"))))))
+
 ;; TODO: detect non-list arguments.
 
 (define map

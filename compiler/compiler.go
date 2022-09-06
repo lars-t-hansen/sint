@@ -44,6 +44,7 @@ func NewCompiler(s *SharedScheme) *Compiler {
 	c.keywords[s.LetStarValuesSym] = true
 	c.keywords[s.LetrecSym] = true
 	c.keywords[s.OrSym] = true
+	c.keywords[s.ParameterizeSym] = true
 	c.keywords[s.QuoteSym] = true
 	c.keywords[s.SetSym] = true
 	// arrowSym and elseSym are not reserved
@@ -207,6 +208,9 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			}
 			if kwd == c.s.OrSym {
 				return c.compileOr(e, llen, env)
+			}
+			if kwd == c.s.ParameterizeSym {
+				return c.compileParameterize(e, llen, env)
 			}
 			if kwd == c.s.QuoteSym {
 				return c.compileQuote(e, llen, env)
@@ -539,6 +543,22 @@ func (c *Compiler) compileOr(l Val, llen int, env *cenv) (Code, error) {
 		e = c.list(c.s.LetSym, c.list(c.list(vname, first)), e)
 	}
 	return c.compileExpr(e, env)
+}
+
+func (c *Compiler) compileParameterize(l Val, llen int, env *cenv) (Code, error) {
+	// (parameterize ((p-expr0 v-expr0) ...) expr0 expr1 ...) becomes
+	//    (let ((p-name0 p-expr0) ... (v-name0 v-expr0) ...)
+	//      (let ((old-name0 (p-name0)) ...)
+	//        (sint:dynamic-wind
+	//           (lambda ()
+	//             (p-name0 v-name0) ...)
+	//           (lambda ()
+	//              expr0 expr1 ...)
+	//           (lambda ()
+	//             (p-name0 old-name0) ...))))
+	// The p-name*, v-name*, and old-name* are all fresh names.
+	// We use sint:dynamic-wind to avoid capturing any dynamic-wind that's lexically bound.
+	return c.reportError("`parameterize` not implemented yet")
 }
 
 func (c *Compiler) compileQuote(l Val, llen int, env *cenv) (Code, error) {

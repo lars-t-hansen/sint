@@ -9,6 +9,15 @@ import (
 	"sync/atomic"
 )
 
+// Well-known tls key values.  The ones below 100 are embedded in Scheme code as
+// constants.
+const (
+	CurrentInputPort  = 1
+	CurrentOutputPort = 2
+	CurrentErrorPort  = 3
+	FirstUserTlsKey   = 100
+)
+
 // State shared between goroutines of the same Scheme instance.  Some of these
 // values are copied into the per-goroutine state for easy access.
 type SharedScheme struct {
@@ -31,8 +40,12 @@ type SharedScheme struct {
 	// atomic operators on a plain int32.
 	nextGensym int32
 
-	// Counter for parameters.  Atomic as for gensym.
-	nextParameterId int32
+	// Counter for tls-value keys.  Atomic as for nextGensym.
+	//
+	// Keys have to be globally unique since a tls key (the internal name for a parameter)
+	// can be created on one thread but later used on a different thread; the name
+	// must not reference some other parameter on the latter thread.
+	nextTlsKey int32
 
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -63,6 +76,7 @@ type SharedScheme struct {
 	LetStarValuesSym *Symbol
 	LetrecSym        *Symbol
 	OrSym            *Symbol
+	ParameterizeSym  *Symbol
 	QuoteSym         *Symbol
 	SetSym           *Symbol
 	ArrowSym         *Symbol
@@ -71,23 +85,18 @@ type SharedScheme struct {
 	ReturnSym        *Symbol
 	TabSym           *Symbol
 	SpaceSym         *Symbol
-
-	// Well-known parameter IDs
-	CurrentInputPortId  int32
-	CurrentOutputPortId int32
-	CurrentErrorPortId  int32
 }
 
 func newSharedScheme() *SharedScheme {
 	s := &SharedScheme{
-		UnspecifiedVal:  &Unspecified{},
-		UndefinedVal:    &Undefined{},
-		NullVal:         &Null{},
-		TrueVal:         &True{},
-		FalseVal:        &False{},
-		EofVal:          &EofObject{},
-		nextGensym:      1000,
-		nextParameterId: 100,
+		UnspecifiedVal: &Unspecified{},
+		UndefinedVal:   &Undefined{},
+		NullVal:        &Null{},
+		TrueVal:        &True{},
+		FalseVal:       &False{},
+		EofVal:         &EofObject{},
+		nextGensym:     1000,
+		nextTlsKey:     FirstUserTlsKey,
 	}
 
 	s.AndSym = s.Intern("and")
@@ -106,6 +115,7 @@ func newSharedScheme() *SharedScheme {
 	s.LetStarValuesSym = s.Intern("let*-values")
 	s.LetrecSym = s.Intern("letrec")
 	s.OrSym = s.Intern("or")
+	s.ParameterizeSym = s.Intern("parameterize")
 	s.QuoteSym = s.Intern("quote")
 	s.SetSym = s.Intern("set!")
 	s.ArrowSym = s.Intern("=>")
@@ -114,11 +124,6 @@ func newSharedScheme() *SharedScheme {
 	s.ReturnSym = s.Intern("return")
 	s.TabSym = s.Intern("tab")
 	s.SpaceSym = s.Intern("space")
-
-	// Scheme code knows these values
-	s.CurrentInputPortId = 1
-	s.CurrentOutputPortId = 2
-	s.CurrentErrorPortId = 3
 
 	return s
 }
@@ -152,10 +157,11 @@ type Scheme struct {
 	// in the evaluator
 	MultiVals []Val
 
-	// Parameters are per-thread.  These are keyed by the parameter identifier, which
-	// is globally unique.  Since this is per-thread it does not need to be synchronized,
-	// but it must be initialized properly from the parent map.
-	Parameters map[int]Val
+	// The tls store is used for parameter values primarily, but can also be used
+	// for other things.  The key is global; see comments in SharedScheme.
+	// The store is initialized from the parent's store when the thread is forked.
+	//  Threads never merge.
+	tlsValues map[int32]Val
 }
 
 // oldScheme can be nil, in which case we create a new globally shared
@@ -176,14 +182,15 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 		FalseVal:       ss.FalseVal,
 		EofVal:         ss.EofVal,
 		Zero:           big.NewInt(0),
-		Parameters:     make(map[int]Val),
+		tlsValues:      make(map[int32]Val),
 	}
 
 	// Inherit initial parameter values from oldScheme.
 	// We're currently on oldScheme's thread and can copy without synchronization.
+	// TODO: Is this the best we can do for copying a map?
 	if oldScheme != nil {
-		for k, v := range oldScheme.Parameters {
-			s.Parameters[k] = v
+		for k, v := range oldScheme.tlsValues {
+			s.tlsValues[k] = v
 		}
 	}
 	return s
@@ -210,6 +217,22 @@ func (c *SharedScheme) Gensym(s string) *Symbol {
 
 func (c *Scheme) Gensym(s string) *Symbol {
 	return c.Shared.Gensym(s)
+}
+
+func (c *Scheme) AllocateTlsKey() int32 {
+	// TODO: Overflow checking
+	return atomic.AddInt32(&c.Shared.nextTlsKey, 1)
+}
+
+func (c *Scheme) GetTlsValue(key int32) Val {
+	if v, ok := c.tlsValues[key]; ok {
+		return v
+	}
+	return c.UnspecifiedVal
+}
+
+func (c *Scheme) SetTlsValue(key int32, v Val) {
+	c.tlsValues[key] = v
 }
 
 func (c *Scheme) EvalToplevel(expr Code) []Val {
