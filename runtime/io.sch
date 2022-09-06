@@ -16,12 +16,3 @@
         (lambda () #t)
         (lambda () (proc port))
         (lambda () (close-output-port port)))))
-
-(define (current-input-port)
-  (sint:read-parameter 1))
-
-(define (current-output-port)
-  (sint:read-parameter 2))
-
-(define (current-error-port)
-  (sint:read-parameter 3))

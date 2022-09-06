@@ -46,13 +46,15 @@ Try `sint help`
 
 ## MVP to-do list
 
-- parameters:
+- parameters (also see below):
   - support parameterize in the compiler
+  - this means dynamic-wind too
   - test more
 - Number syntax is really wonky, "-1" doesn't work.  Clean this up.
 - "round" needs to round, not truncate
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
 - ports and basic text I/O
+  - default ports are parameters
 - basic error handling & recovery during execution; document it too.  this includes what
   happens when we panic in a goroutine, and when a Go builtin panics.
 - fix error reporting: the pretty printer in `error` is really dumb

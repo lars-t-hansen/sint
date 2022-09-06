@@ -204,6 +204,71 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }}}}
 c.EvalToplevel(code3)
 code4 := 
+&Setglobal{Name:c.Intern("make-parameter"), Rhs:&Lambda{
+Fixed:1, Rest:true,
+Body:&Let{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Lambda{
+Fixed:1, Rest:false,
+Body:&Lexical{Levels:0, Offset:0}},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
+},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:new-tls-key")},
+}},
+}, Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:write-tls-value")},
+&Lexical{Levels:0, Offset:1},
+&Call{Exprs:[]Code{
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
+}},
+}},
+&Lambda{
+Fixed:0, Rest:true,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:read-tls-value")},
+&Lexical{Levels:1, Offset:1},
+}},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:2, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:write-tls-value")},
+&Lexical{Levels:1, Offset:1},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:2, Offset:1},
+}},
+}},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"Invalid call to parameter function"}},
+}},
+},
+}},
+}}}}}
+c.EvalToplevel(code4)
+code5 := 
 &Setglobal{Name:c.Intern("map"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -347,8 +412,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-c.EvalToplevel(code4)
-code5 := 
+c.EvalToplevel(code5)
+code6 := 
 &Setglobal{Name:c.Intern("for-each"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -495,8 +560,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-c.EvalToplevel(code5)
-code6 := 
+c.EvalToplevel(code6)
+code7 := 
 &Setglobal{Name:c.Intern("every?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -535,8 +600,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code6)
-code7 := 
+c.EvalToplevel(code7)
+code8 := 
 &Setglobal{Name:c.Intern("some?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -572,8 +637,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code7)
-code8 := 
+c.EvalToplevel(code8)
+code9 := 
 &Setglobal{Name:c.Intern("filter"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -623,5 +688,5 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code8)
+c.EvalToplevel(code9)
 }
