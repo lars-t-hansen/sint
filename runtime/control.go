@@ -269,6 +269,20 @@ Alternate:&Call{Exprs:[]Code{
 }}}}}
 c.EvalToplevel(code4)
 code5 := 
+&Setglobal{Name:c.Intern("dynamic-wind"), Rhs:&Lambda{
+Fixed:3, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:unwind-protect")},
+&Lexical{Levels:0, Offset:1},
+&Lexical{Levels:0, Offset:2},
+}},
+}}}}
+c.EvalToplevel(code5)
+code6 := 
 &Setglobal{Name:c.Intern("map"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -412,8 +426,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-c.EvalToplevel(code5)
-code6 := 
+c.EvalToplevel(code6)
+code7 := 
 &Setglobal{Name:c.Intern("for-each"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -560,8 +574,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-c.EvalToplevel(code6)
-code7 := 
+c.EvalToplevel(code7)
+code8 := 
 &Setglobal{Name:c.Intern("every?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -600,8 +614,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code7)
-code8 := 
+c.EvalToplevel(code8)
+code9 := 
 &Setglobal{Name:c.Intern("some?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -637,8 +651,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code8)
-code9 := 
+c.EvalToplevel(code9)
+code10 := 
 &Setglobal{Name:c.Intern("filter"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -688,5 +702,5 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code9)
+c.EvalToplevel(code10)
 }

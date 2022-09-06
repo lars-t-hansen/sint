@@ -235,53 +235,83 @@ func (c *Scheme) SetTlsValue(key int32, v Val) {
 	c.tlsValues[key] = v
 }
 
-func (c *Scheme) EvalToplevel(expr Code) []Val {
+// When we unwind, eval() returns a (value, EvalUnwind) where the value
+// will be interpreted by whatever stops the unwinding.
+const (
+	EvalUnwind = -1
+)
+
+func (c *Scheme) Error(message string) (Val, int) {
+	return c.WrapError(message), EvalUnwind
+}
+
+func (c *Scheme) WrapError(message string) Val {
+	// TODO: Not what we want, probably.
+	return &Str{Value: message}
+}
+
+func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
-func (c *Scheme) Invoke(proc Val, args []Val) []Val {
-	newCode, newEnv, prim := c.invokeSetup(proc, args)
+func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
+	newCode, newEnv, prim, err := c.invokeSetup(proc, args)
+	if err != nil {
+		return nil, err
+	}
 	var v Val
 	var k int
 	if prim != nil {
 		v, k = prim(c, args)
 	} else {
 		v, k = c.eval(newCode, newEnv)
+		if k == EvalUnwind {
+			return nil, v
+		}
 	}
 	return c.captureValues(v, k)
 }
 
-func (c *Scheme) InvokeConcurrent(proc Val) {
+func (c *Scheme) InvokeConcurrent(proc Val) Val {
 	// This is always (sint:go thunk) and there are "no" nullary primitive
 	// procedures, so let's keep it simple and ban primitive procedures from
 	// being used here.
-	newCode, newEnv, prim := c.invokeSetup(proc, []Val{})
+	newCode, newEnv, prim, err := c.invokeSetup(proc, []Val{})
+	if err != nil {
+		return err
+	}
 	if prim != nil {
-		panic("Primitive procedures cannot be invoked concurrently")
+		return c.WrapError("Primitive procedures cannot be invoked concurrently")
 	}
 	go NewScheme(c).eval(newCode, newEnv)
+	return c.UnspecifiedVal
 }
 
-func (c *Scheme) captureValues(v Val, numVal int) []Val {
+func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
+	if numVal == EvalUnwind {
+		return nil, v
+	}
 	vs := []Val{v}
 	if numVal > 1 {
 		vs = append(vs, c.MultiVals[:numVal-1]...)
 	}
-	return vs
+	return vs, nil
 }
 
-func (c *Scheme) invokeSetup(proc Val, args []Val) (Code, *lexenv, func(*Scheme, []Val) (Val, int)) {
+func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv, thePrim func(*Scheme, []Val) (Val, int), theErr Val) {
 	if p, ok := proc.(*Procedure); ok {
 		if len(args) < p.Lam.Fixed {
-			panic("Not enough arguments") // TODO msg
+			theErr = c.WrapError("Not enough arguments") // TODO msg
+			return
 		}
 		if len(args) > p.Lam.Fixed && !p.Lam.Rest {
-			panic("Too many arguments") // TODO msg
+			theErr = c.WrapError("Too many arguments") // TODO msg
+			return
 		}
 		if p.Lam.Body == nil {
-			return nil, nil, p.Primop
+			thePrim = p.Primop
+			return
 		}
-		var newEnv *lexenv = nil
 		// args (really the underlying vals) is freshly allocated,
 		// so it's OK to use that storage here.
 		if !p.Lam.Rest {
@@ -312,10 +342,11 @@ func (c *Scheme) invokeSetup(proc Val, args []Val) (Code, *lexenv, func(*Scheme,
 			}
 			newEnv = &lexenv{slots: newSlots, link: p.Env}
 		}
-		return p.Lam.Body, newEnv, nil
-	} else {
-		panic("Invoke: Not a procedure" /*+ e.Exprs[0].String() + "\n" + proc.String()*/)
+		theCode = p.Lam.Body
+		return
 	}
+	theErr = c.WrapError("Invoke: Not a procedure" /*+ e.Exprs[0].String() + "\n" + proc.String()*/)
+	return
 }
 
 type lexenv struct {
@@ -330,7 +361,11 @@ again:
 	case *Quote:
 		return instr.Value, 1
 	case *If:
-		if v, _ := c.eval(instr.Test, env); v != c.FalseVal {
+		v, nres := c.eval(instr.Test, env)
+		if nres == EvalUnwind {
+			return v, nres
+		}
+		if v != c.FalseVal {
 			expr = instr.Consequent
 		} else {
 			expr = instr.Alternate
@@ -340,14 +375,23 @@ again:
 		if len(instr.Exprs) == 0 {
 			return c.UnspecifiedVal, 1
 		}
-		c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
+		_, unwindVal := c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
+		if unwindVal != nil {
+			return unwindVal, EvalUnwind
+		}
 		expr = instr.Exprs[len(instr.Exprs)-1]
 		goto again
 	case *Call:
-		vals := c.evalExprs(instr.Exprs, env)
+		vals, unwindVal := c.evalExprs(instr.Exprs, env)
+		if unwindVal != nil {
+			return unwindVal, EvalUnwind
+		}
 		maybeProc := vals[0]
 		args := vals[1:]
-		newCode, newEnv, prim := c.invokeSetup(maybeProc, args)
+		newCode, newEnv, prim, err := c.invokeSetup(maybeProc, args)
+		if err != nil {
+			return err, EvalUnwind
+		}
 		if prim != nil {
 			return prim(c, args)
 		}
@@ -356,8 +400,14 @@ again:
 		goto again
 	//			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 	case *Apply:
-		proc, _ := c.eval(instr.Proc, env)
-		argList, _ := c.eval(instr.Args, env)
+		proc, procRes := c.eval(instr.Proc, env)
+		if procRes == EvalUnwind {
+			return proc, procRes
+		}
+		argList, argRes := c.eval(instr.Args, env)
+		if argRes == EvalUnwind {
+			return argList, argRes
+		}
 		args := []Val{}
 		for {
 			if argList == c.NullVal {
@@ -365,12 +415,15 @@ again:
 			}
 			a, ok := argList.(*Cons)
 			if !ok {
-				panic("sint:apply: Not a list") // TODO: msg
+				return c.Error("sint:apply: Not a list") // TODO: msg
 			}
 			args = append(args, a.Car)
 			argList = a.Cdr
 		}
-		newCode, newEnv, prim := c.invokeSetup(proc, args)
+		newCode, newEnv, prim, err := c.invokeSetup(proc, args)
+		if err != nil {
+			return err, EvalUnwind
+		}
 		if prim != nil {
 			return prim(c, args)
 		}
@@ -380,7 +433,10 @@ again:
 	case *Lambda:
 		return &Procedure{Lam: instr, Env: env, Primop: nil}, 1
 	case *Let:
-		vals := c.evalExprs(instr.Exprs, env)
+		vals, unwindVal := c.evalExprs(instr.Exprs, env)
+		if unwindVal != nil {
+			return unwindVal, EvalUnwind
+		}
 		newEnv := &lexenv{slots: vals, link: env}
 		expr = instr.Body
 		env = newEnv
@@ -390,7 +446,7 @@ again:
 		// Then evaluate the exprs in order in the old env and assign values to slots, throwing if
 		// an expression returns the wrong number of values for the corresponding binding
 		// Then evaluate the body in that environment
-		panic("LetValues not implemented")
+		return c.Error("LetValues not implemented")
 	case *Letrec:
 		// TODO: Probably there's a more efficient way to do this?  Note we need
 		// fresh storage, so at a minimum we need to copy out of a master slice of
@@ -400,7 +456,10 @@ again:
 			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
 		newEnv := &lexenv{slots: slotvals, link: env}
-		vals := c.evalExprs(instr.Exprs, newEnv)
+		vals, unwindVal := c.evalExprs(instr.Exprs, newEnv)
+		if unwindVal != nil {
+			return unwindVal, EvalUnwind
+		}
 		for i, v := range vals {
 			slotvals[i] = v
 		}
@@ -414,7 +473,10 @@ again:
 		}
 		return rib.slots[instr.Offset], 1
 	case *Setlex:
-		rhs, _ := c.eval(instr.Rhs, env)
+		rhs, rhsRes := c.eval(instr.Rhs, env)
+		if rhsRes == EvalUnwind {
+			return rhs, rhsRes
+		}
 		rib := env
 		for levels := instr.Levels; levels > 0; levels-- {
 			rib = rib.link
@@ -424,11 +486,14 @@ again:
 	case *Global:
 		val := instr.Name.Value
 		if val == c.UndefinedVal {
-			panic("Undefined global variable '" + instr.Name.Name + "'")
+			return c.Error("Undefined global variable '" + instr.Name.Name + "'")
 		}
 		return val, 1
 	case *Setglobal:
-		rhs, _ := c.eval(instr.Rhs, env)
+		rhs, rhsRes := c.eval(instr.Rhs, env)
+		if rhsRes == EvalUnwind {
+			return rhs, rhsRes
+		}
 		instr.Name.Value = rhs
 		return c.UnspecifiedVal, 1
 	default:
@@ -436,11 +501,14 @@ again:
 	}
 }
 
-func (c *Scheme) evalExprs(es []Code, env *lexenv) []Val {
+func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
 	vs := []Val{}
 	for _, e := range es {
-		r, _ := c.eval(e, env)
+		r, nres := c.eval(e, env)
+		if nres == EvalUnwind {
+			return nil, r
+		}
 		vs = append(vs, r)
 	}
-	return vs
+	return vs, nil
 }

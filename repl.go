@@ -88,7 +88,11 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			continue
 		}
 		writer.WriteString(prog.String() + "\n")
-		results := engine.EvalToplevel(prog)
+		results, err := engine.EvalToplevel(prog)
+		if err != nil {
+			// FIXME
+			panic("Error: " + err.String())
+		}
 		if prog == nil {
 			continue
 		}
@@ -113,7 +117,11 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 		os.Stderr.WriteString("Aborting\n")
 		os.Exit(1)
 	}
-	results := engine.EvalToplevel(prog)
+	results, err := engine.EvalToplevel(prog)
+	if err != nil {
+		// FIXME
+		panic("Error: " + err.String())
+	}
 	for _, r := range results {
 		if r != engine.UnspecifiedVal {
 			runtime.Write(r, false, writer)

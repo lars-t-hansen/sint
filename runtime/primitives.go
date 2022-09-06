@@ -34,7 +34,7 @@ func primCompileToplevel(c *Scheme, args []Val) (Val, int) {
 	comp := compiler.NewCompiler(c.Shared)
 	prog, err := comp.CompileToplevel(args[0])
 	if err != nil {
-		panic(err.Error())
+		return c.Error(err.Error())
 	}
 	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}, 1
 }

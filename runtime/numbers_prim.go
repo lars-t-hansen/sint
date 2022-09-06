@@ -65,7 +65,7 @@ func primFinitep(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.TrueVal, 1
 	}
-	panic("finite?: not a number: " + v.String())
+	return ctx.Error("finite?: not a number: " + v.String())
 }
 
 func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
@@ -79,7 +79,7 @@ func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.FalseVal, 1
 	}
-	panic("infinite?: not a number: " + v.String())
+	return ctx.Error("infinite?: not a number: " + v.String())
 }
 
 func primAdd(c *Scheme, args []Val) (Val, int) {
@@ -96,7 +96,7 @@ func primAdd(c *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primSub(_ *Scheme, args []Val) (Val, int) {
+func primSub(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) == 1 {
 		switch v := args[0].(type) {
 		case *big.Int:
@@ -108,7 +108,7 @@ func primSub(_ *Scheme, args []Val) (Val, int) {
 			r.Neg(v)
 			return &r, 1
 		default:
-			panic("'-': Not a number: " + args[0].String())
+			return ctx.Error("'-': Not a number: " + args[0].String())
 		}
 	}
 	r := sub2(args[0], args[1])
@@ -132,7 +132,7 @@ func primMul(c *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primDiv(_ *Scheme, args []Val) (Val, int) {
+func primDiv(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) == 1 {
 		var fv big.Float
 		switch v := args[0].(type) {
@@ -141,7 +141,7 @@ func primDiv(_ *Scheme, args []Val) (Val, int) {
 		case *big.Float:
 			fv = *v
 		default:
-			panic("'-': Not a number: " + args[0].String())
+			return ctx.Error("'-': Not a number: " + args[0].String())
 		}
 		return div2(big.NewFloat(1), &fv), 1
 	}
@@ -206,7 +206,7 @@ func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
 	if fv, ok := v.(*big.Float); ok {
 		return &Str{Value: fmt.Sprint(fv)}, 1
 	}
-	panic("number->string: Not a number: " + v.String())
+	return ctx.Error("number->string: Not a number: " + v.String())
 }
 
 func primString2Number(ctx *Scheme, args []Val) (Val, int) {
@@ -214,7 +214,7 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 	if v, ok := args[0].(*Str); ok {
 		s = v
 	} else {
-		panic("string->number: bad string: " + args[0].String())
+		return ctx.Error("string->number: bad string: " + args[0].String())
 	}
 	radix := 10
 	if len(args) > 1 {
@@ -226,7 +226,7 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 	case 2, 8, 10, 16:
 		break
 	default:
-		panic("string->number: bad radix: " + strconv.Itoa(radix))
+		return ctx.Error("string->number: bad radix: " + strconv.Itoa(radix))
 	}
 	var iv big.Int
 	if _, ok := iv.SetString(s.Value, radix); ok {
@@ -235,13 +235,13 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 	// This is too aggressive.  The string could have been rejected because
 	// there are bad digits for the base.
 	if radix != 10 {
-		panic("string->number: bad radix for inexact number: " + strconv.Itoa(radix))
+		return ctx.Error("string->number: bad radix for inexact number: " + strconv.Itoa(radix))
 	}
 	var fv big.Float
 	if _, ok := fv.SetString(s.Value); ok {
 		return &fv, 1
 	}
-	panic("string->number: bad number: " + s.Value)
+	return ctx.Error("string->number: bad number: " + s.Value)
 }
 
 func primInexact(ctx *Scheme, args []Val) (Val, int) {
@@ -254,7 +254,7 @@ func primInexact(ctx *Scheme, args []Val) (Val, int) {
 	if _, ok := v.(*big.Float); ok {
 		return v, 1
 	}
-	panic("inexact: Not a number: " + v.String())
+	return ctx.Error("inexact: Not a number: " + v.String())
 }
 
 func primExact(ctx *Scheme, args []Val) (Val, int) {
@@ -265,11 +265,11 @@ func primExact(ctx *Scheme, args []Val) (Val, int) {
 	if fv, ok := v.(*big.Float); ok {
 		iv, _ := fv.Int(nil)
 		if iv == nil {
-			panic("exact: Infinity can't be converted to exact: " + v.String())
+			return ctx.Error("exact: Infinity can't be converted to exact: " + v.String())
 		}
 		return iv, 1
 	}
-	panic("exact: Not a number: " + v.String())
+	return ctx.Error("exact: Not a number: " + v.String())
 }
 
 func primAbs(ctx *Scheme, args []Val) (Val, int) {
@@ -282,7 +282,7 @@ func primAbs(ctx *Scheme, args []Val) (Val, int) {
 		var r *big.Float
 		return r.Abs(fv), 1
 	}
-	panic("abs: Not a number: " + v.String())
+	return ctx.Error("abs: Not a number: " + v.String())
 }
 
 const (
@@ -329,7 +329,7 @@ func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
 		}
 		return iv, 1
 	}
-	panic(name + ": Not a number: " + v.String())
+	return ctx.Error(name + ": Not a number: " + v.String())
 }
 
 func add2(a Val, b Val) Val {

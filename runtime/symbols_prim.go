@@ -22,22 +22,22 @@ func primSymbolp(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func primSymbol2String(c *Scheme, args []Val) (Val, int) {
+func primSymbol2String(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if s, ok := v.(*Symbol); ok {
 		return &Str{Value: s.Name}, 1
 	}
-	panic("symbol->string: Not a symbol: " + v.String())
+	return ctx.Error("symbol->string: Not a symbol: " + v.String())
 }
 
-func primString2Symbol(c *Scheme, args []Val) (Val, int) {
+func primString2Symbol(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if s, ok := v.(*Str); ok {
-		return c.Intern(s.Value), 1
+		return ctx.Intern(s.Value), 1
 	}
-	panic("string->symbol: Not a string: " + v.String())
+	return ctx.Error("string->symbol: Not a string: " + v.String())
 }
 
-func primGensym(c *Scheme, _ []Val) (Val, int) {
-	return c.Gensym("S"), 1
+func primGensym(ctx *Scheme, _ []Val) (Val, int) {
+	return ctx.Gensym("S"), 1
 }

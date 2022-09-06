@@ -44,7 +44,11 @@ func TestFibSexpr(t *testing.T) {
 	if invokeErr != nil {
 		panic(invokeErr.Error())
 	}
-	v := c.EvalToplevel(invokeProg)
+	v, err := c.EvalToplevel(invokeProg)
+	if err != nil {
+		// FIXME
+		panic("Error: " + err.String())
+	}
 	if v[0].(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")
 	}

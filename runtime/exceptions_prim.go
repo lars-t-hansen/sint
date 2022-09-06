@@ -8,10 +8,10 @@ func initExceptionsPrimitives(c *Scheme) {
 	addPrimitive(c, "sint:throw-string", 1, false, primThrowString)
 }
 
-func primThrowString(c *Scheme, args []Val) (Val, int) {
+func primThrowString(ctx *Scheme, args []Val) (Val, int) {
 	// This takes one argument, a string
 	if s, ok := args[0].(*Str); ok {
-		panic(s.Value)
+		return ctx.Error(s.Value)
 	}
-	panic("sint:throw-string: Not a string: " + args[0].String())
+	return ctx.Error("sint:throw-string: Not a string: " + args[0].String())
 }

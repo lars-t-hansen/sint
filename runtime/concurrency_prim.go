@@ -32,7 +32,7 @@ func primMakeChannel(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) > 0 {
 		iv, ok := args[0].(*big.Int)
 		if !ok || !iv.IsInt64() || iv.Int64() < 0 || iv.Int64() > math.MaxInt {
-			panic("make-channel: Invalid capacity: " + args[0].String())
+			return ctx.Error("make-channel: Invalid capacity: " + args[0].String())
 		}
 		capacity = int(iv.Int64())
 	}
@@ -51,7 +51,7 @@ func primChannelSend(ctx *Scheme, args []Val) (Val, int) {
 		ch.Ch <- args[1]
 		return ctx.UnspecifiedVal, 1
 	}
-	panic("channel-send: not a channel: " + args[0].String())
+	return ctx.Error("channel-send: not a channel: " + args[0].String())
 }
 
 func primChannelReceive(ctx *Scheme, args []Val) (Val, int) {
@@ -64,21 +64,21 @@ func primChannelReceive(ctx *Scheme, args []Val) (Val, int) {
 		ctx.MultiVals = []Val{ctx.TrueVal}
 		return v, 2
 	}
-	panic("channel-receive: not a channel: " + args[0].String())
+	return ctx.Error("channel-receive: not a channel: " + args[0].String())
 }
 
 func primChannelLength(ctx *Scheme, args []Val) (Val, int) {
 	if ch, ok := args[0].(*Chan); ok {
 		return big.NewInt(int64(len(ch.Ch))), 1
 	}
-	panic("channel-length: not a channel: " + args[0].String())
+	return ctx.Error("channel-length: not a channel: " + args[0].String())
 }
 
 func primChannelCapacity(ctx *Scheme, args []Val) (Val, int) {
 	if ch, ok := args[0].(*Chan); ok {
 		return big.NewInt(int64(cap(ch.Ch))), 1
 	}
-	panic("channel-capacity: not a channel: " + args[0].String())
+	return ctx.Error("channel-capacity: not a channel: " + args[0].String())
 }
 
 func primCloseChannel(ctx *Scheme, args []Val) (Val, int) {
@@ -86,5 +86,5 @@ func primCloseChannel(ctx *Scheme, args []Val) (Val, int) {
 		close(ch.Ch)
 		return ctx.UnspecifiedVal, 1
 	}
-	panic("close-channel: not a channel: " + args[0].String())
+	return ctx.Error("close-channel: not a channel: " + args[0].String())
 }

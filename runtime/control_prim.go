@@ -20,6 +20,7 @@ func initControlPrimitives(c *Scheme) {
 	addPrimitive(c, "sint:new-tls-key", 0, false, primNewTlsKey)
 	addPrimitive(c, "sint:read-tls-value", 1, false, primReadTlsValue)
 	addPrimitive(c, "sint:write-tls-value", 2, false, primWriteTlsValue)
+	addPrimitive(c, "sint:unwind-protect", 2, false, primUnwindProtect)
 
 	// See runtime/control.sch.  This is a procedure with the signature (fn l)
 	// where the `fn` must be a procedure and `l` must be a proper list.
@@ -43,24 +44,27 @@ func primProcedurep(ctx *Scheme, args []Val) (Val, int) {
 
 func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) > 2 {
-		panic("string-map: Only supported for one string for now")
+		return ctx.Error("string-map: Only supported for one string for now")
 	}
 	p, pOk := args[0].(*Procedure)
 	if !pOk {
-		panic("string-map: Not a procedure: " + args[0].String())
+		return ctx.Error("string-map: Not a procedure: " + args[0].String())
 	}
 	s, sOk := args[1].(*Str)
 	if !sOk {
-		panic("string-map: Not a string: " + args[1].String())
+		return ctx.Error("string-map: Not a string: " + args[1].String())
 	}
 	var callArgs [1]Val
 	result := ""
 	for _, ch := range s.Value {
 		callArgs[0] = &Char{Value: ch}
-		res := ctx.Invoke(p, callArgs[:])
+		res, errVal := ctx.Invoke(p, callArgs[:])
+		if errVal != nil {
+			return errVal, EvalUnwind
+		}
 		nch, ok := res[0].(*Char)
 		if !ok {
-			panic("string-map: not a character: " + nch.String())
+			return ctx.Error("string-map: not a character: " + nch.String())
 		}
 		result = result + string(nch.Value)
 	}
@@ -69,15 +73,15 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 
 func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) > 2 {
-		panic("string-for-each: Only supported for one string for now")
+		return ctx.Error("string-for-each: Only supported for one string for now")
 	}
 	p, pOk := args[0].(*Procedure)
 	if !pOk {
-		panic("string-for-each: Not a procedure: " + args[0].String())
+		return ctx.Error("string-for-each: Not a procedure: " + args[0].String())
 	}
 	s, sOk := args[1].(*Str)
 	if !sOk {
-		panic("string-for-each: Not a string: " + args[1].String())
+		return ctx.Error("string-for-each: Not a string: " + args[1].String())
 	}
 	var callArgs [1]Val
 	for _, ch := range s.Value {
@@ -96,7 +100,10 @@ func primValues(ctx *Scheme, args []Val) (Val, int) {
 }
 
 func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
-	results := ctx.Invoke(args[0], []Val{})
+	results, err := ctx.Invoke(args[0], []Val{})
+	if err != nil {
+		return err, EvalUnwind
+	}
 	l := ctx.NullVal
 	for i := len(results) - 1; i >= 0; i-- {
 		l = &Cons{Car: results[i], Cdr: l}
@@ -123,7 +130,7 @@ func primReadTlsValue(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	panic("sint:read-tls-value: key must be exact integer: " + v.String())
+	return ctx.Error("sint:read-tls-value: key must be exact integer: " + v.String())
 }
 
 func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
@@ -138,5 +145,9 @@ func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	panic("sint:write-tls-value: key must be exact integer: " + v0.String())
+	return ctx.Error("sint:write-tls-value: key must be exact integer: " + v0.String())
+}
+
+func primUnwindProtect(ctx *Scheme, args []Val) (Val, int) {
+	panic("sint:unwind-protect not implemented")
 }

@@ -64,6 +64,10 @@
             (else
              (error "Invalid call to parameter function"))))))
 
+(define (dynamic-wind before during after)
+  (before)
+  (sint:unwind-protect during after))
+
 ;; TODO: detect non-list arguments.
 
 (define map
