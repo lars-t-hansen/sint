@@ -76,7 +76,6 @@ func emit(expr Code, w *bufio.Writer) {
 	default:
 		panic("Bad expression: " + expr.String())
 	}
-
 }
 
 func emitExprs(es []Code, w *bufio.Writer) {
