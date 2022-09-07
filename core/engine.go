@@ -398,7 +398,6 @@ again:
 		expr = newCode
 		env = newEnv
 		goto again
-	//			panic("Invoke: Not a procedure: " + e.Exprs[0].String() + "\n" + maybeProc.String())
 	case *Apply:
 		proc, procRes := c.eval(instr.Proc, env)
 		if procRes == EvalUnwind {
