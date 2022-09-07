@@ -36,7 +36,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }}},
 }}}}}
-c.EvalToplevel(code1)
+_, unwcode1 := c.EvalToplevel(code1)
+if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
 &Setglobal{Name:c.Intern("call-with-output-file"), Rhs:&Lambda{
 Fixed:2, Rest:false,
@@ -63,5 +64,6 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }}},
 }}}}}
-c.EvalToplevel(code2)
+_, unwcode2 := c.EvalToplevel(code2)
+if unwcode2 != nil { panic(unwcode2.String()) }
 }

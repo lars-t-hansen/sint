@@ -19,7 +19,8 @@ Body:&Call{Exprs:[]Code{
 &Quote{Value:c.Intern("sint-0")},
 &Global{Name:c.Intern(".1")},
 }}}}
-c.EvalToplevel(code1)
+_, unwcode1 := c.EvalToplevel(code1)
+if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
 &Setglobal{Name:c.Intern("load"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -61,5 +62,6 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }}},
 }}}}}
-c.EvalToplevel(code2)
+_, unwcode2 := c.EvalToplevel(code2)
+if unwcode2 != nil { panic(unwcode2.String()) }
 }

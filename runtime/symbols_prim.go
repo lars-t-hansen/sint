@@ -8,11 +8,11 @@ import (
 	. "sint/core"
 )
 
-func initSymbolPrimitives(c *Scheme) {
-	addPrimitive(c, "symbol?", 1, false, primSymbolp)
-	addPrimitive(c, "symbol->string", 1, false, primSymbol2String)
-	addPrimitive(c, "string->symbol", 1, false, primString2Symbol)
-	addPrimitive(c, "gensym", 0, false, primGensym)
+func initSymbolPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "symbol?", 1, false, primSymbolp)
+	addPrimitive(ctx, "symbol->string", 1, false, primSymbol2String)
+	addPrimitive(ctx, "string->symbol", 1, false, primString2Symbol)
+	addPrimitive(ctx, "gensym", 0, false, primGensym)
 }
 
 func primSymbolp(ctx *Scheme, args []Val) (Val, int) {

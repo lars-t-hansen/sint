@@ -4,8 +4,8 @@ import (
 	. "sint/core"
 )
 
-func initExceptionsPrimitives(c *Scheme) {
-	addPrimitive(c, "sint:throw-string", 1, false, primThrowString)
+func initExceptionsPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "sint:throw-string", 1, false, primThrowString)
 }
 
 func primThrowString(ctx *Scheme, args []Val) (Val, int) {

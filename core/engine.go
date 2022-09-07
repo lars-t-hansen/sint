@@ -235,29 +235,36 @@ func (c *Scheme) SetTlsValue(key int32, v Val) {
 	c.tlsValues[key] = v
 }
 
-// When we unwind, eval() returns a (value, EvalUnwind) where the value
-// will be interpreted by whatever stops the unwinding.
+// When we unwind, eval() returns a (unwind-object, EvalUnwind) where the unwind-object
+// will be interpreted by whatever stops the unwinding.  The primitives have the same
+// convention.  However, EvalUnwind is internal to the evaluator and primitives, and
+// client code will instead usually receive a (values, unwind-object) tuple where
+// unwind-object is nil on success and non-nil on unwind.
 const (
 	EvalUnwind = -1
 )
 
+// Returns (unwind-object, EvalUnwind)
 func (c *Scheme) Error(message string) (Val, int) {
 	return c.WrapError(message), EvalUnwind
 }
 
+// Returns an unwind-object (if it returns at all)
 func (c *Scheme) WrapError(message string) Val {
 	// TODO: Not what we want, probably.
 	return &Str{Value: message}
 }
 
+// Returns (values, nil) on success, otherwise (nil, unwind-object)
 func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
+// Returns (values, nil) on success, otherwise (nil, unwind-object)
 func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
-	newCode, newEnv, prim, err := c.invokeSetup(proc, args)
-	if err != nil {
-		return nil, err
+	newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
+	if unw != nil {
+		return nil, unw
 	}
 	var v Val
 	var k int
@@ -272,19 +279,20 @@ func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
 	return c.captureValues(v, k)
 }
 
+// Returns nil on success, otherwise an uwind-object.
 func (c *Scheme) InvokeConcurrent(proc Val) Val {
 	// This is always (sint:go thunk) and there are "no" nullary primitive
 	// procedures, so let's keep it simple and ban primitive procedures from
 	// being used here.
-	newCode, newEnv, prim, err := c.invokeSetup(proc, []Val{})
-	if err != nil {
-		return err
+	newCode, newEnv, prim, unw := c.invokeSetup(proc, []Val{})
+	if unw != nil {
+		return unw
 	}
 	if prim != nil {
 		return c.WrapError("Primitive procedures cannot be invoked concurrently")
 	}
 	go NewScheme(c).eval(newCode, newEnv)
-	return c.UnspecifiedVal
+	return nil
 }
 
 func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
@@ -361,11 +369,11 @@ again:
 	case *Quote:
 		return instr.Value, 1
 	case *If:
-		v, nres := c.eval(instr.Test, env)
-		if nres == EvalUnwind {
-			return v, nres
+		test, testRes := c.eval(instr.Test, env)
+		if testRes == EvalUnwind {
+			return test, testRes
 		}
-		if v != c.FalseVal {
+		if test != c.FalseVal {
 			expr = instr.Consequent
 		} else {
 			expr = instr.Alternate
@@ -375,22 +383,22 @@ again:
 		if len(instr.Exprs) == 0 {
 			return c.UnspecifiedVal, 1
 		}
-		_, unwindVal := c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
-		if unwindVal != nil {
-			return unwindVal, EvalUnwind
+		_, unw := c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
+		if unw != nil {
+			return unw, EvalUnwind
 		}
 		expr = instr.Exprs[len(instr.Exprs)-1]
 		goto again
 	case *Call:
-		vals, unwindVal := c.evalExprs(instr.Exprs, env)
-		if unwindVal != nil {
-			return unwindVal, EvalUnwind
+		vals, eUnw := c.evalExprs(instr.Exprs, env)
+		if eUnw != nil {
+			return eUnw, EvalUnwind
 		}
 		maybeProc := vals[0]
 		args := vals[1:]
-		newCode, newEnv, prim, err := c.invokeSetup(maybeProc, args)
-		if err != nil {
-			return err, EvalUnwind
+		newCode, newEnv, prim, iUnw := c.invokeSetup(maybeProc, args)
+		if iUnw != nil {
+			return iUnw, EvalUnwind
 		}
 		if prim != nil {
 			return prim(c, args)
@@ -419,9 +427,9 @@ again:
 			args = append(args, a.Car)
 			argList = a.Cdr
 		}
-		newCode, newEnv, prim, err := c.invokeSetup(proc, args)
-		if err != nil {
-			return err, EvalUnwind
+		newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
+		if unw != nil {
+			return unw, EvalUnwind
 		}
 		if prim != nil {
 			return prim(c, args)
@@ -432,9 +440,9 @@ again:
 	case *Lambda:
 		return &Procedure{Lam: instr, Env: env, Primop: nil}, 1
 	case *Let:
-		vals, unwindVal := c.evalExprs(instr.Exprs, env)
-		if unwindVal != nil {
-			return unwindVal, EvalUnwind
+		vals, unw := c.evalExprs(instr.Exprs, env)
+		if unw != nil {
+			return unw, EvalUnwind
 		}
 		newEnv := &lexenv{slots: vals, link: env}
 		expr = instr.Body
@@ -455,9 +463,9 @@ again:
 			slotvals = append(slotvals, c.UnspecifiedVal)
 		}
 		newEnv := &lexenv{slots: slotvals, link: env}
-		vals, unwindVal := c.evalExprs(instr.Exprs, newEnv)
-		if unwindVal != nil {
-			return unwindVal, EvalUnwind
+		vals, unw := c.evalExprs(instr.Exprs, newEnv)
+		if unw != nil {
+			return unw, EvalUnwind
 		}
 		for i, v := range vals {
 			slotvals[i] = v
@@ -500,6 +508,7 @@ again:
 	}
 }
 
+// Returns either (values, nil) or (nil, unwind-object)
 func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
 	vs := []Val{}
 	for _, e := range es {

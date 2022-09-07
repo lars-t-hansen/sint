@@ -38,16 +38,19 @@ func TestFibSexpr(t *testing.T) {
 	if defnErr != nil {
 		panic(defnErr.Error())
 	}
-	c.EvalToplevel(defnProg)
+	_, unw1 := c.EvalToplevel(defnProg)
+	if unw1 != nil {
+		panic("Error: " + unw1.String())
+	}
 	invoke := list(symFib, big.NewInt(10))
 	invokeProg, invokeErr := comp.CompileToplevel(invoke)
 	if invokeErr != nil {
 		panic(invokeErr.Error())
 	}
-	v, err := c.EvalToplevel(invokeProg)
-	if err != nil {
+	v, unw2 := c.EvalToplevel(invokeProg)
+	if unw2 != nil {
 		// FIXME
-		panic("Error: " + err.String())
+		panic("Error: " + unw2.String())
 	}
 	if v[0].(*big.Int).Cmp(big.NewInt(55)) != 0 {
 		t.Fatal("Wrong answer from fib")

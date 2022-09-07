@@ -88,10 +88,10 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			continue
 		}
 		writer.WriteString(prog.String() + "\n")
-		results, err := engine.EvalToplevel(prog)
-		if err != nil {
+		results, unw := engine.EvalToplevel(prog)
+		if unw != nil {
 			// FIXME
-			panic("Error: " + err.String())
+			panic("Error: " + unw.String())
 		}
 		if prog == nil {
 			continue
@@ -117,10 +117,10 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 		os.Stderr.WriteString("Aborting\n")
 		os.Exit(1)
 	}
-	results, err := engine.EvalToplevel(prog)
-	if err != nil {
+	results, unw := engine.EvalToplevel(prog)
+	if unw != nil {
 		// FIXME
-		panic("Error: " + err.String())
+		panic("Error: " + unw.String())
 	}
 	for _, r := range results {
 		if r != engine.UnspecifiedVal {
@@ -195,7 +195,8 @@ func init%s(c *Scheme) {
 		initName := fmt.Sprintf("code%d", id)
 		id++
 		compiler.EmitGo(prog, initName, writer)
-		fmt.Fprintf(writer, "c.EvalToplevel(%s)\n", initName)
+		fmt.Fprintf(writer, "_, unw%s := c.EvalToplevel(%s)\n", initName, initName)
+		fmt.Fprintf(writer, "if unw%s != nil { panic(unw%s.String()) }\n", initName, initName)
 	}
 	writer.WriteString("}\n")
 	writer.Flush()

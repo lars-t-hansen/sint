@@ -11,14 +11,14 @@ import (
 	"unicode/utf8"
 )
 
-func initStringPrimitives(c *Scheme) {
-	addPrimitive(c, "string?", 1, false, primStringp)
-	addPrimitive(c, "string-length", 1, false, primStringLength)
-	addPrimitive(c, "string-ref", 2, false, primStringRef)
-	addPrimitive(c, "sint:string-compare", 2, false, primStringCompare)
-	addPrimitive(c, "string-append", 0, true, primStringAppend)
-	addPrimitive(c, "substring", 3, false, primSubstring)
-	addPrimitive(c, "sint:list->string", 1, false, primList2String)
+func initStringPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "string?", 1, false, primStringp)
+	addPrimitive(ctx, "string-length", 1, false, primStringLength)
+	addPrimitive(ctx, "string-ref", 2, false, primStringRef)
+	addPrimitive(ctx, "sint:string-compare", 2, false, primStringCompare)
+	addPrimitive(ctx, "string-append", 0, true, primStringAppend)
+	addPrimitive(ctx, "substring", 3, false, primSubstring)
+	addPrimitive(ctx, "sint:list->string", 1, false, primList2String)
 }
 
 func primStringp(ctx *Scheme, args []Val) (Val, int) {

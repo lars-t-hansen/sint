@@ -15,29 +15,29 @@ import (
 	"strconv"
 )
 
-func initNumbersPrimitives(c *Scheme) {
-	addPrimitive(c, "sint:inexact-float?", 1, false, primInexactFloatp)
-	addPrimitive(c, "sint:exact-integer?", 1, false, primExactIntegerp)
-	addPrimitive(c, "finite?", 1, false, primFinitep)
-	addPrimitive(c, "infinite?", 1, false, primInfinitep)
-	addPrimitive(c, "+", 0, true, primAdd)
-	addPrimitive(c, "-", 1, true, primSub)
-	addPrimitive(c, "*", 0, true, primMul)
-	addPrimitive(c, "/", 1, true, primDiv)
-	addPrimitive(c, "<", 2, true, primLess)
-	addPrimitive(c, "<=", 2, true, primLessOrEqual)
-	addPrimitive(c, "=", 2, true, primEqual)
-	addPrimitive(c, ">", 2, true, primGreater)
-	addPrimitive(c, ">=", 2, true, primGreaterOrEqual)
-	addPrimitive(c, "number->string", 1, false, primNumber2String)
-	addPrimitive(c, "string->number", 1, true, primString2Number)
-	addPrimitive(c, "inexact", 1, false, primInexact)
-	addPrimitive(c, "exact", 1, false, primExact)
-	addPrimitive(c, "abs", 1, false, primAbs)
-	addPrimitive(c, "floor", 1, false, primFloor)
-	addPrimitive(c, "ceiling", 1, false, primCeiling)
-	addPrimitive(c, "truncate", 1, false, primTruncate)
-	addPrimitive(c, "round", 1, false, primRound)
+func initNumbersPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "sint:inexact-float?", 1, false, primInexactFloatp)
+	addPrimitive(ctx, "sint:exact-integer?", 1, false, primExactIntegerp)
+	addPrimitive(ctx, "finite?", 1, false, primFinitep)
+	addPrimitive(ctx, "infinite?", 1, false, primInfinitep)
+	addPrimitive(ctx, "+", 0, true, primAdd)
+	addPrimitive(ctx, "-", 1, true, primSub)
+	addPrimitive(ctx, "*", 0, true, primMul)
+	addPrimitive(ctx, "/", 1, true, primDiv)
+	addPrimitive(ctx, "<", 2, true, primLess)
+	addPrimitive(ctx, "<=", 2, true, primLessOrEqual)
+	addPrimitive(ctx, "=", 2, true, primEqual)
+	addPrimitive(ctx, ">", 2, true, primGreater)
+	addPrimitive(ctx, ">=", 2, true, primGreaterOrEqual)
+	addPrimitive(ctx, "number->string", 1, false, primNumber2String)
+	addPrimitive(ctx, "string->number", 1, true, primString2Number)
+	addPrimitive(ctx, "inexact", 1, false, primInexact)
+	addPrimitive(ctx, "exact", 1, false, primExact)
+	addPrimitive(ctx, "abs", 1, false, primAbs)
+	addPrimitive(ctx, "floor", 1, false, primFloor)
+	addPrimitive(ctx, "ceiling", 1, false, primCeiling)
+	addPrimitive(ctx, "truncate", 1, false, primTruncate)
+	addPrimitive(ctx, "round", 1, false, primRound)
 }
 
 func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
@@ -176,69 +176,69 @@ func primDiv(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primLess(c *Scheme, args []Val) (Val, int) {
+func primLess(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		res, err := cmp2(c, args[i-1], args[i], "<")
+		res, err := cmp2(ctx, args[i-1], args[i], "<")
 		if err != nil {
 			return err, EvalUnwind
 		}
 		if res != -1 {
-			return c.FalseVal, 1
+			return ctx.FalseVal, 1
 		}
 	}
-	return c.TrueVal, 1
+	return ctx.TrueVal, 1
 }
 
-func primLessOrEqual(c *Scheme, args []Val) (Val, int) {
+func primLessOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		res, err := cmp2(c, args[i-1], args[i], "<=")
+		res, err := cmp2(ctx, args[i-1], args[i], "<=")
 		if err != nil {
 			return err, EvalUnwind
 		}
 		if res == 1 {
-			return c.FalseVal, 1
+			return ctx.FalseVal, 1
 		}
 	}
-	return c.TrueVal, 1
+	return ctx.TrueVal, 1
 }
 
-func primEqual(c *Scheme, args []Val) (Val, int) {
+func primEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		res, err := cmp2(c, args[i-1], args[i], "=")
+		res, err := cmp2(ctx, args[i-1], args[i], "=")
 		if err != nil {
 			return err, EvalUnwind
 		}
 		if res != 0 {
-			return c.FalseVal, 1
+			return ctx.FalseVal, 1
 		}
 	}
-	return c.TrueVal, 1
+	return ctx.TrueVal, 1
 }
 
-func primGreater(c *Scheme, args []Val) (Val, int) {
+func primGreater(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		res, err := cmp2(c, args[i-1], args[i], ">")
+		res, err := cmp2(ctx, args[i-1], args[i], ">")
 		if err != nil {
 			return err, EvalUnwind
 		}
 		if res != 1 {
-			return c.FalseVal, 1
+			return ctx.FalseVal, 1
 		}
 	}
-	return c.TrueVal, 1
+	return ctx.TrueVal, 1
 }
 
-func primGreaterOrEqual(c *Scheme, args []Val) (Val, int) {
+func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		res, err := cmp2(c, args[i-1], args[i], ">=")
+		res, err := cmp2(ctx, args[i-1], args[i], ">=")
 		if err != nil {
 			return err, EvalUnwind
 		}
 		if res == -1 {
-			return c.FalseVal, 1
+			return ctx.FalseVal, 1
 		}
 	}
-	return c.TrueVal, 1
+	return ctx.TrueVal, 1
 }
 
 func primNumber2String(ctx *Scheme, args []Val) (Val, int) {

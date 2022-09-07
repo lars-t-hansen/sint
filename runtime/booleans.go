@@ -28,7 +28,8 @@ Alternate:&Call{Exprs:[]Code{
 &Quote{Value:c.FalseVal},
 }},
 }}}}
-c.EvalToplevel(code1)
+_, unwcode1 := c.EvalToplevel(code1)
+if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
 &Setglobal{Name:c.Intern("not"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -37,7 +38,8 @@ Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Quote{Value:c.FalseVal},
 Alternate:&Quote{Value:c.TrueVal},
 }}}
-c.EvalToplevel(code2)
+_, unwcode2 := c.EvalToplevel(code2)
+if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
 &Setglobal{Name:c.Intern("boolean=?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -119,5 +121,6 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 }}}}}
-c.EvalToplevel(code3)
+_, unwcode3 := c.EvalToplevel(code3)
+if unwcode3 != nil { panic(unwcode3.String()) }
 }

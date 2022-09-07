@@ -9,9 +9,9 @@ import (
 	. "sint/core"
 )
 
-func initEquivalencePrimitives(c *Scheme) {
-	addPrimitive(c, "eq?", 2, false, primEqp)
-	addPrimitive(c, "eqv?", 2, false, primEqvp)
+func initEquivalencePrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "eq?", 2, false, primEqp)
+	addPrimitive(ctx, "eqv?", 2, false, primEqvp)
 }
 
 func primEqp(ctx *Scheme, args []Val) (Val, int) {

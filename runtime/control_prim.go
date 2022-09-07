@@ -10,22 +10,22 @@ import (
 	. "sint/core"
 )
 
-func initControlPrimitives(c *Scheme) {
-	addPrimitive(c, "procedure?", 1, false, primProcedurep)
-	addPrimitive(c, "string-map", 2, true, primStringMap)
-	addPrimitive(c, "string-for-each", 2, true, primStringForEach)
-	addPrimitive(c, "values", 0, true, primValues)
-	addPrimitive(c, "unspecified", 0, false, primUnspecified)
-	addPrimitive(c, "sint:receive-values", 1, false, primReceiveValues)
-	addPrimitive(c, "sint:new-tls-key", 0, false, primNewTlsKey)
-	addPrimitive(c, "sint:read-tls-value", 1, false, primReadTlsValue)
-	addPrimitive(c, "sint:write-tls-value", 2, false, primWriteTlsValue)
-	addPrimitive(c, "sint:unwind-protect", 2, false, primUnwindProtect)
+func initControlPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "procedure?", 1, false, primProcedurep)
+	addPrimitive(ctx, "string-map", 2, true, primStringMap)
+	addPrimitive(ctx, "string-for-each", 2, true, primStringForEach)
+	addPrimitive(ctx, "values", 0, true, primValues)
+	addPrimitive(ctx, "unspecified", 0, false, primUnspecified)
+	addPrimitive(ctx, "sint:receive-values", 1, false, primReceiveValues)
+	addPrimitive(ctx, "sint:new-tls-key", 0, false, primNewTlsKey)
+	addPrimitive(ctx, "sint:read-tls-value", 1, false, primReadTlsValue)
+	addPrimitive(ctx, "sint:write-tls-value", 2, false, primWriteTlsValue)
+	addPrimitive(ctx, "sint:unwind-protect", 2, false, primUnwindProtect)
 
 	// See runtime/control.sch.  This is a procedure with the signature (fn l)
 	// where the `fn` must be a procedure and `l` must be a proper list.
 	// It applies `fn` to the elements of `l` in a properly tail-recursive manner.
-	sym := c.Intern("sint:apply")
+	sym := ctx.Intern("sint:apply")
 	sym.Value = &Procedure{
 		Lam: &Lambda{
 			Fixed: 2,
@@ -58,9 +58,9 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 	result := ""
 	for _, ch := range s.Value {
 		callArgs[0] = &Char{Value: ch}
-		res, errVal := ctx.Invoke(p, callArgs[:])
-		if errVal != nil {
-			return errVal, EvalUnwind
+		res, unw := ctx.Invoke(p, callArgs[:])
+		if unw != nil {
+			return unw, EvalUnwind
 		}
 		nch, ok := res[0].(*Char)
 		if !ok {
@@ -86,7 +86,10 @@ func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
 	var callArgs [1]Val
 	for _, ch := range s.Value {
 		callArgs[0] = &Char{Value: ch}
-		ctx.Invoke(p, callArgs[:])
+		_, unw := ctx.Invoke(p, callArgs[:])
+		if unw != nil {
+			return unw, EvalUnwind
+		}
 	}
 	return ctx.UnspecifiedVal, 1
 }
@@ -100,9 +103,9 @@ func primValues(ctx *Scheme, args []Val) (Val, int) {
 }
 
 func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
-	results, err := ctx.Invoke(args[0], []Val{})
-	if err != nil {
-		return err, EvalUnwind
+	results, unw := ctx.Invoke(args[0], []Val{})
+	if unw != nil {
+		return unw, EvalUnwind
 	}
 	l := ctx.NullVal
 	for i := len(results) - 1; i >= 0; i-- {

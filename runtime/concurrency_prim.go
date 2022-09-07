@@ -11,19 +11,22 @@ import (
 	. "sint/core"
 )
 
-func initConcurrencyPrimitives(c *Scheme) {
-	addPrimitive(c, "sint:go", 1, false, primGo)
-	addPrimitive(c, "make-channel", 0, true, primMakeChannel)
-	addPrimitive(c, "channel?", 0, true, primChannelp)
-	addPrimitive(c, "channel-send", 2, false, primChannelSend)
-	addPrimitive(c, "channel-receive", 1, false, primChannelReceive)
-	addPrimitive(c, "channel-length", 1, false, primChannelLength)
-	addPrimitive(c, "channel-capacity", 1, false, primChannelCapacity)
-	addPrimitive(c, "close-channel", 1, false, primCloseChannel)
+func initConcurrencyPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "sint:go", 1, false, primGo)
+	addPrimitive(ctx, "make-channel", 0, true, primMakeChannel)
+	addPrimitive(ctx, "channel?", 0, true, primChannelp)
+	addPrimitive(ctx, "channel-send", 2, false, primChannelSend)
+	addPrimitive(ctx, "channel-receive", 1, false, primChannelReceive)
+	addPrimitive(ctx, "channel-length", 1, false, primChannelLength)
+	addPrimitive(ctx, "channel-capacity", 1, false, primChannelCapacity)
+	addPrimitive(ctx, "close-channel", 1, false, primCloseChannel)
 }
 
 func primGo(ctx *Scheme, args []Val) (Val, int) {
-	ctx.InvokeConcurrent(args[0])
+	err := ctx.InvokeConcurrent(args[0])
+	if err != nil {
+		return err, EvalUnwind
+	}
 	return ctx.UnspecifiedVal, 1
 }
 

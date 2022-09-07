@@ -20,7 +20,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}}}
-c.EvalToplevel(code1)
+_, unwcode1 := c.EvalToplevel(code1)
+if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
 &Setglobal{Name:c.Intern("cadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -31,7 +32,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}}}
-c.EvalToplevel(code2)
+_, unwcode2 := c.EvalToplevel(code2)
+if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
 &Setglobal{Name:c.Intern("cdar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -42,7 +44,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}}}
-c.EvalToplevel(code3)
+_, unwcode3 := c.EvalToplevel(code3)
+if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
 &Setglobal{Name:c.Intern("cddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -53,7 +56,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}}}
-c.EvalToplevel(code4)
+_, unwcode4 := c.EvalToplevel(code4)
+if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
 &Setglobal{Name:c.Intern("caaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -67,7 +71,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code5)
+_, unwcode5 := c.EvalToplevel(code5)
+if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
 &Setglobal{Name:c.Intern("caadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -81,7 +86,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code6)
+_, unwcode6 := c.EvalToplevel(code6)
+if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
 &Setglobal{Name:c.Intern("cadar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -95,7 +101,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code7)
+_, unwcode7 := c.EvalToplevel(code7)
+if unwcode7 != nil { panic(unwcode7.String()) }
 code8 := 
 &Setglobal{Name:c.Intern("caddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -109,7 +116,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code8)
+_, unwcode8 := c.EvalToplevel(code8)
+if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
 &Setglobal{Name:c.Intern("cdaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -123,7 +131,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code9)
+_, unwcode9 := c.EvalToplevel(code9)
+if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
 &Setglobal{Name:c.Intern("cdadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -137,7 +146,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code10)
+_, unwcode10 := c.EvalToplevel(code10)
+if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
 &Setglobal{Name:c.Intern("cddar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -151,7 +161,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code11)
+_, unwcode11 := c.EvalToplevel(code11)
+if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
 &Setglobal{Name:c.Intern("cdddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -165,7 +176,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code12)
+_, unwcode12 := c.EvalToplevel(code12)
+if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
 &Setglobal{Name:c.Intern("caaaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -182,7 +194,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code13)
+_, unwcode13 := c.EvalToplevel(code13)
+if unwcode13 != nil { panic(unwcode13.String()) }
 code14 := 
 &Setglobal{Name:c.Intern("caaadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -199,7 +212,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code14)
+_, unwcode14 := c.EvalToplevel(code14)
+if unwcode14 != nil { panic(unwcode14.String()) }
 code15 := 
 &Setglobal{Name:c.Intern("caadar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -216,7 +230,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code15)
+_, unwcode15 := c.EvalToplevel(code15)
+if unwcode15 != nil { panic(unwcode15.String()) }
 code16 := 
 &Setglobal{Name:c.Intern("caaddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -233,7 +248,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code16)
+_, unwcode16 := c.EvalToplevel(code16)
+if unwcode16 != nil { panic(unwcode16.String()) }
 code17 := 
 &Setglobal{Name:c.Intern("cadaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -250,7 +266,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code17)
+_, unwcode17 := c.EvalToplevel(code17)
+if unwcode17 != nil { panic(unwcode17.String()) }
 code18 := 
 &Setglobal{Name:c.Intern("cadadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -267,7 +284,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code18)
+_, unwcode18 := c.EvalToplevel(code18)
+if unwcode18 != nil { panic(unwcode18.String()) }
 code19 := 
 &Setglobal{Name:c.Intern("caddar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -284,7 +302,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code19)
+_, unwcode19 := c.EvalToplevel(code19)
+if unwcode19 != nil { panic(unwcode19.String()) }
 code20 := 
 &Setglobal{Name:c.Intern("cadddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -301,7 +320,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code20)
+_, unwcode20 := c.EvalToplevel(code20)
+if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
 &Setglobal{Name:c.Intern("cdaaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -318,7 +338,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code21)
+_, unwcode21 := c.EvalToplevel(code21)
+if unwcode21 != nil { panic(unwcode21.String()) }
 code22 := 
 &Setglobal{Name:c.Intern("cdaadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -335,7 +356,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code22)
+_, unwcode22 := c.EvalToplevel(code22)
+if unwcode22 != nil { panic(unwcode22.String()) }
 code23 := 
 &Setglobal{Name:c.Intern("cdadar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -352,7 +374,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code23)
+_, unwcode23 := c.EvalToplevel(code23)
+if unwcode23 != nil { panic(unwcode23.String()) }
 code24 := 
 &Setglobal{Name:c.Intern("cdaddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -369,7 +392,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code24)
+_, unwcode24 := c.EvalToplevel(code24)
+if unwcode24 != nil { panic(unwcode24.String()) }
 code25 := 
 &Setglobal{Name:c.Intern("cddaar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -386,7 +410,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code25)
+_, unwcode25 := c.EvalToplevel(code25)
+if unwcode25 != nil { panic(unwcode25.String()) }
 code26 := 
 &Setglobal{Name:c.Intern("cddadr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -403,7 +428,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code26)
+_, unwcode26 := c.EvalToplevel(code26)
+if unwcode26 != nil { panic(unwcode26.String()) }
 code27 := 
 &Setglobal{Name:c.Intern("cdddar"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -420,7 +446,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code27)
+_, unwcode27 := c.EvalToplevel(code27)
+if unwcode27 != nil { panic(unwcode27.String()) }
 code28 := 
 &Setglobal{Name:c.Intern("cddddr"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -437,12 +464,14 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }}}}
-c.EvalToplevel(code28)
+_, unwcode28 := c.EvalToplevel(code28)
+if unwcode28 != nil { panic(unwcode28.String()) }
 code29 := 
 &Setglobal{Name:c.Intern("list"), Rhs:&Lambda{
 Fixed:0, Rest:true,
 Body:&Lexical{Levels:0, Offset:0}}}
-c.EvalToplevel(code29)
+_, unwcode29 := c.EvalToplevel(code29)
+if unwcode29 != nil { panic(unwcode29.String()) }
 code30 := 
 &Setglobal{Name:c.Intern("list?"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -467,7 +496,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 }}}
-c.EvalToplevel(code30)
+_, unwcode30 := c.EvalToplevel(code30)
+if unwcode30 != nil { panic(unwcode30.String()) }
 code31 := 
 &Setglobal{Name:c.Intern("make-list"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -514,7 +544,8 @@ Alternate:&Call{Exprs:[]Code{
 },
 &Quote{Value:c.NullVal},
 }}}}}
-c.EvalToplevel(code31)
+_, unwcode31 := c.EvalToplevel(code31)
+if unwcode31 != nil { panic(unwcode31.String()) }
 code32 := 
 &Setglobal{Name:c.Intern("append"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -593,7 +624,8 @@ Alternate:&Let{Exprs:[]Code{
 }},
 }}},
 }}}}
-c.EvalToplevel(code32)
+_, unwcode32 := c.EvalToplevel(code32)
+if unwcode32 != nil { panic(unwcode32.String()) }
 code33 := 
 &Setglobal{Name:c.Intern("list-tail"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -625,7 +657,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code33)
+_, unwcode33 := c.EvalToplevel(code33)
+if unwcode33 != nil { panic(unwcode33.String()) }
 code34 := 
 &Setglobal{Name:c.Intern("list-ref"), Rhs:&Lambda{
 Fixed:2, Rest:false,
@@ -637,7 +670,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }}}}
-c.EvalToplevel(code34)
+_, unwcode34 := c.EvalToplevel(code34)
+if unwcode34 != nil { panic(unwcode34.String()) }
 code35 := 
 &Setglobal{Name:c.Intern("list-set!"), Rhs:&Lambda{
 Fixed:3, Rest:false,
@@ -650,7 +684,8 @@ Body:&Call{Exprs:[]Code{
 }},
 &Lexical{Levels:0, Offset:2},
 }}}}
-c.EvalToplevel(code35)
+_, unwcode35 := c.EvalToplevel(code35)
+if unwcode35 != nil { panic(unwcode35.String()) }
 code36 := 
 &Setglobal{Name:c.Intern("list-copy"), Rhs:&Lambda{
 Fixed:1, Rest:false,
@@ -659,7 +694,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:c.NullVal},
 }}}}
-c.EvalToplevel(code36)
+_, unwcode36 := c.EvalToplevel(code36)
+if unwcode36 != nil { panic(unwcode36.String()) }
 code37 := 
 &Setglobal{Name:c.Intern("memq"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -714,7 +750,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:1},
 }},
 }}}}}
-c.EvalToplevel(code37)
+_, unwcode37 := c.EvalToplevel(code37)
+if unwcode37 != nil { panic(unwcode37.String()) }
 code38 := 
 &Setglobal{Name:c.Intern("memv"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -769,7 +806,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:1},
 }},
 }}}}}
-c.EvalToplevel(code38)
+_, unwcode38 := c.EvalToplevel(code38)
+if unwcode38 != nil { panic(unwcode38.String()) }
 code39 := 
 &Setglobal{Name:c.Intern("member"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -836,7 +874,8 @@ Alternate:&Call{Exprs:[]Code{
 },
 }},
 }}}}}
-c.EvalToplevel(code39)
+_, unwcode39 := c.EvalToplevel(code39)
+if unwcode39 != nil { panic(unwcode39.String()) }
 code40 := 
 &Setglobal{Name:c.Intern("assq"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -894,7 +933,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:1},
 }},
 }}}}}
-c.EvalToplevel(code40)
+_, unwcode40 := c.EvalToplevel(code40)
+if unwcode40 != nil { panic(unwcode40.String()) }
 code41 := 
 &Setglobal{Name:c.Intern("assv"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -952,7 +992,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:1},
 }},
 }}}}}
-c.EvalToplevel(code41)
+_, unwcode41 := c.EvalToplevel(code41)
+if unwcode41 != nil { panic(unwcode41.String()) }
 code42 := 
 &Setglobal{Name:c.Intern("assoc"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -1022,7 +1063,8 @@ Alternate:&Call{Exprs:[]Code{
 },
 }},
 }}}}}
-c.EvalToplevel(code42)
+_, unwcode42 := c.EvalToplevel(code42)
+if unwcode42 != nil { panic(unwcode42.String()) }
 code43 := 
 &Setglobal{Name:c.Intern("length"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -1053,7 +1095,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }}}}}
-c.EvalToplevel(code43)
+_, unwcode43 := c.EvalToplevel(code43)
+if unwcode43 != nil { panic(unwcode43.String()) }
 code44 := 
 &Setglobal{Name:c.Intern("reverse"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -1087,7 +1130,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:c.NullVal},
 }}}}}
-c.EvalToplevel(code44)
+_, unwcode44 := c.EvalToplevel(code44)
+if unwcode44 != nil { panic(unwcode44.String()) }
 code45 := 
 &Setglobal{Name:c.Intern("reverse-append"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
@@ -1121,5 +1165,6 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-c.EvalToplevel(code45)
+_, unwcode45 := c.EvalToplevel(code45)
+if unwcode45 != nil { panic(unwcode45.String()) }
 }

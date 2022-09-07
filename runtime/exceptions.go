@@ -108,5 +108,6 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}}}}
-c.EvalToplevel(code1)
+_, unwcode1 := c.EvalToplevel(code1)
+if unwcode1 != nil { panic(unwcode1.String()) }
 }

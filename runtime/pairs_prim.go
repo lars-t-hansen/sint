@@ -8,14 +8,14 @@ import (
 	. "sint/core"
 )
 
-func initPairPrimitives(c *Scheme) {
-	addPrimitive(c, "null?", 1, false, primNullp)
-	addPrimitive(c, "pair?", 1, false, primPairp)
-	addPrimitive(c, "cons", 2, false, primCons)
-	addPrimitive(c, "car", 1, false, primCar)
-	addPrimitive(c, "cdr", 1, false, primCdr)
-	addPrimitive(c, "set-car!", 2, false, primSetcar)
-	addPrimitive(c, "set-cdr!", 2, false, primSetcdr)
+func initPairPrimitives(ctx *Scheme) {
+	addPrimitive(ctx, "null?", 1, false, primNullp)
+	addPrimitive(ctx, "pair?", 1, false, primPairp)
+	addPrimitive(ctx, "cons", 2, false, primCons)
+	addPrimitive(ctx, "car", 1, false, primCar)
+	addPrimitive(ctx, "cdr", 1, false, primCdr)
+	addPrimitive(ctx, "set-car!", 2, false, primSetcar)
+	addPrimitive(ctx, "set-cdr!", 2, false, primSetcdr)
 }
 
 func primNullp(ctx *Scheme, args []Val) (Val, int) {
