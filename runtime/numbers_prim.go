@@ -82,16 +82,22 @@ func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.Error("infinite?: not a number: " + v.String())
 }
 
-func primAdd(c *Scheme, args []Val) (Val, int) {
+func primAdd(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) == 0 {
-		return c.Zero, 1
+		return ctx.Zero, 1
 	}
 	if len(args) == 1 {
-		return checkNumber(args[0], "+"), 1
+		return checkNumber(ctx, args[0], "+")
 	}
-	r := add2(args[0], args[1])
+	r, nres := add2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
 	for _, v := range args[2:] {
-		r = add2(r, v)
+		r, nres = add2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
 	}
 	return r, 1
 }
@@ -111,23 +117,35 @@ func primSub(ctx *Scheme, args []Val) (Val, int) {
 			return ctx.Error("'-': Not a number: " + args[0].String())
 		}
 	}
-	r := sub2(args[0], args[1])
+	r, nres := sub2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
 	for _, v := range args[2:] {
-		r = sub2(r, v)
+		r, nres = sub2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
 	}
 	return r, 1
 }
 
-func primMul(c *Scheme, args []Val) (Val, int) {
+func primMul(ctx *Scheme, args []Val) (Val, int) {
 	if len(args) == 0 {
 		return big.NewInt(1), 1
 	}
 	if len(args) == 1 {
-		return checkNumber(args[0], "*"), 1
+		return checkNumber(ctx, args[0], "*")
 	}
-	r := mul2(args[0], args[1])
+	r, nres := mul2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
 	for _, v := range args[2:] {
-		r = mul2(r, v)
+		r, nres = mul2(ctx, r, v)
+		if nres != EvalUnwind {
+			return r, nres
+		}
 	}
 	return r, 1
 }
@@ -143,18 +161,28 @@ func primDiv(ctx *Scheme, args []Val) (Val, int) {
 		default:
 			return ctx.Error("'-': Not a number: " + args[0].String())
 		}
-		return div2(big.NewFloat(1), &fv), 1
+		return div2(ctx, big.NewFloat(1), &fv)
 	}
-	r := div2(args[0], args[1])
+	r, nres := div2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
 	for _, v := range args[2:] {
-		r = div2(r, v)
+		r, nres = div2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
 	}
 	return r, 1
 }
 
 func primLess(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		if cmp2(args[i-1], args[i], "<") != -1 {
+		res, err := cmp2(c, args[i-1], args[i], "<")
+		if err != nil {
+			return err, EvalUnwind
+		}
+		if res != -1 {
 			return c.FalseVal, 1
 		}
 	}
@@ -163,7 +191,11 @@ func primLess(c *Scheme, args []Val) (Val, int) {
 
 func primLessOrEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		if cmp2(args[i-1], args[i], "<=") == 1 {
+		res, err := cmp2(c, args[i-1], args[i], "<=")
+		if err != nil {
+			return err, EvalUnwind
+		}
+		if res == 1 {
 			return c.FalseVal, 1
 		}
 	}
@@ -172,7 +204,11 @@ func primLessOrEqual(c *Scheme, args []Val) (Val, int) {
 
 func primEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		if cmp2(args[i-1], args[i], "=") != 0 {
+		res, err := cmp2(c, args[i-1], args[i], "=")
+		if err != nil {
+			return err, EvalUnwind
+		}
+		if res != 0 {
 			return c.FalseVal, 1
 		}
 	}
@@ -181,7 +217,11 @@ func primEqual(c *Scheme, args []Val) (Val, int) {
 
 func primGreater(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		if cmp2(args[i-1], args[i], ">") != 1 {
+		res, err := cmp2(c, args[i-1], args[i], ">")
+		if err != nil {
+			return err, EvalUnwind
+		}
+		if res != 1 {
 			return c.FalseVal, 1
 		}
 	}
@@ -190,7 +230,11 @@ func primGreater(c *Scheme, args []Val) (Val, int) {
 
 func primGreaterOrEqual(c *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
-		if cmp2(args[i-1], args[i], ">=") != -1 {
+		res, err := cmp2(c, args[i-1], args[i], ">=")
+		if err != nil {
+			return err, EvalUnwind
+		}
+		if res == -1 {
 			return c.FalseVal, 1
 		}
 	}
@@ -332,60 +376,75 @@ func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
 	return ctx.Error(name + ": Not a number: " + v.String())
 }
 
-func add2(a Val, b Val) Val {
+func add2(ctx *Scheme, a Val, b Val) (Val, int) {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
 		z.Add(ia, ib)
-		return &z
+		return &z, 1
 	}
-	fa, fb := bothFloat(a, b, "+")
+	fa, fb, err := bothFloat(ctx, a, b, "+")
+	if err != nil {
+		return err, EvalUnwind
+	}
 	var z big.Float
 	z.Add(fa, fb)
-	return &z
+	return &z, 1
 }
 
-func sub2(a Val, b Val) Val {
+func sub2(ctx *Scheme, a Val, b Val) (Val, int) {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
 		z.Sub(ia, ib)
-		return &z
+		return &z, 1
 	}
-	fa, fb := bothFloat(a, b, "+")
+	fa, fb, err := bothFloat(ctx, a, b, "+")
+	if err != nil {
+		return err, EvalUnwind
+	}
 	var z big.Float
 	z.Sub(fa, fb)
-	return &z
+	return &z, 1
 }
 
-func mul2(a Val, b Val) Val {
+func mul2(ctx *Scheme, a Val, b Val) (Val, int) {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
 		z.Mul(ia, ib)
-		return &z
+		return &z, 1
 	}
-	fa, fb := bothFloat(a, b, "*")
+	fa, fb, err := bothFloat(ctx, a, b, "*")
+	if err != nil {
+		return err, EvalUnwind
+	}
 	var z big.Float
 	z.Mul(fa, fb)
-	return &z
+	return &z, 1
 }
 
 var fzero *big.Float = big.NewFloat(0)
 
-func div2(a Val, b Val) Val {
-	fa, fb := bothFloat(a, b, "/")
+func div2(ctx *Scheme, a Val, b Val) (Val, int) {
+	fa, fb, err := bothFloat(ctx, a, b, "/")
+	if err != nil {
+		return err, EvalUnwind
+	}
 	if (fa.IsInf() && fb.IsInf()) || (fa.Cmp(fzero) == 0 && fb.Cmp(fzero) == 0) {
-		panic("/: Result is not a number: (/" + fa.String() + " " + fb.String() + ")")
+		return ctx.Error("/: Result is not a number: (/" + fa.String() + " " + fb.String() + ")")
 	}
 	var z big.Float
 	z.Quo(fa, fb)
-	return &z
+	return &z, 1
 }
 
-func cmp2(a Val, b Val, name string) int {
+func cmp2(ctx *Scheme, a Val, b Val, name string) (int, Val) {
 	if ia, ib, ok := bothInt(a, b); ok {
-		return ia.Cmp(ib)
+		return ia.Cmp(ib), nil
 	}
-	fa, fb := bothFloat(a, b, name)
-	return fa.Cmp(fb)
+	fa, fb, err := bothFloat(ctx, a, b, name)
+	if err != nil {
+		return 0, err
+	}
+	return fa.Cmp(fb), nil
 }
 
 func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
@@ -398,39 +457,39 @@ func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
 }
 
 // Coerce both values to float and return them
-func bothFloat(a Val, b Val, name string) (*big.Float, *big.Float) {
+func bothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, Val) {
 	if fa, ok := a.(*big.Float); ok {
 		if fb, ok := b.(*big.Float); ok {
-			return fa, fb
+			return fa, fb, nil
 		}
 		if ib, ok := b.(*big.Int); ok {
 			var fb big.Float
 			fb.SetInt(ib)
-			return fa, &fb
+			return fa, &fb, nil
 		}
-		panic("'" + name + "': Not a number: " + b.String())
+		return nil, nil, ctx.WrapError("'" + name + "': Not a number: " + b.String())
 	}
 	if ia, ok := a.(*big.Int); ok {
 		var fa big.Float
 		fa.SetInt(ia)
 		if fb, ok := b.(*big.Float); ok {
-			return &fa, fb
+			return &fa, fb, nil
 		}
 		if ib, ok := b.(*big.Int); ok {
 			var fb big.Float
 			fb.SetInt(ib)
-			return &fa, &fb
+			return &fa, &fb, nil
 		}
-		panic("'" + name + "': Not a number: " + b.String())
+		return nil, nil, ctx.WrapError("'" + name + "': Not a number: " + b.String())
 	}
-	panic("'" + name + "': Not a number: " + a.String())
+	return nil, nil, ctx.WrapError("'" + name + "': Not a number: " + a.String())
 }
 
-func checkNumber(v Val, s string) Val {
+func checkNumber(ctx *Scheme, v Val, s string) (Val, int) {
 	if !isNumber(v) {
-		panic(s + ": Not a number: " + v.String())
+		return ctx.Error(s + ": Not a number: " + v.String())
 	}
-	return v
+	return v, 1
 }
 
 func isNumber(v Val) bool {
