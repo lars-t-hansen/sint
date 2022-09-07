@@ -55,9 +55,8 @@ Try `sint help`
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
 - ports and basic text I/O
   - default ports are parameters
-- basic error handling & recovery during execution; document it too.  this includes what
-  happens when we panic in a goroutine, and when a Go builtin panics.
-- fix error reporting: the pretty printer in `error` is really dumb
+- better call/cc based error handling probably
+- fix error reporting: the pretty printer in `error` is really dumb, as is the one in the last-ditch error handler
 - high-value number operations, see numbers.sch
 - high-value control operations, see control.sch
 - high-value nonstandard string operations, taken from the Go library

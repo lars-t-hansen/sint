@@ -90,8 +90,10 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 		writer.WriteString(prog.String() + "\n")
 		results, unw := engine.EvalToplevel(prog)
 		if unw != nil {
-			// FIXME
-			panic("Error: " + unw.String())
+			// Last-ditch error handler.  With a little more sophistication, there
+			// will be a call/cc to catch the error and we won't reach this code.
+			os.Stderr.WriteString("ERROR: " + unw.String() + "\n")
+			continue
 		}
 		if prog == nil {
 			continue
@@ -119,8 +121,11 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	}
 	results, unw := engine.EvalToplevel(prog)
 	if unw != nil {
-		// FIXME
-		panic("Error: " + unw.String())
+		// Last-ditch error handler.  With a little more sophistication, there
+		// will be a call/cc to catch the error and we won't reach this code.
+		os.Stderr.WriteString("ERROR: " + unw.String() + "\n")
+		os.Stderr.WriteString("Aborting\n")
+		os.Exit(1)
 	}
 	for _, r := range results {
 		if r != engine.UnspecifiedVal {
