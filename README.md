@@ -58,9 +58,11 @@ Try `sint help`
   - default ports are parameters
 - better call/cc based error handling probably
 - fix error reporting: the pretty printer in `error` is really dumb, as is the one in the last-ditch error handler
-- high-value number operations, see numbers.sch
-- high-value control operations, see control.sch
+- call/cc
+- dynamic-wind
+- expt
 - high-value nonstandard string operations, taken from the Go library
+- sundry FIXMEs
 - clean up documentation
 
 ## Backlog (this is actually much longer)
