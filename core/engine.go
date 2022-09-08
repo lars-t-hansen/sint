@@ -15,6 +15,7 @@ const (
 	CurrentInputPort  = 1
 	CurrentOutputPort = 2
 	CurrentErrorPort  = 3
+	ErrorHandler      = 4
 	FirstUserTlsKey   = 100
 )
 
@@ -253,21 +254,31 @@ const (
 	EvalUnwind = -1
 )
 
+// This is a package holding an error while we're in parts of the system that can't easily
+// signal the error using the standard mechanism.  It is converted to an unwinding error by
+// SignalWrappedError.
+type WrappedError struct {
+	message string
+}
+
 // Returns (unwind-object, EvalUnwind) for use in the standard error
 // signalling protocol.
-//
-// TODO: Eventually this will invoke the error handler, which will itself
-// invoke an escape continuation; it will not just start an unwind with an
-// error message.
 func (c *Scheme) Error(message string) (Val, int) {
-	return c.WrapError(message), EvalUnwind
+	return c.SignalWrappedError(c.WrapError(message))
 }
 
 // Returns an unwind-object for use by the caller in its internal error
 // signalling protocol.  That the payload is a list here is to be compatible
 // with how call/cc does it; this will be cleaned up.
-func (c *Scheme) WrapError(message string) Val {
-	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: message}, Cdr: c.NullVal})
+func (c *Scheme) WrapError(message string) *WrappedError {
+	return &WrappedError{message: message}
+}
+
+// TODO: Eventually this will attempt to invoke the error handler, which will itself
+// invoke an escape continuation; it will not just start an unwind with an error message.
+// That will be the fallback behavior.
+func (c *Scheme) SignalWrappedError(we *WrappedError) (Val, int) {
+	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: we.message}, Cdr: c.NullVal}), EvalUnwind
 }
 
 // Returns an unwind-object wrapping the key and the payload.
@@ -290,7 +301,7 @@ func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
 }
 
 // Returns nil on success, otherwise an uwind-package.
-func (c *Scheme) InvokeConcurrent(proc Val) Val {
+func (c *Scheme) InvokeConcurrent(proc Val) *WrappedError {
 	// This is always (sint:go thunk) and there are "no" nullary primitive
 	// procedures, so let's keep it simple and ban primitive procedures from
 	// being used here.
@@ -328,7 +339,7 @@ func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
 	return vs, nil
 }
 
-func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv, thePrim func(*Scheme, []Val) (Val, int), theErr Val) {
+func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv, thePrim func(*Scheme, []Val) (Val, int), theErr *WrappedError) {
 	if p, ok := proc.(*Procedure); ok {
 		if len(args) < p.Lam.Fixed {
 			theErr = c.WrapError("Not enough arguments") // TODO msg
@@ -382,7 +393,7 @@ func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv
 func (c *Scheme) invokeInternal(proc Val, args []Val) (Val, int) {
 	newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
 	if unw != nil {
-		return unw, EvalUnwind
+		return c.SignalWrappedError(unw)
 	}
 	if prim != nil {
 		return prim(c, args)
@@ -431,7 +442,7 @@ again:
 		args := vals[1:]
 		newCode, newEnv, prim, iUnw := c.invokeSetup(maybeProc, args)
 		if iUnw != nil {
-			return iUnw, EvalUnwind
+			return c.SignalWrappedError(iUnw)
 		}
 		if prim != nil {
 			return prim(c, args)
@@ -462,7 +473,7 @@ again:
 		}
 		newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
 		if unw != nil {
-			return unw, EvalUnwind
+			return c.SignalWrappedError(unw)
 		}
 		if prim != nil {
 			return prim(c, args)

@@ -26,7 +26,7 @@ func initConcurrencyPrimitives(ctx *Scheme) {
 func primGo(ctx *Scheme, args []Val) (Val, int) {
 	err := ctx.InvokeConcurrent(args[0])
 	if err != nil {
-		return err, EvalUnwind
+		return ctx.SignalWrappedError(err)
 	}
 	return ctx.UnspecifiedVal, 1
 }

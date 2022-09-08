@@ -180,7 +180,7 @@ func primLess(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		res, err := cmp2(ctx, args[i-1], args[i], "<")
 		if err != nil {
-			return err, EvalUnwind
+			return ctx.SignalWrappedError(err)
 		}
 		if res != -1 {
 			return ctx.FalseVal, 1
@@ -193,7 +193,7 @@ func primLessOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		res, err := cmp2(ctx, args[i-1], args[i], "<=")
 		if err != nil {
-			return err, EvalUnwind
+			return ctx.SignalWrappedError(err)
 		}
 		if res == 1 {
 			return ctx.FalseVal, 1
@@ -206,7 +206,7 @@ func primEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		res, err := cmp2(ctx, args[i-1], args[i], "=")
 		if err != nil {
-			return err, EvalUnwind
+			return ctx.SignalWrappedError(err)
 		}
 		if res != 0 {
 			return ctx.FalseVal, 1
@@ -219,7 +219,7 @@ func primGreater(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		res, err := cmp2(ctx, args[i-1], args[i], ">")
 		if err != nil {
-			return err, EvalUnwind
+			return ctx.SignalWrappedError(err)
 		}
 		if res != 1 {
 			return ctx.FalseVal, 1
@@ -232,7 +232,7 @@ func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	for i := 1; i < len(args); i++ {
 		res, err := cmp2(ctx, args[i-1], args[i], ">=")
 		if err != nil {
-			return err, EvalUnwind
+			return ctx.SignalWrappedError(err)
 		}
 		if res == -1 {
 			return ctx.FalseVal, 1
@@ -384,7 +384,7 @@ func add2(ctx *Scheme, a Val, b Val) (Val, int) {
 	}
 	fa, fb, err := bothFloat(ctx, a, b, "+")
 	if err != nil {
-		return err, EvalUnwind
+		return ctx.SignalWrappedError(err)
 	}
 	var z big.Float
 	z.Add(fa, fb)
@@ -399,7 +399,7 @@ func sub2(ctx *Scheme, a Val, b Val) (Val, int) {
 	}
 	fa, fb, err := bothFloat(ctx, a, b, "+")
 	if err != nil {
-		return err, EvalUnwind
+		return ctx.SignalWrappedError(err)
 	}
 	var z big.Float
 	z.Sub(fa, fb)
@@ -414,7 +414,7 @@ func mul2(ctx *Scheme, a Val, b Val) (Val, int) {
 	}
 	fa, fb, err := bothFloat(ctx, a, b, "*")
 	if err != nil {
-		return err, EvalUnwind
+		return ctx.SignalWrappedError(err)
 	}
 	var z big.Float
 	z.Mul(fa, fb)
@@ -426,7 +426,7 @@ var fzero *big.Float = big.NewFloat(0)
 func div2(ctx *Scheme, a Val, b Val) (Val, int) {
 	fa, fb, err := bothFloat(ctx, a, b, "/")
 	if err != nil {
-		return err, EvalUnwind
+		return ctx.SignalWrappedError(err)
 	}
 	if (fa.IsInf() && fb.IsInf()) || (fa.Cmp(fzero) == 0 && fb.Cmp(fzero) == 0) {
 		return ctx.Error("/: Result is not a number: (/" + fa.String() + " " + fb.String() + ")")
@@ -436,7 +436,7 @@ func div2(ctx *Scheme, a Val, b Val) (Val, int) {
 	return &z, 1
 }
 
-func cmp2(ctx *Scheme, a Val, b Val, name string) (int, Val) {
+func cmp2(ctx *Scheme, a Val, b Val, name string) (int, *WrappedError) {
 	if ia, ib, ok := bothInt(a, b); ok {
 		return ia.Cmp(ib), nil
 	}
@@ -457,7 +457,7 @@ func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
 }
 
 // Coerce both values to float and return them
-func bothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, Val) {
+func bothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, *WrappedError) {
 	if fa, ok := a.(*big.Float); ok {
 		if fb, ok := b.(*big.Float); ok {
 			return fa, fb, nil

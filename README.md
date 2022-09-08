@@ -71,8 +71,7 @@ Try `sint help`
 - implement `select`, at least in a limited form
 - vectors
 - bytevectors
-- everything to do with exceptions
-- parameters - these are per-goroutine unwind-protected globals...
+- everything to do with exceptions / conditions
 - everything to do with environments, if we care
 - locks, for safe concurrent access to variables
 - maybe some notion of atomic operation, though in scheme this means atomic-set-car!,
