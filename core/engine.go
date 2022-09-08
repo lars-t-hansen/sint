@@ -286,7 +286,7 @@ func (c *Scheme) NewUnwindPackage(key Val, vs Val) Val {
 	return &UnwindPkg{Key: key, Payload: vs}
 }
 
-// Returns (values, nil) on success, otherwise (nil, unwind-object)
+// Returns (values, nil) on success, otherwise (nil, unwind-package)
 func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }

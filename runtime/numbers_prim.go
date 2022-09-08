@@ -143,7 +143,7 @@ func primMul(ctx *Scheme, args []Val) (Val, int) {
 	}
 	for _, v := range args[2:] {
 		r, nres = mul2(ctx, r, v)
-		if nres != EvalUnwind {
+		if nres == EvalUnwind {
 			return r, nres
 		}
 	}
