@@ -20,7 +20,11 @@ Usage:
     Enter the interactive repl
 
   sint eval expr
-    Evaluate the expression, print its result(s), and exit
+    Evaluate the expression, print its result(s), and exit.
+
+  sint load filename.sch
+    Load filename.sch: read its expressions, evaluate them in order and
+	print their results, and exit after the last.
 
   sint compile filename.sch
     Compile filename.sch into filename.go and exit.  The output will have
@@ -62,6 +66,12 @@ func main() {
 		evalExpr(engine, comp, args[1])
 	case "help":
 		fmt.Print(HelpText)
+	case "load":
+		// There could be multiple files too
+		if len(args) != 2 {
+			panic("Bad 'load' command, exactly one file required")
+		}
+		loadFile(engine, comp, args[1])
 	case "repl":
 		enterRepl(engine, comp)
 	default:
@@ -85,7 +95,6 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			writer.WriteRune('\n')
 			break
 		}
-		// TODO: Recover from compilation error
 		prog, progErr := comp.CompileToplevel(v)
 		if progErr != nil {
 			os.Stderr.WriteString(progErr.Error() + "\n")
@@ -97,9 +106,6 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			// Last-ditch error handler.  With a little more sophistication, there
 			// will be a call/cc to catch the error and we won't reach this code.
 			os.Stderr.WriteString("ERROR: " + unw.String() + "\n")
-			continue
-		}
-		if prog == nil {
 			continue
 		}
 		for _, r := range results {
@@ -143,6 +149,49 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 			writer.Flush()
 		}
 	}
+}
+
+func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
+	runtime.InitPrimitives(engine)
+	runtime.InitCompiled(engine)
+	input, inErr := os.Open(fn)
+	if inErr != nil {
+		panic(inErr)
+	}
+	reader := bufio.NewReader(input)
+	writer := &runtime.StdoutWriter{}
+	for {
+		v, rdrErr := runtime.Read(engine, reader)
+		if rdrErr != nil {
+			os.Stderr.WriteString(rdrErr.Error() + "\n")
+			os.Stderr.WriteString("Aborting\n")
+			os.Exit(1)
+		}
+		if v == engine.EofVal {
+			break
+		}
+		prog, progErr := comp.CompileToplevel(v)
+		if progErr != nil {
+			os.Stderr.WriteString(progErr.Error() + "\n")
+			os.Stderr.WriteString("Aborting\n")
+			os.Exit(1)
+		}
+		results, unw := engine.EvalToplevel(prog)
+		if unw != nil {
+			// Last-ditch error handler.  With a little more sophistication, there
+			// will be a call/cc to catch the error and we won't reach this code.
+			os.Stderr.WriteString("ERROR: " + unw.String() + "\n")
+			os.Stderr.WriteString("Aborting\n")
+			os.Exit(1)
+		}
+		for _, r := range results {
+			if r != engine.UnspecifiedVal {
+				runtime.Write(r, false, writer)
+				writer.WriteRune('\n')
+			}
+		}
+	}
+	input.Close()
 }
 
 func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {

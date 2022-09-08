@@ -264,20 +264,15 @@ func (c *Scheme) Error(message string) (Val, int) {
 }
 
 // Returns an unwind-object for use by the caller in its internal error
-// signalling protocol.
+// signalling protocol.  That the payload is a list here is to be compatible
+// with how call/cc does it; this will be cleaned up.
 func (c *Scheme) WrapError(message string) Val {
-	return c.NewUnwindPackage(c.FalseVal, []Val{&Str{Value: message}})
+	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: message}, Cdr: c.NullVal})
 }
 
-// Returns an unwind-object wrapping the key and the values; the values
-// are first consed into a list.  The unwinding is not necessarily for
-// an error, it could be for invoking a captured continuation.
-func (c *Scheme) NewUnwindPackage(key Val, vs []Val) Val {
-	l := c.NullVal
-	for i := len(vs) - 1; i >= 0; i-- {
-		l = &Cons{Car: vs[i], Cdr: l}
-	}
-	return &UnwindPkg{Key: key, Payload: l}
+// Returns an unwind-object wrapping the key and the payload.
+func (c *Scheme) NewUnwindPackage(key Val, vs Val) Val {
+	return &UnwindPkg{Key: key, Payload: vs}
 }
 
 // Returns (values, nil) on success, otherwise (nil, unwind-object)

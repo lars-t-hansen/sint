@@ -171,6 +171,6 @@ func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
 }
 
 func primUnwind(ctx *Scheme, args []Val) (Val, int) {
-	// (sint:unwind key values)
-	return ctx.NewUnwindPackage(args[0], []Val{args[1]}), EvalUnwind
+	// (sint:unwind key payload)
+	return ctx.NewUnwindPackage(args[0], args[1]), EvalUnwind
 }
