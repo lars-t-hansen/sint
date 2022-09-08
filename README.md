@@ -30,8 +30,8 @@ A number of subtractions and weirdnesses:
 
 - strings are Go strings, ie immutable byte arrays holding utf8-encoded unicode.  This means a fair amount of string-oriented Scheme code will not work out of the box.  See MANUAL.md for more.
 - no exact rationals or exact complexes - I never found these to be useful in practice
-- call/cc (not actually implemented yet) is only one-shot and upwards within the same goroutine
-- no environments.  Everything is defined in an open top-level scope, no primitives are inlined anywhere, and library functions use standard procedures freely.  You can redefine CAR - though you probably shouldn't!
+- call/cc is only one-shot and upwards within the same goroutine.  Many other uses for call/cc (generators, threads) are better implemented as goroutines, and call/cc+mutation is a nightmare anyway.
+- no first-class environments, and no protected primitives.  Everything is defined in an open top-level scope, no primitives are inlined anywhere, and library functions use standard procedures freely.  You can redefine CAR - though you probably shouldn't!
 
 R7RS conformance is not a goal; but progression toward it is desirable.
 
@@ -47,8 +47,6 @@ Try `sint help`
 
 ## MVP to-do list
 
-- call/cc
-- dynamic-wind
 - parameters (also see below):
   - support parameterize in the compiler
   - test more
@@ -71,10 +69,8 @@ Try `sint help`
 
 - regexes and string matching.  Syntax for literal regex could be #/.../ for example
 - implement `select`, at least in a limited form
-- a verb to load and run a file
 - vectors
 - bytevectors
-- `dynamic-wind` and its abbreviation (in sint) `unwind-protect`
 - everything to do with exceptions
 - parameters - these are per-goroutine unwind-protected globals...
 - everything to do with environments, if we care
