@@ -363,7 +363,7 @@ Body:&Begin{Exprs:[]Code{
 &Let{Exprs:[]Code{
 &Quote{Value:c.FalseVal},
 }, Body:&Call{Exprs:[]Code{
-&Global{Name:c.Intern("sint:unwind-handler")},
+&Global{Name:c.Intern("sint:call-with-unwind-handler")},
 &Quote{Value:c.FalseVal},
 &Lambda{
 Fixed:0, Rest:false,
