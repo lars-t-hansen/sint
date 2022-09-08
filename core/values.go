@@ -16,6 +16,7 @@ import "fmt"
 //   *Char,			// Unicode character
 //   *Str,			// Immutable UTF-8 encoded Unicode code points
 //   *Chan,			// Channel that can transmit any Val
+//   *UnwindPkg,    // Internal value that transmits unwind information
 //   *Null,			// The () singleton
 //   *True,			// The #t singleton
 //   *False,		// The #f singleton
@@ -25,6 +26,8 @@ import "fmt"
 //   *big.Int,		// Exact integer
 //   *big.Float,    // Inexact rational
 // }
+//
+// Eventually the UnwindPkg could become an instance of a Record type.
 
 type Val interface {
 	fmt.Stringer
@@ -87,6 +90,15 @@ type Chan struct {
 
 func (s *Chan) String() string {
 	return "channel"
+}
+
+type UnwindPkg struct {
+	Key     Val
+	Payload Val
+}
+
+func (u *UnwindPkg) String() string {
+	return "unwind-package: " + u.Payload.String()
 }
 
 type Null struct{}

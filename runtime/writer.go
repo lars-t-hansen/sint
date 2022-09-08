@@ -70,6 +70,8 @@ func Write(v Val, quoted bool, w Writer) {
 		w.WriteString("()")
 	case *Procedure:
 		w.WriteString("#<procedure>")
+	case *UnwindPkg:
+		w.WriteString("#<unwind-package>")
 	case *Symbol:
 		w.WriteString(x.Name)
 	case *Cons:

@@ -241,24 +241,43 @@ func (c *Scheme) SetTlsValue(key int32, v Val) {
 	c.tlsValues[key] = v
 }
 
-// When we unwind, eval() returns a (unwind-object, EvalUnwind) where the unwind-object
-// will be interpreted by whatever stops the unwinding.  The primitives have the same
+// When we unwind, eval() returns a (unwind-package, EvalUnwind) where the unwind-package
+// propagates information to whomever stops the unwinding.  The primitives have the same
 // convention.  However, EvalUnwind is internal to the evaluator and primitives, and
-// client code will instead usually receive a (values, unwind-object) tuple where
-// unwind-object is nil on success and non-nil on unwind.
+// client code will instead usually receive values embedded in the unwind-package.
+//
+// It is a system-wide invariant that unwinding carries an unwind-package; if
+// the `number-of-values`` return value is EvalUnwind then the `value`` return
+// value must be such a package.
 const (
 	EvalUnwind = -1
 )
 
-// Returns (unwind-object, EvalUnwind)
+// Returns (unwind-object, EvalUnwind) for use in the standard error
+// signalling protocol.
+//
+// TODO: Eventually this will invoke the error handler, which will itself
+// invoke an escape continuation; it will not just start an unwind with an
+// error message.
 func (c *Scheme) Error(message string) (Val, int) {
 	return c.WrapError(message), EvalUnwind
 }
 
-// Returns an unwind-object (if it returns at all)
+// Returns an unwind-object for use by the caller in its internal error
+// signalling protocol.
 func (c *Scheme) WrapError(message string) Val {
-	// TODO: Not what we want, probably.
-	return &Str{Value: message}
+	return c.NewUnwindPackage(c.FalseVal, []Val{&Str{Value: message}})
+}
+
+// Returns an unwind-object wrapping the key and the values; the values
+// are first consed into a list.  The unwinding is not necessarily for
+// an error, it could be for invoking a captured continuation.
+func (c *Scheme) NewUnwindPackage(key Val, vs []Val) Val {
+	l := c.NullVal
+	for i := len(vs) - 1; i >= 0; i-- {
+		l = &Cons{Car: vs[i], Cdr: l}
+	}
+	return &UnwindPkg{Key: key, Payload: l}
 }
 
 // Returns (values, nil) on success, otherwise (nil, unwind-object)
@@ -266,26 +285,16 @@ func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
-// Returns (values, nil) on success, otherwise (nil, unwind-object)
+// Returns (values, nil) on success, otherwise (nil, unwind-package)
 func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
-	newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
-	if unw != nil {
-		return nil, unw
-	}
-	var v Val
-	var k int
-	if prim != nil {
-		v, k = prim(c, args)
-	} else {
-		v, k = c.eval(newCode, newEnv)
-		if k == EvalUnwind {
-			return nil, v
-		}
+	v, k := c.invokeInternal(proc, args)
+	if k == EvalUnwind {
+		return nil, v
 	}
 	return c.captureValues(v, k)
 }
 
-// Returns nil on success, otherwise an uwind-object.
+// Returns nil on success, otherwise an uwind-package.
 func (c *Scheme) InvokeConcurrent(proc Val) Val {
 	// This is always (sint:go thunk) and there are "no" nullary primitive
 	// procedures, so let's keep it simple and ban primitive procedures from
@@ -299,6 +308,18 @@ func (c *Scheme) InvokeConcurrent(proc Val) Val {
 	}
 	go NewScheme(c).eval(newCode, newEnv)
 	return nil
+}
+
+func (c *Scheme) InvokeWithUnwindHandler(filterKey Val, thunkProc *Procedure, handleProc *Procedure) (Val, int) {
+	v, k := c.invokeInternal(thunkProc, []Val{})
+	if k != EvalUnwind {
+		return v, k
+	}
+	pkg := v.(*UnwindPkg)
+	if filterKey == c.FalseVal || filterKey == pkg.Key {
+		return c.invokeInternal(handleProc, []Val{pkg.Key, pkg.Payload})
+	}
+	return v, k
 }
 
 func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
@@ -361,6 +382,17 @@ func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv
 	}
 	theErr = c.WrapError("Invoke: Not a procedure" /*+ e.Exprs[0].String() + "\n" + proc.String()*/)
 	return
+}
+
+func (c *Scheme) invokeInternal(proc Val, args []Val) (Val, int) {
+	newCode, newEnv, prim, unw := c.invokeSetup(proc, args)
+	if unw != nil {
+		return unw, EvalUnwind
+	}
+	if prim != nil {
+		return prim(c, args)
+	}
+	return c.eval(newCode, newEnv)
 }
 
 type lexenv struct {
@@ -459,7 +491,7 @@ again:
 		// Then evaluate the exprs in order in the old env and assign values to slots, throwing if
 		// an expression returns the wrong number of values for the corresponding binding
 		// Then evaluate the body in that environment
-		return c.Error("LetValues not implemented")
+		panic("LetValues not implemented")
 	case *Letrec:
 		// TODO: Probably there's a more efficient way to do this?  Note we need
 		// fresh storage, so at a minimum we need to copy out of a master slice of

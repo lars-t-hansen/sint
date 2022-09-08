@@ -20,7 +20,8 @@ func initControlPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:new-tls-key", 0, false, primNewTlsKey)
 	addPrimitive(ctx, "sint:read-tls-value", 1, false, primReadTlsValue)
 	addPrimitive(ctx, "sint:write-tls-value", 2, false, primWriteTlsValue)
-	addPrimitive(ctx, "sint:unwind-protect", 2, false, primUnwindProtect)
+	addPrimitive(ctx, "sint:call-with-unwind-handler", 3, false, primUnwindHandler)
+	addPrimitive(ctx, "sint:unwind", 2, false, primUnwind)
 
 	// See runtime/control.sch.  This is a procedure with the signature (fn l)
 	// where the `fn` must be a procedure and `l` must be a proper list.
@@ -151,6 +152,25 @@ func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.Error("sint:write-tls-value: key must be exact integer: " + v0.String())
 }
 
-func primUnwindProtect(ctx *Scheme, args []Val) (Val, int) {
-	panic("sint:unwind-protect not implemented")
+// The documentation for the unwinding primitives is in control.sch
+
+func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
+	// (sint:call-with-unwind-handler key thunk handler)
+	filterKey := args[0]
+	thunk := args[1]
+	thunkProc, thunkOk := thunk.(*Procedure)
+	if !thunkOk || thunkProc.Lam.Fixed != 0 {
+		return ctx.Error("sint:unwind-handler: not a thunk: " + thunk.String())
+	}
+	handler := args[2]
+	handlerProc, handlerOk := handler.(*Procedure)
+	if !handlerOk || handlerProc.Lam.Fixed != 2 {
+		return ctx.Error("sint:unwind-handler: not a handler: " + thunk.String())
+	}
+	return ctx.InvokeWithUnwindHandler(filterKey, thunkProc, handlerProc)
+}
+
+func primUnwind(ctx *Scheme, args []Val) (Val, int) {
+	// (sint:unwind key values)
+	return ctx.NewUnwindPackage(args[0], []Val{args[1]}), EvalUnwind
 }

@@ -31,6 +31,7 @@ A number of subtractions and weirdnesses:
 - strings are Go strings, ie immutable byte arrays holding utf8-encoded unicode.  This means a fair amount of string-oriented Scheme code will not work out of the box.  See MANUAL.md for more.
 - no exact rationals or exact complexes - I never found these to be useful in practice
 - call/cc (not actually implemented yet) is only one-shot and upwards within the same goroutine
+- no environments.  Everything is defined in an open top-level scope, no primitives are inlined anywhere, and library functions use standard procedures freely.  You can redefine CAR - though you probably shouldn't!
 
 R7RS conformance is not a goal; but progression toward it is desirable.
 
@@ -46,21 +47,22 @@ Try `sint help`
 
 ## MVP to-do list
 
+- call/cc
+- dynamic-wind
 - parameters (also see below):
   - support parameterize in the compiler
-  - this means dynamic-wind too
   - test more
   - error handler is a parameter
 - Number syntax is really wonky, "-1" doesn't work.  Clean this up.
-- "round" needs to round, not truncate
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)
 - ports and basic text I/O
   - default ports are parameters
 - better call/cc based error handling probably
 - fix error reporting: the pretty printer in `error` is really dumb, as is the one in the last-ditch error handler
-- call/cc
-- dynamic-wind
 - expt
+- quotient
+- remainder
+- "round" needs to round, not truncate
 - high-value nonstandard string operations, taken from the Go library
 - sundry FIXMEs
 - clean up documentation
