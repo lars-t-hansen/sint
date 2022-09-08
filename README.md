@@ -46,11 +46,11 @@ Try `sint help`
 
 ## MVP to-do list
 
-- proper unwinding from the reader
 - parameters (also see below):
   - support parameterize in the compiler
   - this means dynamic-wind too
   - test more
+  - error handler is a parameter
 - Number syntax is really wonky, "-1" doesn't work.  Clean this up.
 - "round" needs to round, not truncate
 - implement let-values, because multiple values are ubiquitous (and use it in runtime/strings.sch)

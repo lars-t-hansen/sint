@@ -41,14 +41,20 @@ func TestReader(t *testing.T) {
 }
 
 func expectEOF(c *Scheme, in InputStream, t *testing.T) {
-	v := Read(c, in)
+	v, err := Read(c, in)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 	if v != c.EofVal {
 		t.Fatal("Expected EOF object")
 	}
 }
 
 func expectSymbol(c *Scheme, in InputStream, s string, t *testing.T) {
-	v := Read(c, in)
+	v, err := Read(c, in)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 	if sym, ok := v.(*Symbol); ok {
 		if sym.Name == s {
 			return
@@ -58,7 +64,10 @@ func expectSymbol(c *Scheme, in InputStream, s string, t *testing.T) {
 }
 
 func expectExact(c *Scheme, in InputStream, i int, t *testing.T) {
-	v := Read(c, in)
+	v, err := Read(c, in)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 	if n, ok := v.(*big.Int); ok {
 		if n.Cmp(big.NewInt(int64(i))) == 0 {
 			return
@@ -68,7 +77,10 @@ func expectExact(c *Scheme, in InputStream, i int, t *testing.T) {
 }
 
 func expectInexact(c *Scheme, in InputStream, d float64, t *testing.T) {
-	v := Read(c, in)
+	v, err := Read(c, in)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
 	if n, ok := v.(*big.Float); ok {
 		if n.Cmp(big.NewFloat(d)) == 0 {
 			return

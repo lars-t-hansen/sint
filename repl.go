@@ -76,7 +76,11 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	writer := &runtime.StdoutWriter{}
 	for {
 		writer.WriteString("> ")
-		v := runtime.Read(engine, reader)
+		v, rdrErr := runtime.Read(engine, reader)
+		if rdrErr != nil {
+			os.Stderr.WriteString(rdrErr.Error() + "\n")
+			continue
+		}
 		if v == engine.EofVal {
 			writer.WriteRune('\n')
 			break
@@ -112,7 +116,12 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	runtime.InitCompiled(engine)
 	reader := bufio.NewReader(strings.NewReader(expr))
 	writer := bufio.NewWriter(os.Stdout)
-	v := runtime.Read(engine, reader)
+	v, rdrErr := runtime.Read(engine, reader)
+	if rdrErr != nil {
+		os.Stderr.WriteString(rdrErr.Error() + "\n")
+		os.Stderr.WriteString("Aborting\n")
+		os.Exit(1)
+	}
 	prog, progErr := comp.CompileToplevel(v)
 	if progErr != nil {
 		os.Stderr.WriteString(progErr.Error() + "\n")
@@ -187,7 +196,12 @@ func init%s(c *Scheme) {
 `, fn, moduleName, moduleName)
 	id := 1
 	for {
-		v := runtime.Read(engine, reader)
+		v, rdrErr := runtime.Read(engine, reader)
+		if rdrErr != nil {
+			os.Stderr.WriteString(rdrErr.Error() + "\n")
+			os.Stderr.WriteString("Aborting\n")
+			os.Exit(1)
+		}
 		if v == engine.EofVal {
 			break
 		}

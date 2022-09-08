@@ -14,20 +14,35 @@ type InputStream interface {
 	UnreadRune() error
 }
 
+type ReadError struct {
+	message string
+}
+
+func (r *ReadError) Error() string {
+	return r.message
+}
+
 type reader struct {
 	s   *Scheme
 	rdr InputStream
 }
 
-func Read(s *Scheme, rdr InputStream) Val {
+func Read(s *Scheme, rdr InputStream) (Val, error) {
 	r := &reader{s: s, rdr: rdr}
 	return r.read()
 }
 
-func (r *reader) read() Val {
-	c, atEOF := r.skipWhitespace()
+func (r *reader) readError(msg string) *ReadError {
+	return &ReadError{message: msg}
+}
+
+func (r *reader) read() (Val, error) {
+	c, atEOF, err := r.skipWhitespace()
+	if err != nil {
+		return nil, err
+	}
 	if atEOF {
-		return r.s.EofVal
+		return r.s.EofVal, nil
 	}
 	switch c {
 	case '(':
@@ -35,40 +50,45 @@ func (r *reader) read() Val {
 	case '.':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
-			return r.s.Shared.DotSym
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
+			return r.s.Shared.DotSym, nil
 		}
 		r.rdr.UnreadRune()
 		// TODO: Maybe .37 is valid syntax for 0.37
 		if isSymbolSubsequent(d) {
 			return r.readSymbol(c)
 		}
-		return r.s.Shared.DotSym
+		return r.s.Shared.DotSym, nil
 	case '\'':
-		v := r.read()
-		return &Cons{Car: r.s.Shared.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}
+		v, err := r.read()
+		if err != nil {
+			return nil, err
+		}
+		return &Cons{Car: r.s.Shared.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}, nil
 	case '#':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
 			return r.handleError(err)
 		}
 		if d == 't' {
-			return r.s.TrueVal
+			return r.s.TrueVal, nil
 		}
 		if d == 'f' {
-			return r.s.FalseVal
+			return r.s.FalseVal, nil
 		}
 		if d == 'x' {
 			return r.readHexNumber()
 		}
 		if d == '/' {
 			// FIXME: Implement this
-			panic("No syntax for regular expressions yet")
+			return nil, r.readError("No syntax for regular expressions yet")
 		}
 		if d == '\\' {
 			return r.readCharacter()
 		}
-		panic("Unknown # syntax")
+		return nil, r.readError("Unknown # syntax")
 	case '"':
 		return r.readString()
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
@@ -78,35 +98,52 @@ func (r *reader) read() Val {
 			// TODO: quasiquote, unquote, unquote-splicing
 			return r.readSymbol(c)
 		}
-		panic("Unknown character")
+		return nil, r.readError("Unknown character")
 	}
 }
 
-func (r *reader) readNotEOF() Val {
-	w := r.read()
-	if w == r.s.EofVal {
-		panic("EOF not allowed here")
+func (r *reader) readNotEOF() (Val, error) {
+	w, err := r.read()
+	if err != nil {
+		return nil, err
 	}
-	return w
+	if w == r.s.EofVal {
+		return nil, r.readError("EOF not allowed here")
+	}
+	return w, nil
 }
 
 // Initial paren has been consumed
-func (r *reader) readList() Val {
+func (r *reader) readList() (Val, error) {
 	var l *Cons
 	var last *Cons
 	for {
-		if r.canReadRightParen() {
+		canRead, err := r.canReadRightParen()
+		if err != nil {
+			return nil, err
+		}
+		if canRead {
 			break
 		}
-		v := r.readNotEOF()
+		v, err := r.readNotEOF()
+		if err != nil {
+			return nil, err
+		}
 		if v == r.s.Shared.DotSym {
 			if last == nil {
-				panic("Illegal '.' in list")
+				return nil, r.readError("Illegal '.' in list")
 			}
-			w := r.readNotEOF()
+			w, err := r.readNotEOF()
+			if err != nil {
+				return nil, err
+			}
 			last.Cdr = w
-			if !r.canReadRightParen() {
-				panic("Expected ')'")
+			canRead, err := r.canReadRightParen()
+			if err != nil {
+				return nil, err
+			}
+			if !canRead {
+				return nil, r.readError("Expected ')'")
 			}
 			break
 		}
@@ -119,35 +156,42 @@ func (r *reader) readList() Val {
 		last = p
 	}
 	if l == nil {
-		return r.s.NullVal
+		return r.s.NullVal, nil
 	}
-	return l
+	return l, nil
 }
 
-func (r *reader) canReadRightParen() bool {
-	c, atEOF := r.skipWhitespace()
+func (r *reader) canReadRightParen() (bool, error) {
+	c, atEOF, err := r.skipWhitespace()
+	if err != nil {
+		return false, err
+	}
 	if atEOF {
-		panic("EOF in datum")
+		return false, r.readError("EOF in datum")
 	}
 	if c == ')' {
-		return true
+		return true, nil
 	}
 	r.rdr.UnreadRune()
-	return false
+	return false, nil
 }
 
 // Leading #x has been consumed
-func (r *reader) readHexNumber() Val {
-	panic("Hex numbers not supported yet")
+func (r *reader) readHexNumber() (Val, error) {
+	return nil, r.readError("Hex numbers not supported yet")
 }
 
 // "initial" is the leading digit
-func (r *reader) readDecimalNumber(initial rune) Val {
+func (r *reader) readDecimalNumber(initial rune) (Val, error) {
 	s := string(initial)
 	isFloating := false
 
 	// Integer part
-	if digs, any := r.readDecimalDigits(); any {
+	digs, any, err := r.readDecimalDigits()
+	if err != nil {
+		return nil, err
+	}
+	if any {
 		s = s + digs
 	}
 
@@ -155,15 +199,20 @@ func (r *reader) readDecimalNumber(initial rune) Val {
 	{
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
 			goto eofAfterDatum
 		}
 		if d == '.' {
 			isFloating = true
 			s = s + "."
-			digs, any := r.readDecimalDigits()
+			digs, any, err := r.readDecimalDigits()
+			if err != nil {
+				return nil, err
+			}
 			if !any {
-				panic("Digits required after decimal point")
+				return nil, r.readError("Digits required after decimal point")
 			}
 			s = s + digs
 		} else {
@@ -175,7 +224,9 @@ func (r *reader) readDecimalNumber(initial rune) Val {
 	{
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
 			goto eofAfterDatum
 		}
 		if d == 'e' || d == 'E' {
@@ -183,17 +234,22 @@ func (r *reader) readDecimalNumber(initial rune) Val {
 			s = s + string(d)
 			x, _, err := r.rdr.ReadRune()
 			if err != nil {
-				r.handleErrorIgnoreEOF(err)
-				panic("EOF in datum")
+				if e := r.handleErrorIgnoreEOF(err); e != nil {
+					return nil, e
+				}
+				return nil, r.readError("EOF in datum")
 			}
 			if x == '+' || x == '-' {
 				s = s + string(x)
 			} else {
 				r.rdr.UnreadRune()
 			}
-			digs, any := r.readDecimalDigits()
+			digs, any, err := r.readDecimalDigits()
+			if err != nil {
+				return nil, err
+			}
 			if !any {
-				panic("Digits required in exponent")
+				return nil, r.readError("Digits required in exponent")
 			}
 			s = s + digs
 		} else {
@@ -205,18 +261,20 @@ eofAfterDatum:
 	if isFloating {
 		var f big.Float
 		f.Parse(s, 10)
-		return &f
+		return &f, nil
 	}
 	var i big.Int
 	i.SetString(s, 10)
-	return &i
+	return &i, nil
 }
 
-func (r *reader) readDecimalDigits() (s string, any bool) {
+func (r *reader) readDecimalDigits() (s string, any bool, rdrErr error) {
 	for {
 		c, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				rdrErr = e
+			}
 			return
 		}
 		if c < '0' || c > '9' {
@@ -228,59 +286,70 @@ func (r *reader) readDecimalDigits() (s string, any bool) {
 	}
 }
 
-func (r *reader) readCharacter() Val {
+func (r *reader) readCharacter() (Val, error) {
 	e, _, err := r.rdr.ReadRune()
 	if err != nil {
-		r.handleErrorIgnoreEOF(err)
-		panic("EOF in character")
+		if e := r.handleErrorIgnoreEOF(err); e != nil {
+			return nil, e
+		}
+		return nil, r.readError("EOF in character")
 	}
 	switch e {
 	case 'n', 'r', 's', 't':
 		f, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
 			break
 		}
 		r.rdr.UnreadRune()
 		if !isAlphabetic(f) {
 			break
 		}
-		name := r.readSymbol(e)
+		name, err := r.readSymbol(e)
+		if err != nil {
+			return nil, err
+		}
 		if name == r.s.Shared.NewlineSym {
-			return &Char{Value: '\n'}
+			return &Char{Value: '\n'}, nil
 		}
 		if name == r.s.Shared.ReturnSym {
-			return &Char{Value: '\r'}
+			return &Char{Value: '\r'}, nil
 		}
 		if name == r.s.Shared.TabSym {
-			return &Char{Value: '\t'}
+			return &Char{Value: '\t'}, nil
 		}
 		if name == r.s.Shared.SpaceSym {
-			return &Char{Value: ' '}
+			return &Char{Value: ' '}, nil
 		}
-		panic("Illegal character name: " + name.Name)
+		return nil, r.readError("Illegal character name: " + name.Name)
 	default:
 		break
 	}
-	return &Char{Value: e}
+	return &Char{Value: e}, nil
 }
 
-func (r *reader) readString() *Str {
+func (r *reader) readString() (*Str, error) {
 	s := ""
 	for {
 		c, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
-			panic("EOF in string")
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
+			return nil, r.readError("EOF in string")
 		}
 		if c == '"' {
-			return &Str{Value: s}
+			return &Str{Value: s}, nil
 		}
 		if c == '\\' {
 			d, _, err := r.rdr.ReadRune()
 			if err != nil {
-				r.handleErrorIgnoreEOF(err)
-				panic("EOF in string")
+				if e := r.handleErrorIgnoreEOF(err); e != nil {
+					return nil, e
+				}
+				return nil, r.readError("EOF in string")
 			}
 			switch d {
 			case 'n':
@@ -293,7 +362,7 @@ func (r *reader) readString() *Str {
 				c = '\\'
 			default:
 				// TODO: \x, \u, probably others
-				panic("Unsupported escape sequence in string")
+				return nil, r.readError("Unsupported escape sequence in string")
 			}
 		}
 		// TODO: Check for invalid code point?
@@ -301,12 +370,14 @@ func (r *reader) readString() *Str {
 	}
 }
 
-func (r *reader) readSymbol(initial rune) *Symbol {
+func (r *reader) readSymbol(initial rune) (*Symbol, error) {
 	s := string(initial)
 	for {
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
-			r.handleErrorIgnoreEOF(err)
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
 			break
 		}
 		if isSymbolSubsequent(d) {
@@ -316,18 +387,21 @@ func (r *reader) readSymbol(initial rune) *Symbol {
 			break
 		}
 	}
-	return r.s.Intern(s)
+	return r.s.Intern(s), nil
 }
 
 // Skip whitespace and comments.  Throws on I/O error.  If EOF is encountered,
 // atEOF is true and the ch is garbage.  Otherwise, atEOF is false and ch has the
 // first nonblank character.
-func (r *reader) skipWhitespace() (ch rune, atEOF bool) {
+func (r *reader) skipWhitespace() (ch rune, atEOF bool, rdrErr error) {
 again:
 	c, _, err := r.rdr.ReadRune()
 	if err != nil {
-		r.handleErrorIgnoreEOF(err)
-		atEOF = true
+		if e := r.handleErrorIgnoreEOF(err); e != nil {
+			rdrErr = e
+		} else {
+			atEOF = true
+		}
 		return
 	}
 	if isSpace(c) {
@@ -337,8 +411,11 @@ again:
 		for {
 			d, _, err := r.rdr.ReadRune()
 			if err != nil {
-				r.handleErrorIgnoreEOF(err)
-				atEOF = true
+				if e := r.handleErrorIgnoreEOF(err); e != nil {
+					rdrErr = e
+				} else {
+					atEOF = true
+				}
 				return
 			}
 			if d == '\n' {
@@ -405,14 +482,16 @@ func isAlphabetic(c rune) bool {
 	return c < 128 && (charTable[c]&kAlphabetic) != 0
 }
 
-func (r *reader) handleError(err error) Val {
-	r.handleErrorIgnoreEOF(err)
-	return r.s.EofVal
+func (r *reader) handleError(err error) (Val, error) {
+	if e := r.handleErrorIgnoreEOF(err); e != nil {
+		return nil, e
+	}
+	return r.s.EofVal, nil
 }
 
-func (r *reader) handleErrorIgnoreEOF(err error) {
+func (r *reader) handleErrorIgnoreEOF(err error) error {
 	if err == io.EOF {
-		return
+		return nil
 	}
-	panic("I/O error")
+	return r.readError("I/O error")
 }
