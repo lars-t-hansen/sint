@@ -47,6 +47,9 @@ type SharedScheme struct {
 	// must not reference some other parameter on the latter thread.
 	nextTlsKey int32
 
+	// Counter for goroutine ID.  Atomic as for nextGensym.
+	nextGoroutineId int64
+
 	//////////////////////////////////////////////////////////////////////////
 	//
 	// Immutable state
@@ -149,6 +152,8 @@ type Scheme struct {
 	// so they probably are not all that useful frankly.
 	Zero *big.Int
 
+	GoroutineId *big.Int
+
 	///////////////////////////////////////////////////////////////////////////////
 	//
 	// Per-thread mutable state
@@ -183,6 +188,7 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 		EofVal:         ss.EofVal,
 		Zero:           big.NewInt(0),
 		tlsValues:      make(map[int32]Val),
+		GoroutineId:    big.NewInt(atomic.AddInt64(&ss.nextGoroutineId, 1)),
 	}
 
 	// Inherit initial parameter values from oldScheme.

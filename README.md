@@ -46,6 +46,7 @@ Try `sint help`
 
 ## MVP to-do list
 
+- proper unwinding from the reader
 - parameters (also see below):
   - support parameterize in the compiler
   - this means dynamic-wind too
