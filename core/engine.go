@@ -1,4 +1,4 @@
-// Evaluation engine core
+// Evaluation engine core.
 
 package core
 
@@ -160,13 +160,13 @@ type Scheme struct {
 	// Per-thread mutable state
 
 	// This is interpreted in the context of the number-of-values flag passed back
-	// in the evaluator
+	// in the evaluator.
 	MultiVals []Val
 
 	// The tls store is used for parameter values primarily, but can also be used
 	// for other things.  The key is global; see comments in SharedScheme.
 	// The store is initialized from the parent's store when the thread is forked.
-	//  Threads never merge.
+	// Threads never merge.
 	tlsValues map[int32]Val
 }
 
