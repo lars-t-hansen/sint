@@ -100,7 +100,7 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			os.Stderr.WriteString(progErr.Error() + "\n")
 			continue
 		}
-		writer.WriteString(prog.String() + "\n")
+		//writer.WriteString(prog.String() + "\n")
 		results, unw := engine.EvalToplevel(prog)
 		if unw != nil {
 			// Last-ditch error handler.  With a little more sophistication, there

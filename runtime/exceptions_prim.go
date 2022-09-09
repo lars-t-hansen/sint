@@ -1,3 +1,5 @@
+// R7RS 6.11 "Exceptions".  Also see exceptions.sch.
+
 package runtime
 
 import (

@@ -1,4 +1,9 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+;;
+;; R7RS 6.7 "Strings"
+;;
+;; Note that strings in sint are Go strings: immutable byte arrays holding (mostly) UTF8-encoded
+;; Unicode.  String lengths and string indices are *byte* lengths and indices.
 
 ;; This would be more efficient as a primitive, but it's likely used for very short strings and only
 ;; infrequently.

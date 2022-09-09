@@ -1,4 +1,6 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+;;
+;; R7RS 6.10 "Control features"
 
 ;; (sint:compile-toplevel-phrase x) interprets the datum `x` as top-level source code and returns a
 ;; thunk that evaluates that code and returns its result.
@@ -62,6 +64,12 @@
              (sint:write-tls-value key (conv (car rest))))
             (else
              (error "Invalid call to parameter function"))))))
+
+;; Note that call-with-current-continuation is one-shot upward-only within the goroutine that
+;; created the continuation function, ie, it's setjmp/longjmp.  Other uses of first-class
+;; continuations (threads, coroutines, generators) are instead served by goroutines.
+;;
+;; As a consequence, dynamic-wind is really just unwind-protect.
 
 ;; (sint:unwind key values) triggers unwinding in the evaluator with the tuple (key, values).  The
 ;; values are whatever we wish to be propagating to the receiver.  key must be an object value

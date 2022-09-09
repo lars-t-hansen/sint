@@ -1,7 +1,10 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
 
-;; TODO: This may not terminate
+;; R7R7 6.1 "Equivalence predicates"
+;;
 ;; TODO: strings and vectors, eventually
+
+;; TODO: This may not terminate
 
 (define (equal? a b)
   (or (eqv? a b)

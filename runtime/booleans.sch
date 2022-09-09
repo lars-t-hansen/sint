@@ -1,4 +1,6 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+;;
+;; R7RS 6.3 "Booleans"
 
 (define (boolean? x)
   (or (eq? x #t) (eq? x #f)))

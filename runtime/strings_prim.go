@@ -1,6 +1,10 @@
 // String primitive procedures.
 //
-// R7RS 6.7, Strings
+// R7RS 6.7, Strings.  Also see strings.sch.
+//
+// Note that strings in sint are Go strings: immutable byte arrays
+// holding (mostly) UTF8-encoded Unicode.  String lengths and string
+// indices are *byte* lengths and indices.
 
 package runtime
 

@@ -1,4 +1,6 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+;;
+;; R7RS 6.5 "Symbols"
 
 (define symbol=?
   (letrec ((check

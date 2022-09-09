@@ -1,4 +1,6 @@
 ;; -*- indent-tabs-mode: nil; fill-column: 100 -*-
+;;
+;; R7RS 6.11 "Exceptions"
 
 (define error
   (letrec ((loop
