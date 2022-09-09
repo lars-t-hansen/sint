@@ -57,13 +57,16 @@
   (let ((conv (if (null? rest) (lambda (x) x) (car rest)))
         (key  (sint:new-tls-key)))
     (sint:write-tls-value key (conv init))
-    (lambda args
-      (cond ((null? args)
-             (sint:read-tls-value key))
-            ((null? cdr rest)
-             (sint:write-tls-value key (conv (car rest))))
-            (else
-             (error "Invalid call to parameter function"))))))
+    (sint:make-parameter-function key conv)))
+
+(define (sint:make-parameter-function key conv)
+  (lambda args
+    (cond ((null? args)
+           (sint:read-tls-value key))
+          ((null? (cdr args))
+           (sint:write-tls-value key (conv (car args))))
+          (else
+           (error "Invalid call to parameter function")))))
 
 ;; Note that call-with-current-continuation is one-shot upward-only within the goroutine that
 ;; created the continuation function, ie, it's setjmp/longjmp.  Other uses of first-class
