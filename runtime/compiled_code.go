@@ -6,16 +6,19 @@ package runtime
 import . "sint/core"
 
 func InitCompiled(c *Scheme) {
-	// It's fine for these to be in alpha order, I think; they had better
-	// not reference each other during initialization.
+	// Fundamental stuff.  These should not reference each other during
+	// initialization and can be in alpha order.
 	initBooleans(c)
 	initControl(c)
 	initEquivalence(c)
 	initExceptions(c)
-	initIo(c)
 	initNumbers(c)
 	initPairs(c)
 	initStrings(c)
 	initSymbols(c)
 	initSystem(c)
+
+	// Higher-level stuff.  These can reference definitions from the previous set
+	// during initialization.
+	initIo(c)
 }

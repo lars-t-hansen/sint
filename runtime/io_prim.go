@@ -13,6 +13,9 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "writeln", 1, true, primWriteln)
 	addPrimitive(ctx, "eof-object", 0, false, primEof)
 	addPrimitive(ctx, "eof-object?", 1, false, primEofObjectp)
+	addPrimitive(ctx, "port?", 1, false, primPortp)
+	addPrimitive(ctx, "close-port", 1, false, primClosePort)
+	addPrimitive(ctx, "sint:port-flags", 1, false, primPortFlags)
 }
 
 func primWrite(ctx *Scheme, args []Val) (Val, int) {
@@ -52,4 +55,34 @@ func primEofObjectp(ctx *Scheme, args []Val) (Val, int) {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
+}
+
+func primPortp(ctx *Scheme, args []Val) (Val, int) {
+	/*
+		if _, ok := args[0].(*EofObject); ok {
+			return ctx.TrueVal, 1
+		}
+	*/
+	// FIXME
+	return ctx.FalseVal, 1
+}
+
+func primPortFlags(ctx *Scheme, args []Val) (Val, int) {
+	/*
+		if _, ok := args[0].(*EofObject); ok {
+			return ctx.TrueVal, 1
+		}
+	*/
+	// FIXME
+	return ctx.Zero, 1
+}
+
+func primClosePort(ctx *Scheme, args []Val) (Val, int) {
+	/*
+		if _, ok := args[0].(*EofObject); ok {
+			return ctx.TrueVal, 1
+		}
+	*/
+	// FIXME
+	return ctx.Zero, 1
 }
