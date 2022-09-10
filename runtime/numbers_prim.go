@@ -38,6 +38,11 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "ceiling", 1, false, primCeiling)
 	addPrimitive(ctx, "truncate", 1, false, primTruncate)
 	addPrimitive(ctx, "round", 1, false, primRound)
+	addPrimitive(ctx, "bitwise-and", 0, true, primBitwiseAnd)
+	addPrimitive(ctx, "bitwise-or", 0, true, primBitwiseOr)
+	addPrimitive(ctx, "bitwise-xor", 0, true, primBitwiseXor)
+	addPrimitive(ctx, "bitwise-and-not", 2, false, primBitwiseAndNot)
+	addPrimitive(ctx, "bitwise-not", 1, false, primBitwiseNot)
 }
 
 func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
@@ -376,6 +381,87 @@ func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
 	return ctx.Error(name + ": Not a number: " + v.String())
 }
 
+func primBitwiseAnd(ctx *Scheme, args []Val) (Val, int) {
+	if len(args) == 0 {
+		return ctx.Zero, 1
+	}
+	if len(args) == 1 {
+		return checkNumber(ctx, args[0], "bitwise-and")
+	}
+	r, nres := and2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
+	for _, v := range args[2:] {
+		r, nres = and2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
+	}
+	return r, 1
+}
+
+func primBitwiseOr(ctx *Scheme, args []Val) (Val, int) {
+	if len(args) == 0 {
+		return ctx.Zero, 1
+	}
+	if len(args) == 1 {
+		return checkNumber(ctx, args[0], "bitwise-or")
+	}
+	r, nres := or2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
+	for _, v := range args[2:] {
+		r, nres = or2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
+	}
+	return r, 1
+}
+
+func primBitwiseXor(ctx *Scheme, args []Val) (Val, int) {
+	if len(args) == 0 {
+		return ctx.Zero, 1
+	}
+	if len(args) == 1 {
+		return checkNumber(ctx, args[0], "bitwise-xor")
+	}
+	r, nres := xor2(ctx, args[0], args[1])
+	if nres == EvalUnwind {
+		return r, nres
+	}
+	for _, v := range args[2:] {
+		r, nres = xor2(ctx, r, v)
+		if nres == EvalUnwind {
+			return r, nres
+		}
+	}
+	return r, 1
+}
+
+func primBitwiseAndNot(ctx *Scheme, args []Val) (Val, int) {
+	a := args[0]
+	b := args[1]
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.AndNot(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("bitwise-and-not: numbers must be exact integers: " + a.String() + " " + b.String())
+}
+
+func primBitwiseNot(ctx *Scheme, args []Val) (Val, int) {
+	a := args[0]
+	if ia, ok := a.(*big.Int); ok {
+		var z big.Int
+		z.Not(ia)
+		return &z, 1
+	}
+	return ctx.Error("bitwise-not: not an exact integer: " + a.String())
+}
+
 func add2(ctx *Scheme, a Val, b Val) (Val, int) {
 	if ia, ib, ok := bothInt(a, b); ok {
 		var z big.Int
@@ -445,6 +531,33 @@ func cmp2(ctx *Scheme, a Val, b Val, name string) (int, *WrappedError) {
 		return 0, err
 	}
 	return fa.Cmp(fb), nil
+}
+
+func and2(ctx *Scheme, a Val, b Val) (Val, int) {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.And(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("bitwise-and: numbers must be exact integers: " + a.String() + " " + b.String())
+}
+
+func or2(ctx *Scheme, a Val, b Val) (Val, int) {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Or(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("bitwise-or: numbers must be exact integers: " + a.String() + " " + b.String())
+}
+
+func xor2(ctx *Scheme, a Val, b Val) (Val, int) {
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Xor(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("bitwise-xor: numbers must be exact integers: " + a.String() + " " + b.String())
 }
 
 func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
