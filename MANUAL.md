@@ -125,3 +125,17 @@ If we have a channel that always delivers a value then it may be possible to cha
 ## Synchronization and atomics (evolving)
 
 TBD.
+
+## Numbers
+
+### Bitwise operations
+
+Bitwise operations are interpreted as if on two's complement integers; the arguments must be exact integers.
+
+* `(bitwise-and n ...)`
+* `(bitwise-or n ...)`
+* `(bitwise-xor n ...)`
+* `(bitwise-and-not n1 n2)` computes `(bitwise-and n1 (bitwise-not n2))`
+* `(bitwise-not n)`
+
+(Currently missing are bitwise shifts and operations for extracting and inserting individual bits or bit fields)
