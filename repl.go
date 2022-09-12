@@ -86,6 +86,7 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	writer := runtime.NewStdoutWriter()
 	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
 	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(reader, true /* isText */, "<standard input>"))
+	// TODO: stderr
 	for {
 		writer.WriteString("> ")
 		v, rdrErr := runtime.Read(engine, reader)
@@ -122,9 +123,13 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	runtime.InitPrimitives(engine)
 	runtime.InitCompiled(engine)
-	reader := bufio.NewReader(strings.NewReader(expr))
+	sourceReader := bufio.NewReader(strings.NewReader(expr))
 	writer := runtime.NewStdoutWriter()
-	v, rdrErr := runtime.Read(engine, reader)
+	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
+	stdin := runtime.NewStdinReader()
+	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(stdin, true /* isText */, "<standard input>"))
+	// TODO: stderr
+	v, rdrErr := runtime.Read(engine, sourceReader)
 	if rdrErr != nil {
 		os.Stderr.WriteString(rdrErr.Error() + "\n")
 		os.Stderr.WriteString("Aborting\n")
@@ -160,10 +165,14 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 	if inErr != nil {
 		panic(inErr)
 	}
-	reader := bufio.NewReader(input)
+	sourceReader := bufio.NewReader(input)
 	writer := runtime.NewStdoutWriter()
+	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
+	stdin := runtime.NewStdinReader()
+	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(stdin, true /* isText */, "<standard input>"))
+	// TODO: stderr
 	for {
-		v, rdrErr := runtime.Read(engine, reader)
+		v, rdrErr := runtime.Read(engine, sourceReader)
 		if rdrErr != nil {
 			os.Stderr.WriteString(rdrErr.Error() + "\n")
 			os.Stderr.WriteString("Aborting\n")
