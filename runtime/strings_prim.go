@@ -76,6 +76,8 @@ func primStringCompare(ctx *Scheme, args []Val) (Val, int) {
 }
 
 func primStringAppend(ctx *Scheme, args []Val) (Val, int) {
+	// TODO: Maybe use a strings.Builder instead?  Depends on the typical number
+	// of strings that are appended.
 	s := ""
 	for _, v := range args {
 		s2, ok := v.(*Str)
@@ -110,6 +112,9 @@ func primSubstring(ctx *Scheme, args []Val) (Val, int) {
 
 // sint:list->string assumes the list is proper, but it does check that each value
 // is a char.
+//
+// TODO: Again, may be interesting to use a strings.Builder here for efficiency.
+// This might be different than for string-append.
 
 func primList2String(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]

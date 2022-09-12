@@ -82,8 +82,10 @@ func main() {
 func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	runtime.InitPrimitives(engine)
 	runtime.InitCompiled(engine)
-	reader := bufio.NewReader(os.Stdin)
-	writer := &runtime.StdoutWriter{}
+	reader := runtime.NewStdinReader()
+	writer := runtime.NewStdoutWriter()
+	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
+	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(reader, true /* isText */, "<standard input>"))
 	for {
 		writer.WriteString("> ")
 		v, rdrErr := runtime.Read(engine, reader)
@@ -121,7 +123,7 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	runtime.InitPrimitives(engine)
 	runtime.InitCompiled(engine)
 	reader := bufio.NewReader(strings.NewReader(expr))
-	writer := bufio.NewWriter(os.Stdout)
+	writer := runtime.NewStdoutWriter()
 	v, rdrErr := runtime.Read(engine, reader)
 	if rdrErr != nil {
 		os.Stderr.WriteString(rdrErr.Error() + "\n")
@@ -159,7 +161,7 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 		panic(inErr)
 	}
 	reader := bufio.NewReader(input)
-	writer := &runtime.StdoutWriter{}
+	writer := runtime.NewStdoutWriter()
 	for {
 		v, rdrErr := runtime.Read(engine, reader)
 		if rdrErr != nil {

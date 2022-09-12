@@ -49,12 +49,12 @@ Try `sint help`
 
 - ports and basic I/O
 - bug: Number syntax is really wonky, "-1" doesn't work.  Clean this up.
-- better call/cc based error handling probably
+- bug: "round" needs to round, not truncate
+- better call/cc based error handling
 - fix error reporting: the pretty printer in `error` is really dumb, as is the one in the last-ditch error handler
 - expt
 - quotient
 - remainder
-- "round" needs to round, not truncate
 - high-value nonstandard string operations, taken from the Go library
 - sundry FIXMEs and TODOs
 - clean up documentation
@@ -93,3 +93,4 @@ Try `sint help`
 - all missing special forms
 - compiled code can probably use init() to register an init callback that will be invoked by initCompiledCode, so that the latter need not be updated every time we add a new file
 - string ports
+

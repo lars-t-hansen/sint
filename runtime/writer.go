@@ -3,24 +3,12 @@ package runtime
 import (
 	"fmt"
 	"math/big"
-	"os"
 	. "sint/core"
 )
 
 type Writer interface {
 	WriteString(s string) (int, error)
 	WriteRune(r rune) (int, error)
-}
-
-type StdoutWriter struct {
-}
-
-func (w *StdoutWriter) WriteString(s string) (int, error) {
-	return os.Stdout.WriteString(s)
-}
-
-func (w *StdoutWriter) WriteRune(r rune) (int, error) {
-	return os.Stdout.WriteString(string(r))
 }
 
 func Write(v Val, quoted bool, w Writer) {
@@ -56,6 +44,35 @@ func Write(v Val, quoted bool, w Writer) {
 		}
 	case *Chan:
 		w.WriteString(fmt.Sprintf("#<channel %d>", cap(x.Ch)))
+	case *Port:
+		s := ""
+		// It's not safe to call Flags() here because that may lock the port, and the
+		// port may already be locked because we're writing to its output stream.
+		flags := x.RacyFlags()
+		if (flags & IsTextPort) != 0 {
+			s = "textual "
+		} else {
+			if (flags & IsBinaryPort) == 0 {
+				panic("Bad port state")
+			}
+			s = "binary "
+		}
+		if (flags & IsInputPort) != 0 {
+			if (x.Flags() & IsOutputPort) != 0 {
+				s = "input/output port"
+			} else {
+				s = "input port"
+			}
+		} else {
+			s = "output port"
+		}
+		if (flags & IsClosedPort) != 0 {
+			s = "closed " + s
+		}
+		if x.Name != "" {
+			s = s + " " + x.Name
+		}
+		w.WriteString("#<" + s + ">")
 	case *True:
 		w.WriteString("#t")
 	case *False:

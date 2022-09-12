@@ -2,7 +2,10 @@
 
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"sync"
+)
 
 // Values.
 //
@@ -16,6 +19,7 @@ import "fmt"
 //   *Char,			// Unicode character
 //   *Str,			// Immutable UTF-8 encoded Unicode code points
 //   *Chan,			// Channel that can transmit any Val
+//   *Port,         // I/O port
 //   *UnwindPkg,    // Internal value that transmits unwind information
 //   *Null,			// The () singleton
 //   *True,			// The #t singleton
@@ -66,6 +70,7 @@ func (c *Procedure) String() string {
 // will never return non-code points, integer->char checks that its
 // input is a valid code point, and (in the future) read-char checks
 // that it is reading a code point.
+
 type Char struct {
 	Value rune
 }
@@ -76,6 +81,7 @@ func (c *Char) String() string {
 
 // Sint strings are Go strings, ie, they are immutable byte slices holding
 // UTF-8 encoded Unicode code points.  This is nonstandard.  See MANUAL.md.
+
 type Str struct {
 	Value string
 }
@@ -90,6 +96,109 @@ type Chan struct {
 
 func (s *Chan) String() string {
 	return "channel"
+}
+
+// The flag values are known to Scheme code as well.  Our ports are currently
+// either input or output ports, never both at the same time, but that might
+// change.  When it does, the IsClosed flag will need to become something else.
+
+type PortFlags int32
+
+const (
+	IsInputPort  = 1
+	IsOutputPort = 2
+	IsTextPort   = 4
+	IsBinaryPort = 8
+	IsClosedPort = 16
+)
+
+type ClosableInputStream interface {
+	ReadRune() (rune, int, error)
+	UnreadRune() error
+	Close()
+}
+
+type ClosableFlushableOutputStream interface {
+	WriteString(s string) (int, error)
+	WriteRune(r rune) (int, error)
+	Flush()
+	Close()
+}
+
+// Ports -- really the streams attached to ports -- are concurrently mutable
+// and nonatomic and are therefore under protection of the mutex.
+//
+// TODO: A better solution would be to use concurrency-aware streams, leaving the
+// port object itself immutable.  In that case we would want the `flags` to be
+// immutable and for the IsClosed indicator to move into each individual stream.
+
+type Port struct {
+	m      sync.Mutex
+	flags  PortFlags
+	input  ClosableInputStream
+	output ClosableFlushableOutputStream
+	Name   string
+}
+
+func NewInputPort(in ClosableInputStream, isText bool, name string) *Port {
+	var flags PortFlags = IsInputPort
+	if isText {
+		flags = flags | IsTextPort
+	} else {
+		flags = flags | IsBinaryPort
+	}
+	return &Port{flags: flags, input: in, output: nil, Name: name}
+}
+
+func NewOutputPort(out ClosableFlushableOutputStream, isText bool, name string) *Port {
+	var flags PortFlags = IsOutputPort
+	if isText {
+		flags = flags | IsTextPort
+	} else {
+		flags = flags | IsBinaryPort
+	}
+	return &Port{flags: flags, input: nil, output: out, Name: name}
+}
+
+func (p *Port) String() string {
+	return "port"
+}
+
+func (p *Port) AcquireInputStream() ClosableInputStream {
+	p.m.Lock()
+	return p.input
+}
+
+func (p *Port) ReleaseInputStream(s ClosableInputStream) {
+	if p.input != s {
+		panic("Invalid stream")
+	}
+	p.m.Unlock()
+}
+
+func (p *Port) AcquireOutputStream() ClosableFlushableOutputStream {
+	p.m.Lock()
+	return p.output
+}
+
+func (p *Port) ReleaseOutputStream(s ClosableFlushableOutputStream) {
+	if p.output != s {
+		panic("Invalid stream")
+	}
+	p.m.Unlock()
+}
+
+func (p *Port) Flags() PortFlags {
+	p.m.Lock()
+	flags := p.flags
+	p.m.Unlock()
+	return flags
+}
+
+// RacyFlags is used for printing and that type of thing, when we may not be able
+// to safely acquire the lock.
+func (p *Port) RacyFlags() PortFlags {
+	return p.flags
 }
 
 type UnwindPkg struct {

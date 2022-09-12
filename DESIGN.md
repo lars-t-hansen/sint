@@ -1,4 +1,4 @@
-# Design notes
+# Design and implementation notes
 
 ## Unwinding, errors, and call/cc
 
@@ -43,3 +43,29 @@ the parameter object.
 
 In turn, the thread-local storage is supported by new primitives `sint:new-tls-key`, 
 `sint:read-tls-value` and `sint:write-tls-value`.
+
+## Thread safety
+
+### Ports
+
+Ports are built on thread-unsafe data structures (bufio, among other things) and are
+therefore protected by a mutex.  Read and write operations acquire exclusive access to
+the pertinent streams in the port via protected accessors on the port.
+
+Of course, it's the individual operations (write, display, newline, read, read-char, etc) that
+are protected - not groups of these.  So i/o may still be jumbled at the scheme level but
+it will be thread-safe at the Go level.
+
+Of course, the lock may make it quite expensive to do things like byte-at-a-time reading.
+
+### Strings
+
+If s and t are strings, s+t is thread-safe (consider the case where one thread does s+t
+while another is doing s+u and the fact that strings are simply byte slices; raw `append` on slices
+would not be thread-safe).  Safety is
+evident from the implementation in the Go run-time support - a truly new string is created.
+The language spec is perhaps a little too
+understated here: "String addition creates a new string by concatenating the operands."
+However, the alternative would probably be too error-prone, since string addition is
+used "casually" for error messages and many other things where worrying about thread
+safety is simply unreasonable.  We do want effect-free semantics.
