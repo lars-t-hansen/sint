@@ -47,7 +47,12 @@ Try `sint help`
 
 ## MVP to-do list
 
-- ports and basic I/O
+- bug: Intern is not thread-safe, see comment in text!
+- ports and basic I/O on text ports
+  - mostly in place now
+  - opening, flushing, closing on text files at least
+  - read-char, write-char on textual ports
+  - peek-char?
 - bug: Number syntax is really wonky, "-1" doesn't work.  Clean this up.
 - bug: "round" needs to round, not truncate
 - better call/cc based error handling

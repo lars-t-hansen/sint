@@ -204,6 +204,9 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 }
 
 func (c *SharedScheme) Intern(s string) *Symbol {
+	// BUG: This is racy, it is possible for two threads to create two different
+	// symbols for the same name if they concurrently try to intern a name that
+	// is not previously interned!
 	if v, ok := c.oblist.Load(s); ok {
 		return v.(*Symbol)
 	}
