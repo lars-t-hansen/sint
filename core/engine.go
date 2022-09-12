@@ -204,15 +204,14 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 }
 
 func (c *SharedScheme) Intern(s string) *Symbol {
-	// BUG: This is racy, it is possible for two threads to create two different
-	// symbols for the same name if they concurrently try to intern a name that
-	// is not previously interned!
 	if v, ok := c.oblist.Load(s); ok {
 		return v.(*Symbol)
 	}
+	// Two threads can race to add a new symbol; if the other thread won,
+	// return the symbol it created instead of the one constructed here.
 	sym := &Symbol{Name: s, Value: c.UndefinedVal}
-	c.oblist.Store(s, sym)
-	return sym
+	realSym, _ := c.oblist.LoadOrStore(s, sym)
+	return realSym.(*Symbol)
 }
 
 func (c *Scheme) Intern(s string) *Symbol {

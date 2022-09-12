@@ -47,7 +47,6 @@ Try `sint help`
 
 ## MVP to-do list
 
-- bug: Intern is not thread-safe, see comment in text!
 - ports and basic I/O on text ports
   - mostly in place now
   - opening, flushing, closing on text files at least
