@@ -62,6 +62,7 @@ func (e *CompilerError) Error() string {
 
 // Returns (nil, *CompilerError) on error, the error holds data explaining
 // the problem.  The compiler panics only on internal errors.
+
 func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	length, exprIsList := c.checkProperList(v)
 	var compiled Code
@@ -132,8 +133,9 @@ func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
 	return c.reportError("Invalid top-level definition") // TODO: msg
 }
 
-// bodyList is a list of expressions.  If its length is 1, return the first element,
+// `bodyList`` is a list of expressions.  If its length is 1, return the first element,
 // otherwise turn it into a BEGIN.
+
 func (c *Compiler) wrapBodyList(bodyList Val) Val {
 	if cdr(bodyList) != c.s.NullVal {
 		return cons(c.s.BeginSym, bodyList)
@@ -462,17 +464,17 @@ func (c *Compiler) compileLetrec(l Val, llen int, env *cenv) (Code, error) {
 
 func (c *Compiler) compileLetStar(l Val, llen int, env *cenv) (Code, error) {
 	// (let* ((id expr) ...) expr expr ...)
-	return c.reportError("`let*` not implemented yet")
+	return c.reportError("`let*` not implemented yet") // TODO
 }
 
 func (c *Compiler) compileLetValues(l Val, llen int, env *cenv) (Code, error) {
 	// (let-values ((bindings expr) ...) expr expr ...)
-	return c.reportError("`let-values` not implemented yet")
+	return c.reportError("`let-values` not implemented yet") // TODO
 }
 
 func (c *Compiler) compileLetStarValues(l Val, llen int, env *cenv) (Code, error) {
 	// (let*-values ((bindings expr) ...) expr expr ...)
-	return c.reportError("`let*-values` not implemented yet")
+	return c.reportError("`let*-values` not implemented yet") // TODO
 }
 
 func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool) (Code, error) {
@@ -515,7 +517,7 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 }
 
 func (c *Compiler) compileNamedLet(l Val, llen int, env *cenv) (Code, error) {
-	return c.reportError("Named `let` not implemented yet")
+	return c.reportError("Named `let` not implemented yet") // TODO
 }
 
 func (c *Compiler) compileOr(l Val, llen int, env *cenv) (Code, error) {
@@ -558,7 +560,7 @@ func (c *Compiler) compileParameterize(l Val, llen int, env *cenv) (Code, error)
 	//             (p-name0 old-name0) ...))))
 	// The p-name*, v-name*, and old-name* are all fresh names.
 	// We use sint:dynamic-wind to avoid capturing any dynamic-wind that's lexically bound.
-	return c.reportError("`parameterize` not implemented yet")
+	return c.reportError("`parameterize` not implemented yet") // TODO
 }
 
 func (c *Compiler) compileQuote(l Val, llen int, env *cenv) (Code, error) {

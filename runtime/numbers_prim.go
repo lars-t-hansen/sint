@@ -1,4 +1,4 @@
-// Equivalence primitive procedures.
+// Number primitive procedures.
 //
 // R7RS 6.2, Numbers, also see numbers.sch
 // TODO: /

@@ -196,7 +196,8 @@ func (p *Port) Flags() PortFlags {
 }
 
 // RacyFlags is used for printing and that type of thing, when we may not be able
-// to safely acquire the lock.
+// to safely acquire the lock.  This is a hack; a better solution would be welcome.
+
 func (p *Port) RacyFlags() PortFlags {
 	return p.flags
 }

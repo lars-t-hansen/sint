@@ -82,7 +82,7 @@ func (r *reader) read() (Val, error) {
 			return r.readHexNumber()
 		}
 		if d == '/' {
-			// FIXME: Implement this
+			// TODO: Implement this
 			return nil, r.readError("No syntax for regular expressions yet")
 		}
 		if d == '\\' {

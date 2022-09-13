@@ -11,6 +11,7 @@ import (
 
 // Well-known tls key values.  The ones below 100 are embedded in Scheme code as
 // constants.
+
 const (
 	CurrentInputPort  = 1
 	CurrentOutputPort = 2
@@ -21,6 +22,7 @@ const (
 
 // State shared between goroutines of the same Scheme instance.  Some of these
 // values are copied into the per-goroutine state for easy access.
+
 type SharedScheme struct {
 	/////////////////////////////////////////////////////////////////////////
 	//
@@ -134,6 +136,7 @@ func newSharedScheme() *SharedScheme {
 
 // There is one new Scheme instance per goroutine, so it needs to be fairly
 // lightweight.
+
 type Scheme struct {
 	Shared *SharedScheme
 
@@ -172,6 +175,7 @@ type Scheme struct {
 
 // oldScheme can be nil, in which case we create a new globally shared
 // SharedScheme instance.  For new goroutines, oldScheme must never be nil.
+
 func NewScheme(oldScheme *Scheme) *Scheme {
 	var ss *SharedScheme
 	if oldScheme != nil {
@@ -252,6 +256,7 @@ func (c *Scheme) SetTlsValue(key int32, v Val) {
 // It is a system-wide invariant that unwinding carries an unwind-package; if
 // the `number-of-values`` return value is EvalUnwind then the `value`` return
 // value must be such a package.
+
 const (
 	EvalUnwind = -1
 )
@@ -259,12 +264,14 @@ const (
 // This is a package holding an error while we're in parts of the system that can't easily
 // signal the error using the standard mechanism.  It is converted to an unwinding error by
 // SignalWrappedError.
+
 type WrappedError struct {
 	message string
 }
 
 // Returns (unwind-object, EvalUnwind) for use in the standard error
 // signalling protocol.
+
 func (c *Scheme) Error(message string) (Val, int) {
 	return c.SignalWrappedError(c.WrapError(message))
 }
@@ -272,6 +279,7 @@ func (c *Scheme) Error(message string) (Val, int) {
 // Returns an unwind-object for use by the caller in its internal error
 // signalling protocol.  That the payload is a list here is to be compatible
 // with how call/cc does it; this will be cleaned up.
+
 func (c *Scheme) WrapError(message string) *WrappedError {
 	return &WrappedError{message: message}
 }
@@ -279,21 +287,25 @@ func (c *Scheme) WrapError(message string) *WrappedError {
 // TODO: Eventually this will attempt to invoke the error handler, which will itself
 // invoke an escape continuation; it will not just start an unwind with an error message.
 // That will be the fallback behavior.
+
 func (c *Scheme) SignalWrappedError(we *WrappedError) (Val, int) {
 	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: we.message}, Cdr: c.NullVal}), EvalUnwind
 }
 
 // Returns an unwind-object wrapping the key and the payload.
+
 func (c *Scheme) NewUnwindPackage(key Val, vs Val) Val {
 	return &UnwindPkg{Key: key, Payload: vs}
 }
 
 // Returns (values, nil) on success, otherwise (nil, unwind-package)
+
 func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
 // Returns (values, nil) on success, otherwise (nil, unwind-package)
+
 func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
 	v, k := c.invokeInternal(proc, args)
 	if k == EvalUnwind {
@@ -303,6 +315,7 @@ func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
 }
 
 // Returns nil on success, otherwise an uwind-package.
+
 func (c *Scheme) InvokeConcurrent(proc Val) *WrappedError {
 	// This is always (sint:go thunk) and there are "no" nullary primitive
 	// procedures, so let's keep it simple and ban primitive procedures from
@@ -555,6 +568,7 @@ again:
 }
 
 // Returns either (values, nil) or (nil, unwind-object)
+
 func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
 	vs := []Val{}
 	for _, e := range es {

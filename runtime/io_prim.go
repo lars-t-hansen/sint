@@ -3,6 +3,7 @@
 package runtime
 
 import (
+	"io"
 	"math/big"
 	. "sint/core"
 )
@@ -12,12 +13,14 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "newline", 0, true, primNewline)
 	addPrimitive(ctx, "write", 1, true, primWrite)
 	addPrimitive(ctx, "writeln", 1, true, primWriteln)
+	addPrimitive(ctx, "write-char", 1, true, primWriteChar)
 	addPrimitive(ctx, "eof-object", 0, false, primEofObject)
 	addPrimitive(ctx, "eof-object?", 1, false, primEofObjectp)
 	addPrimitive(ctx, "port?", 1, false, primPortp)
 	addPrimitive(ctx, "close-port", 1, false, primClosePort)
 	addPrimitive(ctx, "sint:port-flags", 1, false, primPortFlags)
 	addPrimitive(ctx, "read", 0, true, primRead)
+	addPrimitive(ctx, "read-char", 0, true, primReadChar)
 }
 
 func currentInputPort(ctx *Scheme) *Port {
@@ -41,6 +44,7 @@ func init() {
 // the tlsKey.  The port must have the right direction and type.
 //
 // If the `v` value is not nil then (v, nv) is an error return and `port` should be ignored.
+
 func getPort(ctx *Scheme, args []Val, maybePort int, name string, tlsKey int32, direction PortFlags, ty PortFlags) (port *Port, v Val, nv int) {
 	ok := true
 	if len(args) > maybePort {
@@ -123,6 +127,23 @@ func primNewline(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
 }
 
+func primWriteChar(ctx *Scheme, args []Val) (Val, int) {
+	c, ok := args[0].(*Char)
+	if !ok {
+		return ctx.Error("write-char: not a character: " + args[0].String())
+	}
+	p, v, nv := getPort(ctx, args, 1, "write-char", CurrentOutputPort, IsOutputPort, IsTextPort)
+	if v != nil {
+		return v, nv
+	}
+	{
+		writer := p.AcquireOutputStream()
+		writer.WriteRune(c.Value)
+		p.ReleaseOutputStream(writer)
+	}
+	return ctx.UnspecifiedVal, 1
+}
+
 func primRead(ctx *Scheme, args []Val) (Val, int) {
 	p, v, nv := getPort(ctx, args, 0, "read", CurrentInputPort, IsInputPort, IsTextPort)
 	if v != nil {
@@ -137,6 +158,23 @@ func primRead(ctx *Scheme, args []Val) (Val, int) {
 	return readv, 1
 }
 
+func primReadChar(ctx *Scheme, args []Val) (Val, int) {
+	p, v, nv := getPort(ctx, args, 0, "read-char", CurrentInputPort, IsInputPort, IsTextPort)
+	if v != nil {
+		return v, nv
+	}
+	reader := p.AcquireInputStream()
+	readv, _, readErr := reader.ReadRune()
+	p.ReleaseInputStream(reader)
+	if readErr == io.EOF {
+		return ctx.EofVal, 1
+	}
+	if readErr != nil {
+		return ctx.Error(readErr.Error())
+	}
+	// TODO: Do we need to range check the value?
+	return &Char{Value: readv}, 1
+}
 func primEofObject(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.EofVal, 1
 }
