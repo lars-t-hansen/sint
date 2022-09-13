@@ -1,6 +1,6 @@
 # sint
 
-Subset R7RS-small Scheme dialect implementation embedded in Go, with many Go facilities
+Extended subset of R7RS-small Scheme, embedded in Go, with many Go facilities
 
 ## Mottos
 
@@ -10,7 +10,7 @@ Subset R7RS-small Scheme dialect implementation embedded in Go, with many Go fac
 
 ## Status
 
-Pre-MVP (see to-do list below)
+Pre-MVP (see issue tracker for all MVP issues, and BACKLOG.md for other things)
 
 ## Some details
 
@@ -44,14 +44,3 @@ After cloning the repo, just `go install sint`
 ## Usage
 
 Try `sint help`
-
-## MVP to-do list
-
-- ports and basic I/O on text ports
-  - mostly in place now
-  - opening, flushing, closing on text files at least
-  - read-char, write-char on textual ports
-  - peek-char?
-- better call/cc based error handling
-- fix error reporting: the pretty printer in `error` is really dumb, as is the one in the last-ditch error handler
-
