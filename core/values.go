@@ -147,7 +147,7 @@ func NewInputPort(in ClosableInputStream, isText bool, name string) *Port {
 	} else {
 		flags = flags | IsBinaryPort
 	}
-	return &Port{flags: flags, input: in, output: nil, Name: name}
+	return &Port{flags: flags, input: in, Name: name}
 }
 
 func NewOutputPort(out ClosableFlushableOutputStream, isText bool, name string) *Port {
@@ -157,7 +157,7 @@ func NewOutputPort(out ClosableFlushableOutputStream, isText bool, name string) 
 	} else {
 		flags = flags | IsBinaryPort
 	}
-	return &Port{flags: flags, input: nil, output: out, Name: name}
+	return &Port{flags: flags, output: out, Name: name}
 }
 
 func (p *Port) String() string {
