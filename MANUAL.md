@@ -83,8 +83,6 @@ The memory model is that of Go.  All Scheme values are word-sized and racy acces
 
 TODO: It's possible we want some type of primitive to identify the goroutine we're in, like a thread ID?
 
-TODO: There's no really good reason why it has to be the current syntax and not simply `(go expr)`.
-
 ## Channels and communication (evolving)
 
 ### Channel primitives
@@ -137,5 +135,3 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 * `(bitwise-xor n ...)`
 * `(bitwise-and-not n1 n2)` computes `(bitwise-and n1 (bitwise-not n2))`
 * `(bitwise-not n)`
-
-(Currently missing are bitwise shifts and operations for extracting and inserting individual bits or bit fields)
