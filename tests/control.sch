@@ -51,8 +51,25 @@
 
 (assert (equal? '(0 0) (filter zero? '(1 2 3 0 1 2 0 1))) "filter #1")
 
-;; TODO: make-parameter
-;; TODO: call-with-current-continuation
-;; TODO: dynamic-wind
+;; This is pretty trivial, it would be more interesting with multiple values
+;; passed to k.
+
+(let ((x 37)
+      (y 0))
+  (let ((z (call-with-current-continuation
+	    (lambda (k)
+	      (dynamic-wind
+		  (lambda ()
+		    (set! x (+ x 1)))
+		  (lambda ()
+		    (set! y x)
+		    (k 42))
+		  (lambda ()
+		    (set! x (- x 1))))))))
+    (assert (= x 37) "call/cc #1")
+    (assert (= y 38) "call/cc #2")
+    (assert (= z 42) "call/cc #3")))
+
+;; TODO: make-parameter and parameterize
 
 (display "OK\n")
