@@ -7,6 +7,7 @@ package runtime
 import (
 	"math"
 	"math/big"
+	"sint/compiler"
 	. "sint/core"
 )
 
@@ -34,6 +35,10 @@ func initControlPrimitives(ctx *Scheme) {
 			Body:  &Apply{Proc: &Lexical{Levels: 0, Offset: 0}, Args: &Lexical{Levels: 0, Offset: 1}}},
 		Env:    nil,
 		Primop: nil}
+
+	// See runtime/control.sch.  This treats its argument as a top-level program form
+	// and returns a thunk that evaluates that form.
+	addPrimitive(ctx, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
 }
 
 func primProcedurep(ctx *Scheme, args []Val) (Val, int) {
@@ -173,4 +178,16 @@ func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
 func primUnwind(ctx *Scheme, args []Val) (Val, int) {
 	// (sint:unwind key payload)
 	return ctx.NewUnwindPackage(args[0], args[1]), EvalUnwind
+}
+
+func primCompileToplevel(ctx *Scheme, args []Val) (Val, int) {
+	// Compiles args[0] into a lambda and then creates a toplevel procedure
+	// from that lambda, and returns the procedure
+	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
+	comp := compiler.NewCompiler(ctx.Shared)
+	prog, err := comp.CompileToplevel(args[0])
+	if err != nil {
+		return ctx.Error(err.Error())
+	}
+	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}, 1
 }

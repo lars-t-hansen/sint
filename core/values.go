@@ -211,6 +211,10 @@ func (u *UnwindPkg) String() string {
 	return "unwind-package: " + u.Payload.String()
 }
 
+func (u *UnwindPkg) Error() string {
+	return u.String()
+}
+
 type Null struct{}
 
 func (c *Null) String() string {

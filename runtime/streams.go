@@ -10,6 +10,7 @@ import (
 )
 
 // StdWriter is a ClosableFlushableOutputStream that writes to stdout/stderr, see core/values.go
+// It must be line buffered: if a newline is encountered, the output must be flushed reliably.
 
 type stdWriter struct {
 	stream *os.File
@@ -41,8 +42,8 @@ func (w *stdWriter) Close() {
 
 // StdReader is a ClosableInputStream that reads from stdin, see core/values.go
 //
-// TODO: This probably has to be a singleton per underlying stream, or there
-// will be multiple buffers, which will be a mess.
+// This has to be a singleton per underlying stream, or there will be multiple
+// buffers, which will be a mess.
 
 type stdReader struct {
 	stream *bufio.Reader

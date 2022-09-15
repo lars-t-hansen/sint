@@ -14,10 +14,9 @@ var nullVal Val
 
 func TestFibSexpr(t *testing.T) {
 	c := NewScheme(nil)
+	runtime.StandardInitialization(c)
 	nullVal = c.NullVal
 	comp := compiler.NewCompiler(c.Shared)
-	runtime.InitPrimitives(c)
-	runtime.InitCompiledCode(c)
 	symDefine := c.Intern("define")
 	symLess := c.Intern("<")
 	symFib := c.Intern("fib")

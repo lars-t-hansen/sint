@@ -56,6 +56,10 @@ type CompilerError struct {
 	msg string
 }
 
+func NewCompilerError(msg string) *CompilerError {
+	return &CompilerError{msg: msg}
+}
+
 func (e *CompilerError) Error() string {
 	return e.msg
 }
