@@ -27,7 +27,7 @@ func primSymbol2String(ctx *Scheme, args []Val) (Val, int) {
 	if s, ok := v.(*Symbol); ok {
 		return &Str{Value: s.Name}, 1
 	}
-	return ctx.Error("symbol->string: Not a symbol: " + v.String())
+	return ctx.Error("symbol->string: Not a symbol", v)
 }
 
 func primString2Symbol(ctx *Scheme, args []Val) (Val, int) {
@@ -35,7 +35,7 @@ func primString2Symbol(ctx *Scheme, args []Val) (Val, int) {
 	if s, ok := v.(*Str); ok {
 		return ctx.Intern(s.Value), 1
 	}
-	return ctx.Error("string->symbol: Not a string: " + v.String())
+	return ctx.Error("string->symbol: Not a string", v)
 }
 
 func primGensym(ctx *Scheme, _ []Val) (Val, int) {

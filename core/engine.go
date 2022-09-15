@@ -266,22 +266,23 @@ const (
 // SignalWrappedError.
 
 type WrappedError struct {
-	message string
+	message   string
+	irritants []Val
 }
 
 // Returns (unwind-object, EvalUnwind) for use in the standard error
 // signalling protocol.
 
-func (c *Scheme) Error(message string) (Val, int) {
-	return c.SignalWrappedError(c.WrapError(message))
+func (c *Scheme) Error(message string, irritants ...Val) (Val, int) {
+	return c.SignalWrappedError(&WrappedError{message: message, irritants: irritants})
 }
 
 // Returns an unwind-object for use by the caller in its internal error
 // signalling protocol.  That the payload is a list here is to be compatible
 // with how call/cc does it; this will be cleaned up.
 
-func (c *Scheme) WrapError(message string) *WrappedError {
-	return &WrappedError{message: message}
+func (c *Scheme) WrapError(message string, irritants ...Val) *WrappedError {
+	return &WrappedError{message: message, irritants: irritants}
 }
 
 // TODO: Eventually this will attempt to invoke the error handler, which will itself
@@ -289,7 +290,11 @@ func (c *Scheme) WrapError(message string) *WrappedError {
 // That will be the fallback behavior.
 
 func (c *Scheme) SignalWrappedError(we *WrappedError) (Val, int) {
-	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: we.message}, Cdr: c.NullVal}), EvalUnwind
+	is := c.NullVal
+	for idx := len(we.irritants) - 1; idx >= 0; idx-- {
+		is = &Cons{Car: we.irritants[idx], Cdr: is}
+	}
+	return c.NewUnwindPackage(c.FalseVal, &Cons{Car: &Str{Value: we.message}, Cdr: is}), EvalUnwind
 }
 
 // Returns an unwind-object wrapping the key and the payload.
@@ -481,7 +486,7 @@ again:
 			}
 			a, ok := argList.(*Cons)
 			if !ok {
-				return c.Error("sint:apply: Not a list") // TODO: msg
+				return c.Error("sint:apply: Not a list", argList)
 			}
 			args = append(args, a.Car)
 			argList = a.Cdr
@@ -552,7 +557,7 @@ again:
 	case *Global:
 		val := instr.Name.Value
 		if val == c.UndefinedVal {
-			return c.Error("Undefined global variable '" + instr.Name.Name + "'")
+			return c.Error("Undefined global variable", instr.Name)
 		}
 		return val, 1
 	case *Setglobal:

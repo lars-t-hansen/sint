@@ -54,11 +54,11 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 	}
 	p, pOk := args[0].(*Procedure)
 	if !pOk {
-		return ctx.Error("string-map: Not a procedure: " + args[0].String())
+		return ctx.Error("string-map: Not a procedure", args[0])
 	}
 	s, sOk := args[1].(*Str)
 	if !sOk {
-		return ctx.Error("string-map: Not a string: " + args[1].String())
+		return ctx.Error("string-map: Not a string", args[1])
 	}
 	var callArgs [1]Val
 	result := ""
@@ -70,7 +70,7 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 		}
 		nch, ok := res[0].(*Char)
 		if !ok {
-			return ctx.Error("string-map: not a character: " + nch.String())
+			return ctx.Error("string-map: not a character", nch)
 		}
 		result = result + string(nch.Value)
 	}
@@ -83,11 +83,11 @@ func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
 	}
 	p, pOk := args[0].(*Procedure)
 	if !pOk {
-		return ctx.Error("string-for-each: Not a procedure: " + args[0].String())
+		return ctx.Error("string-for-each: Not a procedure: ", args[0])
 	}
 	s, sOk := args[1].(*Str)
 	if !sOk {
-		return ctx.Error("string-for-each: Not a string: " + args[1].String())
+		return ctx.Error("string-for-each: Not a string: ", args[1])
 	}
 	var callArgs [1]Val
 	for _, ch := range s.Value {
@@ -139,7 +139,7 @@ func primReadTlsValue(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("sint:read-tls-value: key must be exact integer: " + v.String())
+	return ctx.Error("sint:read-tls-value: key must be exact integer", v)
 }
 
 func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
@@ -154,7 +154,7 @@ func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("sint:write-tls-value: key must be exact integer: " + v0.String())
+	return ctx.Error("sint:write-tls-value: key must be exact integer", v0)
 }
 
 // The documentation for the unwinding primitives is in control.sch
@@ -165,12 +165,12 @@ func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
 	thunk := args[1]
 	thunkProc, thunkOk := thunk.(*Procedure)
 	if !thunkOk || thunkProc.Lam.Fixed != 0 {
-		return ctx.Error("sint:unwind-handler: not a thunk: " + thunk.String())
+		return ctx.Error("sint:unwind-handler: not a thunk", thunk)
 	}
 	handler := args[2]
 	handlerProc, handlerOk := handler.(*Procedure)
 	if !handlerOk || handlerProc.Lam.Fixed != 2 {
-		return ctx.Error("sint:unwind-handler: not a handler: " + thunk.String())
+		return ctx.Error("sint:unwind-handler: not a handler", thunk)
 	}
 	return ctx.InvokeWithUnwindHandler(filterKey, thunkProc, handlerProc)
 }

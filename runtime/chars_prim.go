@@ -31,22 +31,23 @@ func primChar2Int(ctx *Scheme, args []Val) (Val, int) {
 	if ch, ok := args[0].(*Char); ok {
 		return big.NewInt(int64(ch.Value)), 1
 	}
-	return ctx.Error("char->integer: Not a character: " + args[0].String())
+	return ctx.Error("char->integer: Not a character", args[0])
 }
 
 func primInt2Char(ctx *Scheme, args []Val) (Val, int) {
-	if n, ok := args[0].(*big.Int); ok {
+	v := args[0]
+	if n, ok := v.(*big.Int); ok {
 		if !n.IsInt64() {
-			ctx.Error("char->integer: Integer outside character range: " + args[0].String())
+			ctx.Error("char->integer: Integer outside character range", v)
 		}
 		k := n.Int64()
 		// TODO: Is this right?
 		if k < 0 || k > 0xDFFF {
-			return ctx.Error("char->integer: Integer outside character range: " + args[0].String())
+			return ctx.Error("char->integer: Integer outside character range", v)
 		}
 		return &Char{Value: rune(n.Int64())}, 1
 	}
-	return ctx.Error("char->integer: Not an exact integer: " + args[0].String())
+	return ctx.Error("char->integer: Not an exact integer", v)
 }
 
 func primCharEq(ctx *Scheme, args []Val) (Val, int) {
@@ -107,11 +108,11 @@ func primCharLe(ctx *Scheme, args []Val) (Val, int) {
 func checkBothChars(ctx *Scheme, v0 Val, v1 Val, name string) (rune, rune, *WrappedError) {
 	c0, ok0 := v0.(*Char)
 	if !ok0 {
-		return 0, 0, ctx.WrapError(name + ": not a character: " + v0.String())
+		return 0, 0, ctx.WrapError(name+": not a character", v0)
 	}
 	c1, ok1 := v1.(*Char)
 	if !ok1 {
-		return 0, 0, ctx.WrapError(name + ": not a character: " + v1.String())
+		return 0, 0, ctx.WrapError(name+": not a character", v1)
 	}
 	return c0.Value, c1.Value, nil
 }

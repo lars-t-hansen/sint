@@ -46,7 +46,7 @@ func getPort(ctx *Scheme, args []Val, maybePort int, name string, tlsKey int32, 
 		if port, ok = args[maybePort].(*Port); ok {
 			goto checkPort
 		}
-		v, nv = ctx.Error(name + ": not an " + portDiagnostics[int(direction)] + " port: " + args[maybePort].String())
+		v, nv = ctx.Error(name+": not an "+portDiagnostics[int(direction)]+" port", args[maybePort])
 		return
 	}
 	{
@@ -59,11 +59,11 @@ func getPort(ctx *Scheme, args []Val, maybePort int, name string, tlsKey int32, 
 checkPort:
 	flags := port.Flags()
 	if (flags & direction) == 0 {
-		v, nv = ctx.Error(name + ": not an " + portDiagnostics[int(direction)] + " port: " + port.String())
+		v, nv = ctx.Error(name+": not an "+portDiagnostics[int(direction)]+" port", port)
 		return
 	}
 	if (flags & ty) == 0 {
-		v, nv = ctx.Error(name + ": not a " + portDiagnostics[int(ty)] + " port: " + port.String())
+		v, nv = ctx.Error(name+": not a "+portDiagnostics[int(ty)]+" port", port)
 		return
 	}
 	return
@@ -125,7 +125,7 @@ func primNewline(ctx *Scheme, args []Val) (Val, int) {
 func primWriteChar(ctx *Scheme, args []Val) (Val, int) {
 	c, ok := args[0].(*Char)
 	if !ok {
-		return ctx.Error("write-char: not a character: " + args[0].String())
+		return ctx.Error("write-char: not a character", args[0])
 	}
 	p, v, nv := getPort(ctx, args, 1, "write-char", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
@@ -215,7 +215,7 @@ func (f *InputFile) Close() {
 func primOpenInputFile(ctx *Scheme, args []Val) (Val, int) {
 	fn, fnOk := args[0].(*Str)
 	if !fnOk {
-		return ctx.Error("open-input-file: file name must be a string: " + args[0].String())
+		return ctx.Error("open-input-file: file name must be a string", args[0])
 	}
 	input, inErr := os.Open(fn.Value)
 	if inErr != nil {
@@ -229,11 +229,11 @@ func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	port, portOk := v.(*Port)
 	if !portOk {
-		return ctx.Error("close-input-port: not a port: " + v.String())
+		return ctx.Error("close-input-port: not a port", v)
 	}
 	f := port.Flags()
 	if (f & IsInputPort) == 0 {
-		return ctx.Error("close-input-port: not an input port: " + port.String())
+		return ctx.Error("close-input-port: not an input port", port)
 	}
 	s := port.AcquireInputStream() // The port is now locked
 	if (port.RacyFlags() & IsClosedPort) == 0 {

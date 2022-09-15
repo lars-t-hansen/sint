@@ -40,14 +40,14 @@ func primCar(ctx *Scheme, args []Val) (Val, int) {
 	if c, ok := args[0].(*Cons); ok {
 		return c.Car, 1
 	}
-	return ctx.Error("car: Not a pair: " + args[0].String())
+	return ctx.Error("car: Not a pair", args[0])
 }
 
 func primCdr(ctx *Scheme, args []Val) (Val, int) {
 	if c, ok := args[0].(*Cons); ok {
 		return c.Cdr, 1
 	}
-	return ctx.Error("cdr: Not a pair: " + args[0].String())
+	return ctx.Error("cdr: Not a pair", args[0])
 }
 
 func primSetcar(ctx *Scheme, args []Val) (Val, int) {
@@ -55,7 +55,7 @@ func primSetcar(ctx *Scheme, args []Val) (Val, int) {
 		c.Car = args[1]
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("set-car!: Not a pair: " + args[0].String())
+	return ctx.Error("set-car!: Not a pair", args[0])
 }
 
 func primSetcdr(ctx *Scheme, args []Val) (Val, int) {
@@ -63,5 +63,5 @@ func primSetcdr(ctx *Scheme, args []Val) (Val, int) {
 		c.Cdr = args[1]
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("set-cdr!: Not a pair: " + args[0].String())
+	return ctx.Error("set-cdr!: Not a pair", args[0])
 }
