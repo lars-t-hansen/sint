@@ -31,7 +31,7 @@ Test:&Call{Exprs:[]Code{
 Consequent:&Quote{Value:&Char{Value:32}},
 Alternate:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
-&Global{Name:c.Intern("fill")},
+&Lexical{Levels:0, Offset:1},
 }},
 },
 }, Body:&Call{Exprs:[]Code{

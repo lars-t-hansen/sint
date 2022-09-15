@@ -14,7 +14,7 @@
 ;; Nobody cares about the perf of this
 
 (define (make-string k . rest)
-  (let ((fill (if (null? rest) #\space (car fill))))
+  (let ((fill (if (null? rest) #\space (car rest))))
     (sint:list->string (make-list k fill))))
 
 ;; Note sint:string-compare checks that both operands are strings, we don't need to check that here.
