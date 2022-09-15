@@ -44,7 +44,9 @@
 (assert (string>=? "ad" "ac" "ab" "ab") "string>=? #1")
 (assert-not (string>=? "ac" "ab" "ab" "ac") "string>=? #2")
 
-(assert (equal? (string->list "abc") '(#\a #\b #\c)) "string->list")
+(assert (equal? (string->list "abc") '(#\a #\b #\c)) "string->list #1")
+(assert (equal? (string->list "abc" 1) '(#\b #\c)) "string->list #2")
+(assert (equal? (string->list "abcd" 1 3) '(#\b #\c)) "string->list #3")
 
 (assert (string=? "abc" (list->string '(#\a #\b #\c))) "list->string")
 
