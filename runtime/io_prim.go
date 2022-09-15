@@ -76,7 +76,7 @@ func primWrite(ctx *Scheme, args []Val) (Val, int) {
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], false, writer)
+		Write(args[0], true, writer)
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
@@ -89,7 +89,7 @@ func primWriteln(ctx *Scheme, args []Val) (Val, int) {
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], false, writer)
+		Write(args[0], true, writer)
 		writer.WriteRune('\n')
 		p.ReleaseOutputStream(writer)
 	}
@@ -103,7 +103,7 @@ func primDisplay(ctx *Scheme, args []Val) (Val, int) {
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], true, writer)
+		Write(args[0], false, writer)
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
