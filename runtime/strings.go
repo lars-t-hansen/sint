@@ -116,7 +116,10 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
-&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:1},
@@ -163,7 +166,10 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
-&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:1},
@@ -210,7 +216,10 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
-&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:1},
@@ -257,7 +266,10 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
-&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:1},
+}},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:1},

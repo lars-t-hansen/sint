@@ -37,7 +37,7 @@
               (cond ((null? rest)
                      #t)
                     ((< (sint:string-compare a (car rest)) 0)
-                     (loop a (cdr rest)))
+                     (loop (car rest) (cdr rest)))
                     (else
                      #f)))))
     (lambda (a b . rest)
@@ -49,7 +49,7 @@
               (cond ((null? rest)
                      #t)
                     ((<= (sint:string-compare a (car rest)) 0)
-                     (loop a (cdr rest)))
+                     (loop (car rest) (cdr rest)))
                     (else
                      #f)))))
     (lambda (a b . rest)
@@ -61,7 +61,7 @@
               (cond ((null? rest)
                      #t)
                     ((> (sint:string-compare a (car rest)) 0)
-                     (loop a (cdr rest)))
+                     (loop (car rest) (cdr rest)))
                     (else
                      #f)))))
     (lambda (a b . rest)
@@ -73,7 +73,7 @@
               (cond ((null? rest)
                      #t)
                     ((>= (sint:string-compare a (car rest)) 0)
-                     (loop a (cdr rest)))
+                     (loop (car rest) (cdr rest)))
                     (else
                      #f)))))
     (lambda (a b . rest)
