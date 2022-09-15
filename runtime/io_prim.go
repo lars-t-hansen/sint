@@ -22,8 +22,11 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:port-flags", 1, false, primPortFlags)
 	addPrimitive(ctx, "read", 0, true, primRead)
 	addPrimitive(ctx, "read-char", 0, true, primReadChar)
+	addPrimitive(ctx, "peek-char", 0, true, primPeekChar)
 	addPrimitive(ctx, "open-input-file", 1, false, primOpenInputFile)
 	addPrimitive(ctx, "close-input-port", 1, false, primCloseInputPort)
+	addPrimitive(ctx, "open-output-file", 1, false, primOpenOutputFile)
+	addPrimitive(ctx, "close-output-port", 1, false, primCloseOutputPort)
 }
 
 var portDiagnostics map[int]string = make(map[int]string)
@@ -170,6 +173,27 @@ func primReadChar(ctx *Scheme, args []Val) (Val, int) {
 	// TODO: Do we need to range check the value?
 	return &Char{Value: readv}, 1
 }
+
+// TODO: This is just read-char + unread, it would be nice to merge the two functions.
+func primPeekChar(ctx *Scheme, args []Val) (Val, int) {
+	p, v, nv := getPort(ctx, args, 0, "peek-char", CurrentInputPort, IsInputPort, IsTextPort)
+	if v != nil {
+		return v, nv
+	}
+	reader := p.AcquireInputStream()
+	readv, _, readErr := reader.ReadRune()
+	reader.UnreadRune()
+	p.ReleaseInputStream(reader)
+	if readErr == io.EOF {
+		return ctx.EofVal, 1
+	}
+	if readErr != nil {
+		return ctx.Error(readErr.Error())
+	}
+	// TODO: Do we need to range check the value?
+	return &Char{Value: readv}, 1
+}
+
 func primEofObject(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.EofVal, 1
 }
@@ -195,20 +219,36 @@ func primPortFlags(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.Zero, 1
 }
 
-type InputFile struct {
-	handle *os.File
-	stream *bufio.Reader
+type SchemeFile struct {
+	handle    *os.File
+	instream  *bufio.Reader
+	outstream *bufio.Writer
 }
 
-func (f *InputFile) ReadRune() (rune, int, error) {
-	return f.stream.ReadRune()
+func (f *SchemeFile) ReadRune() (rune, int, error) {
+	return f.instream.ReadRune()
 }
 
-func (f *InputFile) UnreadRune() error {
-	return f.stream.UnreadRune()
+func (f *SchemeFile) UnreadRune() error {
+	return f.instream.UnreadRune()
 }
 
-func (f *InputFile) Close() {
+func (f *SchemeFile) WriteString(s string) (int, error) {
+	return f.outstream.WriteString(s)
+}
+
+func (f *SchemeFile) WriteRune(r rune) (int, error) {
+	return f.outstream.WriteRune(r)
+}
+
+func (f *SchemeFile) Flush() {
+	f.outstream.Flush()
+}
+
+func (f *SchemeFile) Close() {
+	if f.outstream != nil {
+		f.outstream.Flush()
+	}
 	f.handle.Close()
 }
 
@@ -219,10 +259,23 @@ func primOpenInputFile(ctx *Scheme, args []Val) (Val, int) {
 	}
 	input, inErr := os.Open(fn.Value)
 	if inErr != nil {
-		return ctx.Error("open-input-file: can't open file " + fn.Value + ": " + inErr.Error())
+		return ctx.Error("open-input-file: can't open file: "+inErr.Error(), fn)
 	}
-	f := &InputFile{input, bufio.NewReader(input)}
+	f := &SchemeFile{handle: input, instream: bufio.NewReader(input)}
 	return NewInputPort(f, true, fn.Value), 1
+}
+
+func primOpenOutputFile(ctx *Scheme, args []Val) (Val, int) {
+	fn, fnOk := args[0].(*Str)
+	if !fnOk {
+		return ctx.Error("open-output-file: file name must be a string", args[0])
+	}
+	output, outErr := os.Create(fn.Value)
+	if outErr != nil {
+		return ctx.Error("open-output-file: can't open file "+outErr.Error(), fn)
+	}
+	f := &SchemeFile{handle: output, outstream: bufio.NewWriter(output)}
+	return NewOutputPort(f, true, fn.Value), 1
 }
 
 func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
@@ -241,5 +294,24 @@ func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
 		port.RacySetClosed()
 	}
 	port.ReleaseInputStream(s)
+	return ctx.UnspecifiedVal, 1
+}
+
+func primCloseOutputPort(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	port, portOk := v.(*Port)
+	if !portOk {
+		return ctx.Error("close-output-port: not a port", v)
+	}
+	f := port.Flags()
+	if (f & IsOutputPort) == 0 {
+		return ctx.Error("close-output-port: not an output port", port)
+	}
+	s := port.AcquireOutputStream() // The port is now locked
+	if (port.RacyFlags() & IsClosedPort) == 0 {
+		s.Close()
+		port.RacySetClosed()
+	}
+	port.ReleaseOutputStream(s)
 	return ctx.UnspecifiedVal, 1
 }

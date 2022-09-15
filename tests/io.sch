@@ -31,6 +31,32 @@
     (assert (eof-object? (read-char p)) "eof 1")
     (assert (eof-object? (read-char p)) "eof 2")))
 
+(call-with-output-file "tests/out.txt"
+  (lambda (p)
+    (write-char #\b p)
+    (write-char #\a p)
+    (write-char #\z p)
+    (write-char #\newline p)))
+(call-with-input-file "tests/out.txt"
+  (lambda (p)
+    (assert (char=? (read-char p) #\b) "write-char 1")
+    (assert (char=? (read-char p) #\a) "write-char 2")
+    (assert (char=? (read-char p) #\z) "write-char 3")
+    (assert (char=? (read-char p) #\newline) "write-char 4")
+    (assert (eof-object? (read-char p)) "write-char 5")))
+
+(call-with-input-file "tests/foo.txt"
+  (lambda (p)
+    (assert (char=? (peek-char p) #\f) "peek-char 1")
+    (assert (char=? (peek-char p) #\f) "peek-char 2")
+    (assert (char=? (read-char p) #\f) "peek-char 3")
+    (assert (char=? (read-char p) #\o) "peek-char 4")
+    (assert (char=? (read-char p) #\o) "peek-char 5")
+    (assert (char=? (read-char p) #\newline) "peek-char 6")
+    (assert (eof-object? (peek-char p)) "peek-char 7")
+    (assert (eof-object? (peek-char p)) "peek-char 8")
+    (assert (eof-object? (read-char p)) "peek-char 9")))
+
 (call-with-input-file "tests/foo.txt"
   (lambda (p)
     (let ((x (read p)))
