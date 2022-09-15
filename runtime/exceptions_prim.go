@@ -7,13 +7,16 @@ import (
 )
 
 func initExceptionsPrimitives(ctx *Scheme) {
-	addPrimitive(ctx, "sint:throw-string", 1, false, primThrowString)
+	addPrimitive(ctx, "sint:report-error", 2, false, primReportError)
 }
 
-func primThrowString(ctx *Scheme, args []Val) (Val, int) {
-	// This takes one argument, a string
+func primReportError(ctx *Scheme, args []Val) (Val, int) {
 	if s, ok := args[0].(*Str); ok {
-		return ctx.Error(s.Value)
+		var xs []Val
+		for l := args[1]; l != ctx.NullVal; l = l.(*Cons).Cdr {
+			xs = append(xs, l.(*Cons).Car)
+		}
+		return ctx.Error(s.Value, xs...)
 	}
-	return ctx.Error("sint:throw-string: Not a string", args[0])
+	return ctx.Error("sint:report-error: Not a string", args[0])
 }

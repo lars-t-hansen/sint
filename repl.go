@@ -1,4 +1,4 @@
-// Command line parsing and command implementation.  This is still pretty rough.
+// Command line parsing and command implementation.
 
 package main
 
@@ -95,7 +95,7 @@ func main() {
 	case "repl":
 		enterRepl(engine, comp)
 	default:
-		panic("Bad command arguments, try `sint help`")
+		panic("Bad verb '" + args[0] + "', try `sint help`")
 	}
 }
 
@@ -113,7 +113,7 @@ func reportUnwinding(engine *core.Scheme, stderr errorReporter, unw *core.Unwind
 			stderr.WriteString(l.(*core.Cons).Car.String() + "\n")
 		}
 	} else {
-		stderr.WriteString("UNHANDLED UNWINDING: " + unw.String() + "\n")
+		stderr.WriteString("UNHANDLED UNWINDING\n" + unw.String() + "\n")
 	}
 }
 
@@ -210,7 +210,7 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 
 func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 	if strings.LastIndex(fn, ".sch") != len(fn)-4 {
-		return compiler.NewCompilerError("Input file for 'compile' must have type '.sch'")
+		return compiler.NewCompilerError("Input file for 'compile' must have type '.sch': " + fn)
 	}
 	withoutExt := fn[:len(fn)-4]
 	ix := strings.LastIndexAny(withoutExt, "/\\")
@@ -219,7 +219,7 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error 
 		moduleName = moduleName[ix+1:]
 	}
 	if len(moduleName) == 0 {
-		return compiler.NewCompilerError("Input file name is empty")
+		return compiler.NewCompilerError("Input file name is empty after stripping suffix: " + fn)
 	}
 	moduleName = strings.ToUpper(moduleName[0:1]) + strings.ToLower(moduleName[1:])
 	tmpFn := withoutExt + ".tmp"

@@ -2,24 +2,8 @@
 ;;
 ;; R7RS 6.11 "Exceptions"
 
-(define error
-  (letrec ((loop
-            (lambda (irritants s)
-              (if (null? irritants)
-                  s
-                  (loop (cdr irritants)
-                        (string-append s " " (fmt (car irritants)))))))
-           (fmt
-            ;; Dumb pretty-printer
-            ;; FIXME: We need something much better
-            (lambda (x)
-              (cond ((string? x))
-                    ((number? x) (number->string x))
-                    ((symbol? x) (symbol->string x))
-                    ((char? x) (string x))
-                    ((eq? x #t) "#t")
-                    ((eq? x #f) "#f")
-                    (else "#<weird>")))))
-    (lambda (msg . irritants)
-      (sint:throw-string (loop irritants msg)))))
+(define (error msg . irritants)
+  (if (not (string? msg))
+      (error "error: the first argument must be a string" msg)
+      (sint:report-error msg irritants)))
 
