@@ -11,9 +11,16 @@
               (let ((item (read p)))
                 (if (not (eof-object? item))
                     (begin
-                      (eval item)
+                      (call-with-values
+                          (lambda () (eval item))
+                        (lambda results
+                          (if (not (and (= 1 (length results))
+                                        (eq? (unspecified) (car results))))
+                              (for-each (lambda (x)
+                                          (display x)
+                                          (newline))
+                                        results))))
                       (loop p)))))))
     (lambda (fn)
       (call-with-input-file fn
-        (lambda (p)
-          (loop p))))))
+        loop))))

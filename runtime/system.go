@@ -40,8 +40,57 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Begin{Exprs:[]Code{
 &Call{Exprs:[]Code{
+&Global{Name:c.Intern("call-with-values")},
+&Lambda{
+Fixed:0, Rest:false,
+Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("eval")},
+&Lexical{Levels:1, Offset:0},
+}}},
+&Lambda{
+Fixed:0, Rest:true,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("=")},
+&Quote{Value:big.NewInt(1)},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("length")},
 &Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eq?")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("unspecified")},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("for-each")},
+&Lambda{
+Fixed:1, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("display")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("newline")},
+}},
+}}},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+}},
 }},
 &Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:0},
@@ -55,12 +104,7 @@ Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("call-with-input-file")},
 &Lexical{Levels:0, Offset:0},
-&Lambda{
-Fixed:1, Rest:false,
-Body:&Call{Exprs:[]Code{
-&Lexical{Levels:2, Offset:0},
-&Lexical{Levels:0, Offset:0},
-}}},
+&Lexical{Levels:1, Offset:0},
 }}}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
