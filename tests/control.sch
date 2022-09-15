@@ -31,4 +31,28 @@
 		(lambda values
 		  (apply + values)))) "call-with-values / values")
 
+(assert (equal? '(1 2 3) (map (lambda (x) (+ x 1)) '(0 1 2))) "map #1")
+(assert (equal? '(12 23 34) (map (lambda (a b)
+				   (+ (* a 10) b))
+				 '(1 2 3)
+				 '(2 3 4 5)))
+	"map #2")
+
+(assert (= 10 (let ((k 0))
+		(for-each (lambda (x) (set! k (+ k x))) '(1 2 3 4))
+		k))
+	"for-each #1")
+
+(assert (every? (lambda (x) (> x 0)) '(1 2 3 5)) "every? #1")
+(assert-not (every? (lambda (x) (> x 0)) '(1 2 0 5)) "every? #2")
+
+(assert (some? zero? '(1 2 0 5)) "some? #1")
+(assert-not (some? zero? '(1 2 3 5)) "some? #2")
+
+(assert (equal? '(0 0) (filter zero? '(1 2 3 0 1 2 0 1))) "filter #1")
+
+;; TODO: make-parameter
+;; TODO: call-with-current-continuation
+;; TODO: dynamic-wind
+
 (display "OK\n")
