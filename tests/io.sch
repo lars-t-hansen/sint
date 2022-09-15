@@ -8,16 +8,19 @@
 (assert (textual-port? (current-input-port)) "current-input-port is a textual port")
 (assert (not (binary-port? (current-input-port))) "current-input-port is not a binary port")
 (assert (input-port-open? (current-input-port)) "current-input-port is open")
+(assert (port? (current-input-port)) "current-input-port is a port")
 
 (assert (output-port? (current-output-port)) "current-output-port is an output port")
 (assert (textual-port? (current-output-port)) "current-output-port is a textual port")
 (assert (not (binary-port? (current-output-port))) "current-output-port is not a binary port")
 (assert (output-port-open? (current-output-port)) "current-output-port is open")
+(assert (port? (current-output-port)) "current-output-port is a port")
 
 (assert (output-port? (current-error-port)) "current-error-port is an output port")
 (assert (textual-port? (current-error-port)) "current-error-port is a textual port")
 (assert (not (binary-port? (current-error-port))) "current-error-port is not a binary port")
 (assert (output-port-open? (current-error-port)) "current-error-port is open")
+(assert (port? (current-error-port)) "current-error-port is a port")
 
 ;; Test call-with-input-file, eof-object?, read-char
 ;; foo.txt contains exactly "foo<newline>"
