@@ -1,3 +1,5 @@
+// "sint" - an extended subset of R7RS scheme, embedded in Go, with many Go facilities.
+//
 // Command line parsing and command implementation.
 
 package main
@@ -13,8 +15,8 @@ import (
 )
 
 var HelpText string = `
-sint - an extended subset of Scheme embedded in Go
-pre-mvp
+"sint" - an extended subset of Scheme, embedded in Go
+v0.1 (pre-mvp)
 
 Usage:
 
