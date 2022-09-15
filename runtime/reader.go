@@ -462,6 +462,7 @@ func init() {
 	for c := '0'; c <= '9'; c++ {
 		charTable[c] = kSubsequent
 	}
+	charTable['.'] = kSubsequent
 	charTable[' '] = kSpace
 	charTable['\n'] = kSpace
 	charTable['\r'] = kSpace

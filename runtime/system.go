@@ -16,8 +16,7 @@ Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("list")},
 &Quote{Value:c.Intern("sint")},
-&Quote{Value:c.Intern("sint-0")},
-&Global{Name:c.Intern(".1")},
+&Quote{Value:c.Intern("sint-0.1")},
 }}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
