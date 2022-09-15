@@ -390,6 +390,10 @@ Alternate:&Setlex{Levels:0, Offset:0, Rhs:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:1},
 }},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string-length")},
+&Lexical{Levels:0, Offset:0},
+}},
 }}},
 },
 Alternate:&Quote{Value:c.UnspecifiedVal},

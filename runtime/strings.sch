@@ -98,7 +98,7 @@
       (if (not (null? rest))
           (if (not (null? (cdr rest)))
               (set! s (substring s (car rest) (cadr rest)))
-              (set! s (substring s (car rest)))))
+              (set! s (substring s (car rest) (string-length s)))))
       (loop '() '() s 0))))
 
 (define (string-copy s . rest)
