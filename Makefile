@@ -15,5 +15,5 @@ $(TARGETS): compiler/compiler.go compiler/emitter.go
 
 tests:
 	go run sint load tests/asserts.sch tests/booleans.sch tests/chars.sch tests/control.sch \
-		tests/io.sch tests/system.sch
+		tests/io.sch tests/symbols.sch tests/system.sch
 
