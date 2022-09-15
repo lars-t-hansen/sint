@@ -5,6 +5,35 @@ import (
 	. "sint/core"
 )
 
+func StandardInitialization(engine *Scheme) (reader ClosableInputStream, writer ClosableFlushableOutputStream) {
+	InitPrimitives(engine)
+	InitCompiledCode(engine)
+	reader = NewStdinReader()
+	engine.SetTlsValue(CurrentInputPort, NewInputPort(reader, true /* isText */, "<standard input>"))
+	writer = NewStdoutWriter()
+	engine.SetTlsValue(CurrentOutputPort, NewOutputPort(writer, true /* isText */, "<standard output>"))
+	// TODO: stderr
+	return
+}
+
+func InitCompiledCode(c *Scheme) {
+	// Fundamental stuff.  These should not reference each other during
+	// initialization and can be in alpha order.
+	initBooleans(c)
+	initControl(c)
+	initEquivalence(c)
+	initExceptions(c)
+	initNumbers(c)
+	initPairs(c)
+	initStrings(c)
+	initSymbols(c)
+	initSystem(c)
+
+	// Higher-level stuff.  These can reference definitions from the previous set
+	// during initialization.
+	initIo(c)
+}
+
 func InitPrimitives(ctx *Scheme) {
 	initEquivalencePrimitives(ctx)
 	initNumbersPrimitives(ctx)

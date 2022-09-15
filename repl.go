@@ -13,24 +13,26 @@ import (
 )
 
 var HelpText string = `
+sint - an extended subset of Scheme embedded in Go
+pre-mvp
+
 Usage:
 
   sint
   sint repl
     Enter the interactive repl
 
-  sint eval expr
-    Evaluate the expression, print its result(s), and exit.
+  sint eval expr ...
+    Evaluate the expressions, print their result(s), and exit after the last.
 
-  sint load filename.sch
+  sint load filename.sch ...
     Load filename.sch: read its expressions, evaluate them in order and
-	print their results, and exit after the last.
+    print their results, and exit after the last expression of the last file.
 
-  sint compile filename.sch
-    Compile filename.sch into filename.go and exit.  The output will have
+  sint compile filename.sch ...
+    Compile each filename.sch into filename.go and exit.  The output will have
     a function initFilename() that takes a *Scheme and evaluates the
     expressions and definitions of filename.sch in order in that runtime.
-    Punctuation in the filename is removed.
 
   sint help
     Print help (this text)
@@ -49,29 +51,28 @@ func main() {
 
 	switch args[0] {
 	case "compile":
-		// Obviously it would be meaningful to have multiple file names.
-		if len(args) != 2 {
-			panic("Bad 'compile' command, one file name argument required")
+		if len(args) < 2 {
+			panic("Bad 'compile' command, at least one file name argument required")
 		}
-		compileFile(engine, comp, args[1])
+		for _, fn := range args[1:] {
+			compileFile(engine, comp, fn)
+		}
 	case "eval":
-		// An idea is that "eval" is the default verb if the first letter of
-		// the verb is left paren.  That way, `sint 'some expr'` will evaluate
-		// and print it.
-		//
-		// Another idea is that there could be a sequence of expressions, not just one.
-		if len(args) != 2 {
-			panic("Bad 'eval' command, exactly one expression argument required")
+		if len(args) < 2 {
+			panic("Bad 'eval' command, at least one expression argument required")
 		}
-		evalExpr(engine, comp, args[1])
+		for _, ex := range args[1:] {
+			evalExpr(engine, comp, ex)
+		}
+	case "load":
+		if len(args) < 2 {
+			panic("Bad 'load' command, at least one file name argument required")
+		}
+		for _, fn := range args[1:] {
+			loadFile(engine, comp, fn)
+		}
 	case "help":
 		fmt.Print(HelpText)
-	case "load":
-		// There could be multiple files too
-		if len(args) != 2 {
-			panic("Bad 'load' command, exactly one file required")
-		}
-		loadFile(engine, comp, args[1])
 	case "repl":
 		enterRepl(engine, comp)
 	default:
@@ -80,22 +81,16 @@ func main() {
 }
 
 func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
-	runtime.InitPrimitives(engine)
-	runtime.InitCompiled(engine)
-	reader := runtime.NewStdinReader()
-	writer := runtime.NewStdoutWriter()
-	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
-	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(reader, true /* isText */, "<standard input>"))
-	// TODO: stderr
+	stdin, stdout := runtime.StandardInitialization(engine)
 	for {
-		writer.WriteString("> ")
-		v, rdrErr := runtime.Read(engine, reader)
+		stdout.WriteString("> ")
+		v, rdrErr := runtime.Read(engine, stdin)
 		if rdrErr != nil {
 			os.Stderr.WriteString(rdrErr.Error() + "\n")
 			continue
 		}
 		if v == engine.EofVal {
-			writer.WriteRune('\n')
+			stdout.WriteRune('\n')
 			break
 		}
 		prog, progErr := comp.CompileToplevel(v)
@@ -113,22 +108,16 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 		}
 		for _, r := range results {
 			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, writer)
-				writer.WriteRune('\n')
+				runtime.Write(r, false, stdout)
+				stdout.WriteRune('\n')
 			}
 		}
 	}
 }
 
 func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
-	runtime.InitPrimitives(engine)
-	runtime.InitCompiled(engine)
+	_, stdout := runtime.StandardInitialization(engine)
 	sourceReader := bufio.NewReader(strings.NewReader(expr))
-	writer := runtime.NewStdoutWriter()
-	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
-	stdin := runtime.NewStdinReader()
-	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(stdin, true /* isText */, "<standard input>"))
-	// TODO: stderr
 	v, rdrErr := runtime.Read(engine, sourceReader)
 	if rdrErr != nil {
 		os.Stderr.WriteString(rdrErr.Error() + "\n")
@@ -151,26 +140,20 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) {
 	}
 	for _, r := range results {
 		if r != engine.UnspecifiedVal {
-			runtime.Write(r, false, writer)
-			writer.WriteRune('\n')
-			writer.Flush()
+			runtime.Write(r, false, stdout)
+			stdout.WriteRune('\n')
+			stdout.Flush()
 		}
 	}
 }
 
 func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
-	runtime.InitPrimitives(engine)
-	runtime.InitCompiled(engine)
+	_, stdout := runtime.StandardInitialization(engine)
 	input, inErr := os.Open(fn)
 	if inErr != nil {
 		panic(inErr)
 	}
 	sourceReader := bufio.NewReader(input)
-	writer := runtime.NewStdoutWriter()
-	engine.SetTlsValue(core.CurrentOutputPort, core.NewOutputPort(writer, true /* isText */, "<standard output>"))
-	stdin := runtime.NewStdinReader()
-	engine.SetTlsValue(core.CurrentInputPort, core.NewInputPort(stdin, true /* isText */, "<standard input>"))
-	// TODO: stderr
 	for {
 		v, rdrErr := runtime.Read(engine, sourceReader)
 		if rdrErr != nil {
@@ -197,8 +180,8 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) {
 		}
 		for _, r := range results {
 			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, writer)
-				writer.WriteRune('\n')
+				runtime.Write(r, false, stdout)
+				stdout.WriteRune('\n')
 			}
 		}
 	}
