@@ -64,7 +64,16 @@
       (assert (eof-object? (read p)) "read foo eof"))))
       
 (let ((p (open-input-file "tests/foo.txt")))
-  (close-port p))
+  (call-with-port p
+    (lambda (p)
+      (assert (eq? (read p) 'foo) "call-with-port / close-port #1")))
+  (assert-not (input-port-open? p) "call-with-port / close-port #2"))
+
+(let ((p (open-output-file "tests/out.txt")))
+  (call-with-port p
+    (lambda (p)
+      (write 'hi p)))
+  (assert-not (output-port-open? p) "call-with-port / close-port #3"))
 
 (display "OK\n")
 
