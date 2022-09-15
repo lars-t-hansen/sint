@@ -366,6 +366,10 @@ Body:&Call{Exprs:[]Code{
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
+&Setglobal{Name:c.Intern("call/cc"), Rhs:&Global{Name:c.Intern("call-with-current-continuation")}}
+_, unwcode7 := c.EvalToplevel(code7)
+if unwcode7 != nil { panic(unwcode7.String()) }
+code8 := 
 &Setglobal{Name:c.Intern("dynamic-wind"), Rhs:&Lambda{
 Fixed:3, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -417,9 +421,9 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }}},
 }}},
 }}}}
-_, unwcode7 := c.EvalToplevel(code7)
-if unwcode7 != nil { panic(unwcode7.String()) }
-code8 := 
+_, unwcode8 := c.EvalToplevel(code8)
+if unwcode8 != nil { panic(unwcode8.String()) }
+code9 := 
 &Setglobal{Name:c.Intern("map"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -563,9 +567,9 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-_, unwcode8 := c.EvalToplevel(code8)
-if unwcode8 != nil { panic(unwcode8.String()) }
-code9 := 
+_, unwcode9 := c.EvalToplevel(code9)
+if unwcode9 != nil { panic(unwcode9.String()) }
+code10 := 
 &Setglobal{Name:c.Intern("for-each"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -712,9 +716,9 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }}}}
-_, unwcode9 := c.EvalToplevel(code9)
-if unwcode9 != nil { panic(unwcode9.String()) }
-code10 := 
+_, unwcode10 := c.EvalToplevel(code10)
+if unwcode10 != nil { panic(unwcode10.String()) }
+code11 := 
 &Setglobal{Name:c.Intern("every?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -753,9 +757,9 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-_, unwcode10 := c.EvalToplevel(code10)
-if unwcode10 != nil { panic(unwcode10.String()) }
-code11 := 
+_, unwcode11 := c.EvalToplevel(code11)
+if unwcode11 != nil { panic(unwcode11.String()) }
+code12 := 
 &Setglobal{Name:c.Intern("some?"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -791,9 +795,9 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-_, unwcode11 := c.EvalToplevel(code11)
-if unwcode11 != nil { panic(unwcode11.String()) }
-code12 := 
+_, unwcode12 := c.EvalToplevel(code12)
+if unwcode12 != nil { panic(unwcode12.String()) }
+code13 := 
 &Setglobal{Name:c.Intern("filter"), Rhs:&Letrec{Exprs:[]Code{
 &Lambda{
 Fixed:2, Rest:false,
@@ -843,6 +847,6 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }}}}}
-_, unwcode12 := c.EvalToplevel(code12)
-if unwcode12 != nil { panic(unwcode12.String()) }
+_, unwcode13 := c.EvalToplevel(code13)
+if unwcode13 != nil { panic(unwcode13.String()) }
 }

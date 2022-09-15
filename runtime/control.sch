@@ -112,6 +112,8 @@
        ;; (eq? returned? #t) => #t
        (apply values vs)))))
 
+(define call/cc call-with-current-continuation)
+
 (define (dynamic-wind before during after)
   (before)
   (let ((started-after? #f))
