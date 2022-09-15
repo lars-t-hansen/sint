@@ -62,7 +62,7 @@
 (define (zero? z)
   (= z 0))
 
-(define (positive z)
+(define (positive? z)
   (> z 0))
 
 (define (negative? z)

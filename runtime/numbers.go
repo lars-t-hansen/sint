@@ -267,7 +267,7 @@ Body:&Call{Exprs:[]Code{
 _, unwcode15 := c.EvalToplevel(code15)
 if unwcode15 != nil { panic(unwcode15.String()) }
 code16 := 
-&Setglobal{Name:c.Intern("positive"), Rhs:&Lambda{
+&Setglobal{Name:c.Intern("positive?"), Rhs:&Lambda{
 Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern(">")},
