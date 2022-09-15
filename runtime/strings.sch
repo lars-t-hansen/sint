@@ -105,7 +105,7 @@
   (if (not (null? rest))
       (if (not (null? (cdr rest)))
           (substring s (car rest) (cadr rest))
-          (substring s (car rest)))
+          (substring s (car rest) (string-length s)))
       (substring s 0 (string-length s))))
 
 (define (list->string cs)

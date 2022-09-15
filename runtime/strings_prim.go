@@ -101,8 +101,8 @@ func primSubstring(ctx *Scheme, args []Val) (Val, int) {
 	if !ok {
 		return ctx.Error("substring: invalid indices", v1, v2)
 	}
-	if i1.IsInt64() && i1.Int64() >= 0 && i1.Int64() < int64(len(s0.Value)) &&
-		i2.IsInt64() && i2.Int64() >= 0 && i2.Int64() < int64(len(s0.Value)) &&
+	if i1.IsInt64() && i1.Int64() >= 0 && i1.Int64() <= int64(len(s0.Value)) &&
+		i2.IsInt64() && i2.Int64() >= 0 && i2.Int64() <= int64(len(s0.Value)) &&
 		i1.Int64() <= i2.Int64() {
 		return &Str{Value: s0.Value[i1.Int64():i2.Int64()]}, 1
 	} else {
