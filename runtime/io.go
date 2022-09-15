@@ -389,4 +389,57 @@ Body:&Call{Exprs:[]Code{
 }}}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
+code21 := 
+&Setglobal{Name:c.Intern("close-port"), Rhs:&Lambda{
+Fixed:1, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("input-port?")},
+&Lexical{Levels:0, Offset:0},
+}},
+}, Body:&If{
+Test:&Lexical{Levels:0, Offset:0},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("output-port?")},
+&Lexical{Levels:1, Offset:0},
+}},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"close-port: Not a port"}},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("input-port?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("close-input-port")},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("output-port?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("close-output-port")},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+}}}}
+_, unwcode21 := c.EvalToplevel(code21)
+if unwcode21 != nil { panic(unwcode21.String()) }
 }

@@ -63,5 +63,8 @@
       (assert (eq? x 'foo) "read foo")
       (assert (eof-object? (read p)) "read foo eof"))))
       
+(let ((p (open-input-file "tests/foo.txt")))
+  (close-port p))
+
 (display "OK\n")
 

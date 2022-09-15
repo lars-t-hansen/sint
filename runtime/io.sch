@@ -92,3 +92,11 @@
       (lambda () #t)
       (lambda () (proc port))
       (lambda () (close-port port))))
+
+(define (close-port p)
+  (if (not (or (input-port? p) (output-port? p)))
+      (error "close-port: Not a port" p))
+  (if (input-port? p)
+      (close-input-port p))
+  (if (output-port? p)
+      (close-output-port p)))
