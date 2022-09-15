@@ -2,14 +2,6 @@
 
 (display "Testing: chars.sch\n")
 
-(define (assert x msg)
-  (if (not x)
-      (error msg)))
-
-(define (assert-not x msg)
-  (if x
-      (error msg)))
-
 ;; Bug #16: Currently the relationals are limited to exactly two arguments
 
 (assert (char? #\a) "char? #1")

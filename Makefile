@@ -14,4 +14,5 @@ libs: $(TARGETS)
 $(TARGETS): compiler/compiler.go compiler/emitter.go
 
 tests:
-	go run sint load tests/booleans.sch tests/chars.sch tests/io.sch 
+	go run sint load tests/asserts.sch tests/booleans.sch tests/chars.sch tests/io.sch tests/system.sch
+

@@ -2,10 +2,6 @@
 
 (display "Testing: io.sch\n")
 
-(define (assert x msg)
-  (if (not x)
-      (error msg)))
-
 ;; Test the port predicates
 
 (assert (input-port? (current-input-port)) "current-input-port is an input port")
