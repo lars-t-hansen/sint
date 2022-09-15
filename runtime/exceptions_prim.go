@@ -12,6 +12,8 @@ func initExceptionsPrimitives(ctx *Scheme) {
 
 func primReportError(ctx *Scheme, args []Val) (Val, int) {
 	if s, ok := args[0].(*Str); ok {
+		// TODO: Really ought to check that this is a list.  As it is,
+		// the system will panic if it is not.
 		var xs []Val
 		for l := args[1]; l != ctx.NullVal; l = l.(*Cons).Cdr {
 			xs = append(xs, l.(*Cons).Car)
