@@ -47,6 +47,8 @@ func (r *reader) read() (Val, error) {
 	switch c {
 	case '(':
 		return r.readList()
+	case ')':
+		return nil, r.readError("Unmatched ')'")
 	case '.':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
@@ -98,7 +100,7 @@ func (r *reader) read() (Val, error) {
 			// TODO: quasiquote, unquote, unquote-splicing
 			return r.readSymbol(c)
 		}
-		return nil, r.readError("Unknown character")
+		return nil, r.readError("Unknown character " + string(c))
 	}
 }
 

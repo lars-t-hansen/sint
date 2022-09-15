@@ -131,6 +131,8 @@ type ClosableFlushableOutputStream interface {
 // TODO: A better solution would be to use concurrency-aware streams, leaving the
 // port object itself immutable.  In that case we would want the `flags` to be
 // immutable and for the IsClosed indicator to move into each individual stream.
+// It would lead to better discipline; the current setup is basically asking for
+// trouble.
 
 type Port struct {
 	m      sync.Mutex
@@ -195,11 +197,17 @@ func (p *Port) Flags() PortFlags {
 	return flags
 }
 
-// RacyFlags is used for printing and that type of thing, when we may not be able
-// to safely acquire the lock.  This is a hack; a better solution would be welcome.
+// RacyFlags is used for printing and to access the flags when the lock has already
+// been taken.
 
 func (p *Port) RacyFlags() PortFlags {
 	return p.flags
+}
+
+// Use this to flag the port as closed when the lock is held.
+
+func (p *Port) RacySetClosed() {
+	p.flags = p.flags | IsClosedPort
 }
 
 type UnwindPkg struct {

@@ -13,11 +13,11 @@ func initCharPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "char?", 1, false, primCharp)
 	addPrimitive(ctx, "char->integer", 1, false, primChar2Int)
 	addPrimitive(ctx, "integer->char", 1, false, primInt2Char)
-	addPrimitive(ctx, "char=?", 1, false, primCharEq)
-	addPrimitive(ctx, "char>?", 1, false, primCharGt)
-	addPrimitive(ctx, "char>=?", 1, false, primCharGe)
-	addPrimitive(ctx, "char<?", 1, false, primCharLt)
-	addPrimitive(ctx, "char<=?", 1, false, primCharLe)
+	addPrimitive(ctx, "char=?", 1, true, primCharEq)
+	addPrimitive(ctx, "char>?", 1, true, primCharGt)
+	addPrimitive(ctx, "char>=?", 1, true, primCharGe)
+	addPrimitive(ctx, "char<?", 1, true, primCharLt)
+	addPrimitive(ctx, "char<=?", 1, true, primCharLe)
 }
 
 func primCharp(ctx *Scheme, args []Val) (Val, int) {

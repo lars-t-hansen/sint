@@ -3,8 +3,10 @@
 package runtime
 
 import (
+	"bufio"
 	"io"
 	"math/big"
+	"os"
 	. "sint/core"
 )
 
@@ -17,18 +19,11 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "eof-object", 0, false, primEofObject)
 	addPrimitive(ctx, "eof-object?", 1, false, primEofObjectp)
 	addPrimitive(ctx, "port?", 1, false, primPortp)
-	addPrimitive(ctx, "close-port", 1, false, primClosePort)
 	addPrimitive(ctx, "sint:port-flags", 1, false, primPortFlags)
 	addPrimitive(ctx, "read", 0, true, primRead)
 	addPrimitive(ctx, "read-char", 0, true, primReadChar)
-}
-
-func currentInputPort(ctx *Scheme) *Port {
-	p := ctx.GetTlsValue(CurrentInputPort)
-	if port, ok := p.(*Port); ok {
-		return port
-	}
-	panic("currentInputPort: no port set")
+	addPrimitive(ctx, "open-input-file", 1, false, primOpenInputFile)
+	addPrimitive(ctx, "close-input-port", 1, false, primCloseInputPort)
 }
 
 var portDiagnostics map[int]string = make(map[int]string)
@@ -200,14 +195,51 @@ func primPortFlags(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.Zero, 1
 }
 
-// Is this properly defined?  If it's an input-and-output port, are
-// we closing both sides?  Surely not.
-func primClosePort(ctx *Scheme, args []Val) (Val, int) {
-	/*
-		if _, ok := args[0].(*EofObject); ok {
-			return ctx.TrueVal, 1
-		}
-	*/
-	// FIXME
-	return ctx.Zero, 1
+type InputFile struct {
+	handle *os.File
+	stream *bufio.Reader
+}
+
+func (f *InputFile) ReadRune() (rune, int, error) {
+	return f.stream.ReadRune()
+}
+
+func (f *InputFile) UnreadRune() error {
+	return f.stream.UnreadRune()
+}
+
+func (f *InputFile) Close() {
+	f.handle.Close()
+}
+
+func primOpenInputFile(ctx *Scheme, args []Val) (Val, int) {
+	fn, fnOk := args[0].(*Str)
+	if !fnOk {
+		return ctx.Error("open-input-file: file name must be a string: " + args[0].String())
+	}
+	input, inErr := os.Open(fn.Value)
+	if inErr != nil {
+		return ctx.Error("open-input-file: can't open file " + fn.Value + ": " + inErr.Error())
+	}
+	f := &InputFile{input, bufio.NewReader(input)}
+	return NewInputPort(f, true, fn.Value), 1
+}
+
+func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	port, portOk := v.(*Port)
+	if !portOk {
+		return ctx.Error("close-input-port: not a port: " + v.String())
+	}
+	f := port.Flags()
+	if (f & IsInputPort) == 0 {
+		return ctx.Error("close-input-port: not an input port: " + port.String())
+	}
+	s := port.AcquireInputStream() // The port is now locked
+	if (port.RacyFlags() & IsClosedPort) == 0 {
+		s.Close()
+		port.RacySetClosed()
+	}
+	port.ReleaseInputStream(s)
+	return ctx.UnspecifiedVal, 1
 }

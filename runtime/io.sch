@@ -40,12 +40,12 @@
 (define (input-port-open? p)
   (if (not (input-port? p))
       (error "input-port-open?: Not an input port: " p))
-  (zero? (bitwise-and (sint:port-flags obj) *closed-port-flag*)))
+  (zero? (bitwise-and (sint:port-flags p) *closed-port-flag*)))
 
 (define (output-port-open? p)
   (if (not (output-port? p))
       (error "output-port-open?: Not an output port: " p))
-  (zero? (bitwise-and (sint:port-flags obj) *closed-port-flag*)))
+  (zero? (bitwise-and (sint:port-flags p) *closed-port-flag*)))
 
 (define current-input-port
   (sint:make-parameter-function
