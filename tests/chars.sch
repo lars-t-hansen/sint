@@ -1,5 +1,7 @@
 ;; Test the character subsystem
 
+(display "Testing: chars.sch\n")
+
 (define (assert x msg)
   (if (not x)
       (error msg)))
@@ -20,8 +22,7 @@
 (assert (char<=? #\a #\a) "char<=? #2")
 (assert-not (char<? #\b #\a) "char<=? #3")
 
-(write "OK")
-(newline)
+(display "OK\n")
 
 
 

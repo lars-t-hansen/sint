@@ -1,5 +1,7 @@
 ;; Test the I/O subsystem in a superficial way.
 
+(display "Testing: io.sch\n")
+
 (define (assert x msg)
   (if (not x)
       (error msg)))
@@ -39,4 +41,5 @@
       (assert (eq? x 'foo) "read foo")
       (assert (eof-object? (read p)) "read foo eof"))))
       
-(writeln "OK")
+(display "OK\n")
+
