@@ -67,7 +67,12 @@ func main() {
 		for _, ex := range args[1:] {
 			err := evalExpr(engine, comp, ex)
 			if err != nil {
-				panic(err)
+				if unw, ok := err.(*core.UnwindPkg); ok {
+					reportUnwinding(engine, os.Stderr, unw)
+					os.Exit(1)
+				} else {
+					panic(err)
+				}
 			}
 		}
 	case "load":
@@ -77,7 +82,12 @@ func main() {
 		for _, fn := range args[1:] {
 			err := loadFile(engine, comp, fn)
 			if err != nil {
-				panic(err)
+				if unw, ok := err.(*core.UnwindPkg); ok {
+					reportUnwinding(engine, os.Stderr, unw)
+					os.Exit(1)
+				} else {
+					panic(err)
+				}
 			}
 		}
 	case "help":
@@ -86,6 +96,24 @@ func main() {
 		enterRepl(engine, comp)
 	default:
 		panic("Bad command arguments, try `sint help`")
+	}
+}
+
+type errorReporter interface {
+	WriteString(s string) (int, error)
+}
+
+func reportUnwinding(engine *core.Scheme, stderr errorReporter, unw *core.UnwindPkg) {
+	if unw.Key == engine.FalseVal {
+		// The payload is a list
+		// The first element is a string
+		// The rest are irritants
+		stderr.WriteString("ERROR: " + unw.Payload.(*core.Cons).Car.(*core.Str).Value + "\n")
+		for l := unw.Payload.(*core.Cons).Cdr; l != engine.NullVal; l = l.(*core.Cons).Cdr {
+			stderr.WriteString(l.(*core.Cons).Car.String() + "\n")
+		}
+	} else {
+		stderr.WriteString("UNHANDLED UNWINDING: " + unw.String() + "\n")
 	}
 }
 
@@ -109,7 +137,7 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 		}
 		results, unw := engine.EvalToplevel(prog)
 		if unw != nil {
-			stderr.WriteString("UNHANDLED UNWINDING: " + unw.String() + "\n")
+			reportUnwinding(engine, stderr, unw.(*core.UnwindPkg))
 			continue
 		}
 		for _, r := range results {
