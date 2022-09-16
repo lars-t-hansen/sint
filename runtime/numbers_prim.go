@@ -1,10 +1,6 @@
 // Number primitive procedures.
 //
 // R7RS 6.2, Numbers, also see numbers.sch
-// TODO: /
-// TODO: quotient
-// TODO: remainder
-// TODO: (other numerics as required)
 
 package runtime
 

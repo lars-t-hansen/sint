@@ -47,6 +47,7 @@
 (assert (exact-integer? 1) "exact-integer? #1")
 (assert-not (exact-integer? 1.0) "exact-integer? #2")
 (assert-not (exact-integer? *inf*) "exact-integer? #3")
+(assert-not (exact-integer? 1.5) "exact-integer? #4")
 
 (assert (inexact? 1.0) "inexact? #1")
 (assert (inexact? *inf*) "inexact? #2")
@@ -68,12 +69,13 @@
 (assert-not (zero? *inf*) "zero? #2")
 (assert (zero? 0.0) "zero? #3")
 (assert-not (zero? 1) "zero? #4")
+(assert (zero? (- 0.0)) "zero? #5")
 
 (assert (positive? 1) "positive? #1")
 (assert-not (positive? 0) "positive? #2")
 
 (assert (negative? (- 1)) "negative? #1")
-(assert-not (negative? (- 0)) "negative? #2")
+(assert-not (negative? (- 0.0)) "negative? #2")
 
 ;; Issue #4
 ;;(assert (odd? 1) "odd? #1")

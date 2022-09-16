@@ -2,12 +2,6 @@
 
 ;; R7RS 6.2 - Numbers
 
-;; High-value primitives:
-;; quotient
-;; remainder
-;; expt
-;; sqrt
-
 (define (number? obj)
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
 
