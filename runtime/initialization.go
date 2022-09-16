@@ -37,6 +37,9 @@ func initCompiledCode(c *Scheme) {
 	// Higher-level stuff.  These can reference definitions from the previous set
 	// during initialization.
 	initIo(c)
+
+	// Library stuff
+	initSort(c)
 }
 
 func initPrimitives(ctx *Scheme) {
