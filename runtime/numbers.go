@@ -242,13 +242,13 @@ Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("not")},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("number?")},
-&Global{Name:c.Intern("z")},
+&Lexical{Levels:0, Offset:0},
 }},
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("error")},
 &Quote{Value:&Str{Value:"nan?: not a number: "}},
-&Global{Name:c.Intern("z")},
+&Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
@@ -371,14 +371,7 @@ Alternate:&Let{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:2},
 }},
-}, Body:&If{
-Test:&Call{Exprs:[]Code{
-&Global{Name:c.Intern(">")},
-&Lexical{Levels:0, Offset:0},
-&Lexical{Levels:1, Offset:1},
-}},
-Consequent:&Call{Exprs:[]Code{
-&Lexical{Levels:2, Offset:0},
+}, Body:&Let{Exprs:[]Code{
 &If{
 Test:&Lexical{Levels:1, Offset:0},
 Consequent:&Lexical{Levels:1, Offset:0},
@@ -387,22 +380,31 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 },
+}, Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern(">")},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:2, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Lexical{Levels:3, Offset:0},
 &Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
-&Lexical{Levels:1, Offset:2},
+&Lexical{Levels:2, Offset:2},
 }},
 }},
 Alternate:&Call{Exprs:[]Code{
-&Lexical{Levels:2, Offset:0},
-&Lexical{Levels:1, Offset:0},
-&Lexical{Levels:1, Offset:1},
+&Lexical{Levels:3, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:2, Offset:1},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
-&Lexical{Levels:1, Offset:2},
+&Lexical{Levels:2, Offset:2},
 }},
 }},
-}},
+}}},
 }},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
@@ -439,14 +441,7 @@ Alternate:&Let{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:2},
 }},
-}, Body:&If{
-Test:&Call{Exprs:[]Code{
-&Global{Name:c.Intern("<")},
-&Lexical{Levels:0, Offset:0},
-&Lexical{Levels:1, Offset:1},
-}},
-Consequent:&Call{Exprs:[]Code{
-&Lexical{Levels:2, Offset:0},
+}, Body:&Let{Exprs:[]Code{
 &If{
 Test:&Lexical{Levels:1, Offset:0},
 Consequent:&Lexical{Levels:1, Offset:0},
@@ -455,22 +450,31 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 },
+}, Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("<")},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:2, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Lexical{Levels:3, Offset:0},
 &Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:0},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
-&Lexical{Levels:1, Offset:2},
+&Lexical{Levels:2, Offset:2},
 }},
 }},
 Alternate:&Call{Exprs:[]Code{
-&Lexical{Levels:2, Offset:0},
-&Lexical{Levels:1, Offset:0},
-&Lexical{Levels:1, Offset:1},
+&Lexical{Levels:3, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:2, Offset:1},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
-&Lexical{Levels:1, Offset:2},
+&Lexical{Levels:2, Offset:2},
 }},
 }},
-}},
+}}},
 }},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
