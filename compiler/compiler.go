@@ -287,7 +287,7 @@ func (c *Compiler) compileBegin(l Val, llen int, env *cenv) (Code, error) {
 	}
 	// Optimization: Single-expression BEGIN becomes just the expression
 	if llen == 2 {
-		return cadr(l), nil
+		return c.compileExpr(cadr(l), env)
 	}
 	es, err := c.compileExprList(cdr(l), env)
 	if err != nil {
