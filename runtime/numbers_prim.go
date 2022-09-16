@@ -75,7 +75,7 @@ func primFinitep(ctx *Scheme, args []Val) (Val, int) {
 func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if _, ok := v.(*big.Int); ok {
-		return ctx.TrueVal, 1
+		return ctx.FalseVal, 1
 	}
 	if fv, ok := v.(*big.Float); ok {
 		if fv.IsInf() {
