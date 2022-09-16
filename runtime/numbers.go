@@ -123,13 +123,13 @@ Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("not")},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("number?")},
-&Global{Name:c.Intern("z")},
+&Lexical{Levels:0, Offset:0},
 }},
 }},
 Consequent:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("error")},
 &Quote{Value:&Str{Value:"imag-part: not a number: "}},
-&Global{Name:c.Intern("z")},
+&Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },

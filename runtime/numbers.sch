@@ -28,7 +28,7 @@
       (error "real-part: not a number: " z))
   z)
 
-(define (imag-part x)
+(define (imag-part z)
   (if (not (number? z))
       (error "imag-part: not a number: " z))
   0)
