@@ -39,6 +39,7 @@ func initCompiledCode(c *Scheme) {
 	initIo(c)
 
 	// Library stuff
+	initGenerator(c)
 	initSort(c)
 }
 
