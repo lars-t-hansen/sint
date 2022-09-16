@@ -1,4 +1,4 @@
-(display "Testing control.sch\n")
+(display "Testing: control.sch\n")
 
 (assert (procedure? assert) "procedure? #1")
 (assert-not (procedure? #f) "procedure? #2")

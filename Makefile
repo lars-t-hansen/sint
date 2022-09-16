@@ -29,5 +29,6 @@ $(TARGETS): compiler/compiler.go compiler/emitter.go runtime/reader.go
 
 tests:
 	go run sint load tests/asserts.sch tests/booleans.sch tests/chars.sch tests/concurrency.sch \
-		tests/control.sch tests/io.sch tests/strings.sch tests/symbols.sch tests/system.sch
+		tests/control.sch tests/io.sch tests/numbers.sch tests/strings.sch tests/symbols.sch \
+		tests/system.sch
 
