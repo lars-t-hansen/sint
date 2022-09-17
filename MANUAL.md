@@ -135,3 +135,15 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 * `(bitwise-xor n ...)`
 * `(bitwise-and-not n1 n2)` computes `(bitwise-and n1 (bitwise-not n2))`
 * `(bitwise-not n)`
+
+## Lists
+
+* `(list-sort! <? xs)` sorts list `xs` in-place according to binary predicate `<?`
+* `(list-sorted? <? xs)` returns #t iff list `xs` is sorted according to binary predicate `<?`
+* `(some? pred xs)` returns #t iff pred tests true for one of the elements of list `xs`
+* `(every? pred xs)` returns #t iff pred tests true for all of the elements of list `xs`
+* `(filter pred xs)` returns those elements of list `xs` for which `pred` tests true
+
+## Generators
+
+* `(make-generator p [end]) => thunk` takes a procedure `p` of one argument, `yield`, and optionally an `end` value.  `p` is invoked once and must call `yield` on values to generate them.  Calls to the returned thunk retrieve successively yielded values.  If `end` is present it is yielded once `p` returns.  After that, the generator yields `#!unspecified` indefinitely.  See samples/generator.sch.
