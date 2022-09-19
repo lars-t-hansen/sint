@@ -51,6 +51,12 @@ func emit(expr Code, w *bufio.Writer) {
 		w.WriteString(", Body:")
 		emit(e.Body, w)
 		w.WriteString("}")
+	case *LetStar:
+		w.WriteString("&LetStar{Exprs:")
+		emitExprs(e.Exprs, w)
+		w.WriteString(", Body:")
+		emit(e.Body, w)
+		w.WriteString("}")
 	case *Letrec:
 		w.WriteString("&Letrec{Exprs:")
 		emitExprs(e.Exprs, w)

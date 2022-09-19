@@ -458,17 +458,18 @@ func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {
 			return c.compileNamedLet(l, llen, env)
 		}
 	}
-	return c.compileLetOrLetrec(l, llen, env, false)
+	return c.compileLetOrLetrecOrLetStar(l, llen, env, kLet)
 }
 
 func (c *Compiler) compileLetrec(l Val, llen int, env *cenv) (Code, error) {
 	// (letrec ((id expr) ...) expr expr ...)
-	return c.compileLetOrLetrec(l, llen, env, true)
+	return c.compileLetOrLetrecOrLetStar(l, llen, env, kLetrec)
 }
 
 func (c *Compiler) compileLetStar(l Val, llen int, env *cenv) (Code, error) {
 	// (let* ((id expr) ...) expr expr ...)
-	return c.reportError("`let*` not implemented yet") // TODO
+	// (letrec ((id expr) ...) expr expr ...)
+	return c.compileLetOrLetrecOrLetStar(l, llen, env, kLetStar)
 }
 
 func (c *Compiler) compileLetValues(l Val, llen int, env *cenv) (Code, error) {
@@ -481,10 +482,25 @@ func (c *Compiler) compileLetStarValues(l Val, llen int, env *cenv) (Code, error
 	return c.reportError("`let*-values` not implemented yet") // TODO
 }
 
-func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool) (Code, error) {
-	name := "let"
-	if isLetrec {
+type LetKind int
+
+const (
+	kLet LetKind = iota
+	kLetrec
+	kLetStar
+)
+
+func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind LetKind) (Code, error) {
+	name := ""
+	switch kind {
+	case kLet:
+		name = "let"
+	case kLetrec:
 		name = "letrec"
+	case kLetStar:
+		name = "let*"
+	default:
+		panic("Bad LetKind")
 	}
 	if llen < 3 {
 		return c.reportError(name + ": Illegal form: " + l.String())
@@ -498,13 +514,29 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	if len(names) == 0 {
 		return c.compileExpr(bodyExpr, env)
 	}
-	newEnv := &cenv{link: env, names: names}
+	var newEnv *cenv
 	var compiledInits []Code
 	var err error
-	if isLetrec {
-		compiledInits, err = c.compileExprSlice(inits, newEnv)
-	} else {
+	switch kind {
+	case kLet:
+		newEnv = &cenv{link: env, names: names}
 		compiledInits, err = c.compileExprSlice(inits, env)
+	case kLetrec:
+		newEnv = &cenv{link: env, names: names}
+		compiledInits, err = c.compileExprSlice(inits, newEnv)
+	case kLetStar:
+		newEnv = &cenv{link: env, names: []*Symbol{}}
+		for i, init := range inits {
+			compiledInit, compileErr := c.compileExpr(init, newEnv)
+			if compileErr != nil {
+				err = compileErr
+				break
+			}
+			compiledInits = append(compiledInits, compiledInit)
+			newEnv.names = append(newEnv.names, names[i])
+		}
+	default:
+		panic("Bad LetKind")
 	}
 	if err != nil {
 		return nil, err
@@ -513,10 +545,15 @@ func (c *Compiler) compileLetOrLetrec(l Val, llen int, env *cenv, isLetrec bool)
 	if bodyErr != nil {
 		return nil, bodyErr
 	}
-	if isLetrec {
-		return &Letrec{Exprs: compiledInits, Body: compiledBody}, nil
-	} else {
+	switch kind {
+	case kLet:
 		return &Let{Exprs: compiledInits, Body: compiledBody}, nil
+	case kLetrec:
+		return &Letrec{Exprs: compiledInits, Body: compiledBody}, nil
+	case kLetStar:
+		return &LetStar{Exprs: compiledInits, Body: compiledBody}, nil
+	default:
+		panic("Bad LetKind")
 	}
 }
 

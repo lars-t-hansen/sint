@@ -520,6 +520,23 @@ again:
 		// an expression returns the wrong number of values for the corresponding binding
 		// Then evaluate the body in that environment
 		panic("LetValues not implemented")
+	case *LetStar:
+		// TODO: See below about initializing the rib
+		slotvals := []Val{}
+		for i := 0; i < len(instr.Exprs); i++ {
+			slotvals = append(slotvals, c.UnspecifiedVal)
+		}
+		newEnv := &lexenv{slots: slotvals, link: env}
+		for i, e := range instr.Exprs {
+			v, unw := c.eval(e, newEnv)
+			if unw == EvalUnwind {
+				return v, unw
+			}
+			slotvals[i] = v
+		}
+		expr = instr.Body
+		env = newEnv
+		goto again
 	case *Letrec:
 		// TODO: Probably there's a more efficient way to do this?  Note we need
 		// fresh storage, so at a minimum we need to copy out of a master slice of

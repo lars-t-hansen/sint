@@ -106,6 +106,16 @@ func (c *Let) String() string {
 	return "(let (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
 }
 
+type LetStar struct {
+	Exprs []Code
+	Body  Code
+	// TODO: Documentation: This should carry the names of locals in the rib
+}
+
+func (c *LetStar) String() string {
+	return "(let* (" + stringifyExprs(c.Exprs) + ") " + c.Body.String() + ")"
+}
+
 type Letrec struct {
 	Exprs []Code
 	Body  Code
