@@ -18,15 +18,13 @@ import (
 //   *Lambda,
 //   *Let,
 //   *Letrec,
+//   *LetStar,
 //   *LetValues,
 //   *Lexical,
 //   *Setlex,
 //   *Global,
 //   *Setglobal
 // }
-//
-// TODO: Probably want a let*, at least, to cut down on the number of
-// ribs being allocated and the number of eval steps.
 
 type Code interface {
 	// TODO: Documentation: each expression should carry its source location

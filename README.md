@@ -10,7 +10,7 @@ Extended subset of R7RS-small Scheme, embedded in Go, with many Go facilities
 
 ## Status
 
-Pre-MVP, but basically operational.  See issue tracker for all MVP issues, and BACKLOG.md for other things.
+Pre-MVP, but basically operational.  See issue tracker for all MVP issues, and BACKLOG.md for longer-term things.
 
 ## Some details
 

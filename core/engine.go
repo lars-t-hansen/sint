@@ -332,8 +332,8 @@ func (c *Scheme) InvokeConcurrent(proc Val) *WrappedError {
 	if prim != nil {
 		return c.WrapError("Primitive procedures cannot be invoked concurrently")
 	}
-	// FIXME: This makes any error disappear.  It needs to invoke something that instead
-	// will call an error reporter if there's an unwinding.
+	// FIXME: Issue #30: This makes any error disappear.  It needs to invoke something
+	// that instead will call an error reporter if there's an unwinding.
 	go NewScheme(c).eval(newCode, newEnv)
 	return nil
 }

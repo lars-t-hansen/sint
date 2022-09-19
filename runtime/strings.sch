@@ -79,7 +79,7 @@
     (lambda (a b . rest)
       (loop a (cons b rest)))))
 
-;; FIXME: Use let-values here, it's much cheaper
+;; TODO: Use let-values here, it's much cheaper
 (define string->list
   (letrec ((loop
             (lambda (first last s i)

@@ -266,7 +266,7 @@ func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 }
 
 func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
-	// FIXME: Radix!
+	// FIXME: Issue #5: Handle radix
 	v := args[0]
 	if iv, ok := v.(*big.Int); ok {
 		return &Str{Value: fmt.Sprint(iv)}, 1
@@ -386,7 +386,7 @@ func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
 			// TODO: Cache the "1"
 			iv.Add(iv, big.NewInt(1))
 		} else if adjust == Round && acc != big.Exact {
-			// FIXME: need to look at the difference between the rounded value and
+			// FIXME: Issue #2: need to look at the difference between the rounded value and
 			// the original value, and round to even
 		}
 		return iv, 1

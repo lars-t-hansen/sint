@@ -2,7 +2,7 @@
 
 This is a grab-bag of TODO items that are not yet prominent enough to make it into the issue tracker.  Probably there are many more items that could go on this list.
 
-High-value MVP items are in README.md.
+All MVP backlog items are in the issue tracker.
 
 Also see many TODO comments in the source code.
 
@@ -23,16 +23,11 @@ Also see many TODO comments in the source code.
   perhaps also whether it should be configurable somehow.  It's hard
   to do this from Scheme, since values are created at
   hard-to-determine times.
-- more testing and bugfixing
-- additional primitives
-- additional library functions
-- the sint/runtime package could provide a Processor abstraction that encapsulates boilerplate?
 - Go FFI.  Note plugins as a way of loading code dynamically, but nice also to be able to link in user code statically.
 - apropos
 - "doc" function (or form) on functions at least
 - "source" function on functions
 - lots of documentation: variable names, function names, function comments, doc strings, ...
 - inexact complexes
-- all missing special forms
 - compiled code can probably use init() to register an init callback that will be invoked by initCompiledCode, so that the latter need not be updated every time we add a new file
 

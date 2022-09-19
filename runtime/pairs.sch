@@ -36,7 +36,7 @@
 
 (define (list . xs) xs)
 
-;; FIXME: This is totally insufficient, it needs to deal properly with circular lists.
+;; FIXME: Issue #26: This is totally insufficient, it needs to deal properly with circular lists.
 
 (define (list? x)
   (cond ((null? x) #t)
@@ -52,7 +52,7 @@
     (lambda (k . rest)
       (loop k (if (null? rest) (unspecified) (car rest)) '()))))
 
-;; FIXME: Needs to check that each of its arguments is a list, though arguably for backward
+;; FIXME: Issue #33: Needs to check that each of its arguments is a list, though arguably for backward
 ;; compatibility the last argument should not be checked.
 
 (define append
@@ -88,7 +88,7 @@
 (define (list-set! l k v)
   (set-car! (list-tail l k) v))
 
-;; FIXME: list-copy is a lot weirder than this
+;; FIXME: Issue #34: list-copy is a lot weirder than this
 
 (define (list-copy l)
   (append l '()))
@@ -162,7 +162,7 @@
           (error "assoc: not a list: " alist))
       (loop obj alist (if (null? rest) equal? (car rest))))))
 
-;; FIXME: Arguably this needs to test for list? while it's computing the length.
+;; FIXME: Issue #35: Arguably this needs to test for list? while it's computing the length.
 
 (define length
   (letrec ((loop
@@ -173,7 +173,7 @@
     (lambda (l)
       (loop l 0))))
 
-;; FIXME: Arguably this needs to test for list?
+;; FIXME: Issue #36: Arguably this needs to test for list?
 
 (define reverse
   (letrec ((loop
@@ -184,7 +184,7 @@
     (lambda (l)
       (loop l '()))))
 
-;; FIXME: Arguably this needs to test for list?
+;; FIXME: Issue #36: Arguably this needs to test for list?
 
 (define reverse-append
   (letrec ((loop
