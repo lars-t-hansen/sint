@@ -40,4 +40,33 @@
 
 (assert (equal? (list-copy '(a b c)) '(a b c)) "list-copy #1")
 
+(assert (eq? 'a (car (memq 'a '(b c a b)))) "memq #1")
+(assert-not (memq 'd '(b c a b)) "memq #2")
+
+(assert (eqv? 1 (car (memv 1 '(2 3 1 4)))) "memv #1")
+(assert-not (memv 7 '(2 3 1 4)) "memv #2")
+
+(assert (equal? '(a) (car (member '(a) '((c) (d) (a) (b))))) "member #1")
+(assert-not (member '(e) '((c) (d) (a) (b))) "member #2")
+(define (same? x y)
+  (equal? x (reverse y)))
+(assert (same? '(a b) (car (member '(a b) '((x c) (y d) (b a) (c b)) same?))) "member #3")
+(assert-not (member '(a c) '((x c) (y d) (b a) (c b)) same?) "member #4")
+
+(assert (equal? '(a b) (assq 'a '((a b) (c x) (b a) (d b)))) "assq #1")
+(assert-not (assq 'a '((y b) (c x) (b a) (d b))) "assq #2")
+
+(assert (equal? '(1 2) (assv '1 '((1 2) (2 3) (3 4) (4 5)))) "assv #1")
+(assert-not (assv '5 '((1 2) (2 3) (3 4) (4 5))) "assv #2")
+
+(assert (equal? '((a b) 3) (assoc '(a b) '(((a b) 3) ((c x) 4) ((b a) 5) ((d b) 7)))) "assoc #1")
+(assert-not (assoc '(b b) '(((a b) 3) ((c x) 4) ((b a) 5) ((d b) 7))) "assoc #2")
+
+(assert (= 0 (length '())) "length #1")
+(assert (= 5 (length '(a b c d e))) "length #2")
+
+(assert (equal? '(e d c b a) (reverse '(a b c d e))) "reverse #1")
+
+(assert (equal? '(a b c d e) (reverse-append '(c b a) '(d e))) "reverse-append #1")
+
 (display "OK\n")
