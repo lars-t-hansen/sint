@@ -200,16 +200,23 @@
 (assert (negative? -1) "negative? #1")
 (assert-not (negative? -0.0) "negative? #2")
 
-;; Issue #4
-;;(assert (odd? 1) "odd? #1")
-;;(assert-not (odd? 2) "odd? #2")
-;;(assert (even? 2) "even? #1")
-;;(assert-not (even? 1) "even? #2")
+(assert (odd? 1) "odd? #1")
+(assert-not (odd? 2) "odd? #2")
+(assert (even? 2) "even? #1")
+(assert-not (even? 1) "even? #2")
 
 (assert (let ((m (max 1 1.5 2 -7))) (and (= m 2) (inexact? m))) "max #1")
 (assert (let ((m (max 1 2 -7))) (and (= m 2) (exact? m))) "max #2")
 
 (assert (let ((m (min 1 1.5 2 -7))) (and (= m -7) (inexact? m))) "min #1")
 (assert (let ((m (min 1 2 -7))) (and (= m -7) (exact? m))) "min #2")
+
+(assert (= (quotient 8 2) 4) "quotient #0")
+(assert (= (quotient 8 3) 2) "quotient #1")
+(assert (= (quotient -8 3) -2) "quotient #2")
+
+(assert (= (remainder 8 2) 0) "remainder #0")
+(assert (= (remainder 8 3) 2) "remainder #1")
+(assert (= (remainder -8 3) -2) "remainder #2")
 
 (display "OK\n")

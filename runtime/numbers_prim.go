@@ -19,6 +19,8 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "-", 1, true, primSub)
 	addPrimitive(ctx, "*", 0, true, primMul)
 	addPrimitive(ctx, "/", 1, true, primDiv)
+	addPrimitive(ctx, "quotient", 2, false, primQuotient)
+	addPrimitive(ctx, "remainder", 2, false, primRemainder)
 	addPrimitive(ctx, "<", 2, true, primLess)
 	addPrimitive(ctx, "<=", 2, true, primLessOrEqual)
 	addPrimitive(ctx, "=", 2, true, primEqual)
@@ -174,6 +176,28 @@ func primDiv(ctx *Scheme, args []Val) (Val, int) {
 		}
 	}
 	return r, 1
+}
+
+func primQuotient(ctx *Scheme, args []Val) (Val, int) {
+	a := args[0]
+	b := args[1]
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Quo(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("quotient: numbers must be exact integers", a, b)
+}
+
+func primRemainder(ctx *Scheme, args []Val) (Val, int) {
+	a := args[0]
+	b := args[1]
+	if ia, ib, ok := bothInt(a, b); ok {
+		var z big.Int
+		z.Rem(ia, ib)
+		return &z, 1
+	}
+	return ctx.Error("remainder: numbers must be exact integers", a, b)
 }
 
 func primLess(ctx *Scheme, args []Val) (Val, int) {
