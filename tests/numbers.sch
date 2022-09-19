@@ -2,6 +2,38 @@
 
 (define *inf* (/ 1 0))
 
+(assert (= (+) 0) "+ #1")
+(assert (= (+ 1) 1) "+ #2")
+(assert (= (+ 1 2) 3) "+ #3")
+(assert (= (+ 1 2 3 4 5 6 7) 28) "+ #4")
+(assert (= (+ 1 2 3 4 5 6.0 7) 28) "+ #5")
+(assert (inexact? (+ 1 2 3 4 5 6.0 7)) "+ #6")
+(assert (exact? (+ 1 2 3 4 5 6 7)) "+ #7")
+
+(assert (= (- 1) -1) "- #1")
+(assert (= (- 1 3) -2) "- #2")
+(assert (= (- 1 3 4 5 6) -17) "- #3")
+(assert (exact? (- 1 3 4 5 6)) "- #4")
+(assert (= (- 1 3 4 5.0 6) -17) "- #5")
+(assert (inexact? (- 1 3 4 5.0 6)) "- #6")
+
+(assert (= (*) 1) "* #1")
+(assert (= (* 3) 3) "* #2")
+(assert (= (* 3 4) 12) "* #3")
+(assert (= (* 1 2 3 4 5 6 7) 5040) "* #4")
+(assert (= (* 1 2 3 4 5 6.0 7) 5040) "* #5")
+(assert (inexact? (* 1 2 3 4 5 6.0 7)) "* #6")
+(assert (exact? (* 1 2 3 4 5 6 7)) "* #7")
+
+(assert (= (/ 2) 0.5) "/ #1")
+(assert (= (/ 2 4) 0.5) "/ #2")
+(assert (= (/ 4 2 2) 1) "/ #3")
+;; Not really a bug as we have no exact rationals, though one could argue that
+;; the integer answer here ought to be exact.
+;;(assert (exact? (/ 4 2 2)) "/ #4")
+(assert (= (/ 4 2 2.0) 1) "/ #5")
+(assert (inexact? (/ 4 2 2.0)) "/ #6")
+
 (assert (finite? 37) "finite? #1")
 (assert (finite? 42.5) "finite? #2")
 (assert-not (finite? *inf*) "finite? #3")
