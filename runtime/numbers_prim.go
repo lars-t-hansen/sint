@@ -260,32 +260,26 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 	} else {
 		return ctx.Error("string->number: Not a string", args[0])
 	}
-	radix := 10
+	radix := -10
 	if len(args) > 1 {
 		if r, ok := args[1].(*big.Int); ok {
-			radix = int(r.Int64())
+			requestedRadix := int(r.Int64())
+			switch requestedRadix {
+			case 2, 8, 10, 16:
+				radix = requestedRadix
+				break
+			default:
+				return ctx.Error("string->number: Bad radix", args[1])
+			}
+		} else {
+			return ctx.Error("string->number: Bad radix", args[1])
 		}
 	}
-	switch radix {
-	case 2, 8, 10, 16:
-		break
-	default:
-		return ctx.Error("string->number: Bad radix", args[1])
+	num := StringToNumber(s.Value, radix)
+	if num == nil {
+		return ctx.Error("string->number: Bad number syntax", s)
 	}
-	var iv big.Int
-	if _, ok := iv.SetString(s.Value, radix); ok {
-		return &iv, 1
-	}
-	// This is too aggressive.  The string could have been rejected because
-	// there are bad digits for the base.
-	if radix != 10 {
-		return ctx.Error("string->number: Bad radix for inexact number", args[1])
-	}
-	var fv big.Float
-	if _, ok := fv.SetString(s.Value); ok {
-		return &fv, 1
-	}
-	return ctx.Error("string->number: Bad number syntax", s)
+	return num, 1
 }
 
 func primInexact(ctx *Scheme, args []Val) (Val, int) {

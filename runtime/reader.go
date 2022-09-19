@@ -1,4 +1,5 @@
 // The reader produces an sexpr from a rune input stream.
+// This is not a standards-compliant reader, but it's moving in that direction.
 
 package runtime
 
@@ -6,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	. "sint/core"
+	"unicode/utf8"
 )
 
 // Matches bufio.Reader and strings.Reader
@@ -30,6 +32,116 @@ type reader struct {
 func Read(s *Scheme, rdr InputStream) (Val, error) {
 	r := &reader{s: s, rdr: rdr}
 	return r.read()
+}
+
+// Returns a number or nil on error (not numeric)
+// radix is -10 for "default" decimal radix, otherwise the requested radix
+func StringToNumber(s string, radix int) Val {
+	if radix != -10 && radix != 10 {
+		panic("Only radix 10 supported at this time")
+	}
+	isNumber, isFloating := hasNumberSyntax(s)
+	if !isNumber {
+		return nil
+	}
+	if isFloating {
+		var f big.Float
+		f.Parse(s, 10)
+		return &f
+	}
+	var i big.Int
+	i.SetString(s, 10)
+	return &i
+}
+
+// Determine if a string can be parsed as a number.
+// TODO: This must handle infinities, nan, radix prefix, exact/inexact prefix,
+// and eventually complexes and so on.
+func hasNumberSyntax(s string) (isNumber bool, isFloating bool) {
+	idx := 0
+	lim := len(s)
+	hasIntegerPart := false
+	hasFractionalPart := false
+	hasExponentPart := false
+	// Assume optimistically it's a number
+	isNumber = true
+	// Skip a leading sign
+	{
+		ch, size := utf8.DecodeRuneInString(s[idx:])
+		if ch == '+' || ch == '-' {
+			idx += size
+		}
+	}
+	// Skip integer part, if present
+	for idx < lim {
+		ch, size := utf8.DecodeRuneInString(s[idx:])
+		if ch < '0' || ch > '9' {
+			break
+		}
+		idx += size
+		hasIntegerPart = true
+	}
+	// Skip fractional part
+	if idx < lim {
+		ch, size := utf8.DecodeRuneInString(s[idx:])
+		if ch == '.' {
+			idx += size
+			ndig := 0
+			for idx < lim {
+				ch, size := utf8.DecodeRuneInString(s[idx:])
+				if ch < '0' || ch > '9' {
+					break
+				}
+				idx += size
+				ndig++
+			}
+			if ndig > 0 {
+				hasFractionalPart = true
+			} else {
+				isNumber = false
+			}
+		}
+	}
+	// Skip exponent part
+	if isNumber && idx < lim {
+		ch, size := utf8.DecodeRuneInString(s[idx:])
+		if ch == 'e' || ch == 'E' {
+			idx += size
+			if idx < lim {
+				ch, size := utf8.DecodeRuneInString(s[idx:])
+				if ch == '+' || ch == '-' {
+					idx += size
+				}
+				ndig := 0
+				for idx < lim {
+					ch, size := utf8.DecodeRuneInString(s[idx:])
+					if ch < '0' || ch > '9' {
+						break
+					}
+					idx += size
+					ndig++
+				}
+				if ndig > 0 {
+					hasExponentPart = true
+				} else {
+					isNumber = false
+				}
+			} else {
+				isNumber = false
+			}
+		}
+	}
+	// It's only a number if we got to the end
+	if idx < lim {
+		isNumber = false
+	}
+	if isNumber && !hasIntegerPart && !hasFractionalPart && !hasExponentPart {
+		isNumber = false
+	}
+	if isNumber && (hasFractionalPart || hasExponentPart) {
+		isFloating = true
+	}
+	return
 }
 
 func (r *reader) readError(msg string) *ReadError {
@@ -58,9 +170,10 @@ func (r *reader) read() (Val, error) {
 			return r.s.Shared.DotSym, nil
 		}
 		r.rdr.UnreadRune()
-		// TODO: Maybe .37 is valid syntax for 0.37
+		// Symbols starting with . is not a thing but it's useful.
+		// Numbers can start with .
 		if isSymbolSubsequent(d) {
-			return r.readSymbol(c)
+			return r.readSymbolOrNumber(c)
 		}
 		return r.s.Shared.DotSym, nil
 	case '\'':
@@ -69,6 +182,21 @@ func (r *reader) read() (Val, error) {
 			return nil, err
 		}
 		return &Cons{Car: r.s.Shared.QuoteSym, Cdr: &Cons{Car: v, Cdr: r.s.NullVal}}, nil
+	case '`':
+		return nil, r.readError("Unhandled reserved syntax '`'")
+	case ',':
+		d, _, err := r.rdr.ReadRune()
+		if err != nil {
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
+			return nil, r.readError("Unhandled reserved syntax ','")
+		}
+		r.rdr.UnreadRune()
+		if d == '@' {
+			return nil, r.readError("Unhandled reserved syntax ',@'")
+		}
+		return nil, r.readError("Unhandled reserved syntax ','")
 	case '#':
 		d, _, err := r.rdr.ReadRune()
 		if err != nil {
@@ -94,11 +222,12 @@ func (r *reader) read() (Val, error) {
 	case '"':
 		return r.readString()
 	case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
-		return r.readDecimalNumber(c)
+		return r.readNumber(c)
+	case '-', '+':
+		return r.readSymbolOrNumber(c)
 	default:
 		if isSymbolInitial(c) {
-			// TODO: quasiquote, unquote, unquote-splicing
-			return r.readSymbol(c)
+			return r.readSymbolOrNumber(c)
 		}
 		return nil, r.readError("Unknown character " + string(c))
 	}
@@ -183,111 +312,6 @@ func (r *reader) readHexNumber() (Val, error) {
 	return nil, r.readError("Hex numbers not supported yet")
 }
 
-// "initial" is the leading digit
-func (r *reader) readDecimalNumber(initial rune) (Val, error) {
-	s := string(initial)
-	isFloating := false
-
-	// Integer part
-	digs, any, err := r.readDecimalDigits()
-	if err != nil {
-		return nil, err
-	}
-	if any {
-		s = s + digs
-	}
-
-	// Optional fractional part
-	{
-		d, _, err := r.rdr.ReadRune()
-		if err != nil {
-			if e := r.handleErrorIgnoreEOF(err); e != nil {
-				return nil, e
-			}
-			goto eofAfterDatum
-		}
-		if d == '.' {
-			isFloating = true
-			s = s + "."
-			digs, any, err := r.readDecimalDigits()
-			if err != nil {
-				return nil, err
-			}
-			if !any {
-				return nil, r.readError("Digits required after decimal point")
-			}
-			s = s + digs
-		} else {
-			r.rdr.UnreadRune()
-		}
-	}
-
-	// Optional exponential part
-	{
-		d, _, err := r.rdr.ReadRune()
-		if err != nil {
-			if e := r.handleErrorIgnoreEOF(err); e != nil {
-				return nil, e
-			}
-			goto eofAfterDatum
-		}
-		if d == 'e' || d == 'E' {
-			isFloating = true
-			s = s + string(d)
-			x, _, err := r.rdr.ReadRune()
-			if err != nil {
-				if e := r.handleErrorIgnoreEOF(err); e != nil {
-					return nil, e
-				}
-				return nil, r.readError("EOF in datum")
-			}
-			if x == '+' || x == '-' {
-				s = s + string(x)
-			} else {
-				r.rdr.UnreadRune()
-			}
-			digs, any, err := r.readDecimalDigits()
-			if err != nil {
-				return nil, err
-			}
-			if !any {
-				return nil, r.readError("Digits required in exponent")
-			}
-			s = s + digs
-		} else {
-			r.rdr.UnreadRune()
-		}
-	}
-
-eofAfterDatum:
-	if isFloating {
-		var f big.Float
-		f.Parse(s, 10)
-		return &f, nil
-	}
-	var i big.Int
-	i.SetString(s, 10)
-	return &i, nil
-}
-
-func (r *reader) readDecimalDigits() (s string, any bool, rdrErr error) {
-	for {
-		c, _, err := r.rdr.ReadRune()
-		if err != nil {
-			if e := r.handleErrorIgnoreEOF(err); e != nil {
-				rdrErr = e
-			}
-			return
-		}
-		if c < '0' || c > '9' {
-			r.rdr.UnreadRune()
-			return
-		}
-		any = true
-		s = s + string(c)
-	}
-}
-
 func (r *reader) readCharacter() (Val, error) {
 	e, _, err := r.rdr.ReadRune()
 	if err != nil {
@@ -309,7 +333,7 @@ func (r *reader) readCharacter() (Val, error) {
 		if !isAlphabetic(f) {
 			break
 		}
-		name, err := r.readSymbol(e)
+		name, err := r.readSymbolOrNumber(e)
 		if err != nil {
 			return nil, err
 		}
@@ -325,7 +349,7 @@ func (r *reader) readCharacter() (Val, error) {
 		if name == r.s.Shared.SpaceSym {
 			return &Char{Value: ' '}, nil
 		}
-		return nil, r.readError("Illegal character name: " + name.Name)
+		return nil, r.readError("Illegal character name: " + name.(*Symbol).Name)
 	default:
 		break
 	}
@@ -372,7 +396,18 @@ func (r *reader) readString() (*Str, error) {
 	}
 }
 
-func (r *reader) readSymbol(initial rune) (*Symbol, error) {
+func (r *reader) readNumber(initial rune) (Val, error) {
+	v, err := r.readSymbolOrNumber(initial)
+	if err != nil {
+		return v, err
+	}
+	if _, isSym := v.(*Symbol); isSym {
+		return nil, r.readError("Number expected here")
+	}
+	return v, nil
+}
+
+func (r *reader) readSymbolOrNumber(initial rune) (Val, error) {
 	s := string(initial)
 	for {
 		d, _, err := r.rdr.ReadRune()
@@ -388,6 +423,10 @@ func (r *reader) readSymbol(initial rune) (*Symbol, error) {
 			r.rdr.UnreadRune()
 			break
 		}
+	}
+	num := StringToNumber(s, -10)
+	if num != nil {
+		return num, nil
 	}
 	return r.s.Intern(s), nil
 }
@@ -447,8 +486,8 @@ func init() {
 	}
 	charTable['_'] = kInitial | kSubsequent
 	charTable['$'] = kInitial | kSubsequent
-	charTable['+'] = kInitial | kSubsequent
-	charTable['-'] = kInitial | kSubsequent
+	charTable['%'] = kInitial | kSubsequent
+	charTable['&'] = kInitial | kSubsequent
 	charTable['*'] = kInitial | kSubsequent
 	charTable['/'] = kInitial | kSubsequent
 	charTable['<'] = kInitial | kSubsequent
@@ -457,12 +496,15 @@ func init() {
 	charTable['?'] = kInitial | kSubsequent
 	charTable['!'] = kInitial | kSubsequent
 	charTable[':'] = kInitial | kSubsequent
-	charTable[','] = kInitial | kSubsequent
 	charTable['@'] = kInitial | kSubsequent
+	charTable['^'] = kInitial | kSubsequent
+	charTable['~'] = kInitial | kSubsequent
 	for c := '0'; c <= '9'; c++ {
 		charTable[c] = kSubsequent
 	}
 	charTable['.'] = kSubsequent
+	charTable['+'] = kSubsequent
+	charTable['-'] = kSubsequent
 	charTable[' '] = kSpace
 	charTable['\n'] = kSpace
 	charTable['\r'] = kSpace
