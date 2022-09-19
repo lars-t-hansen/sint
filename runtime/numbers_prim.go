@@ -313,11 +313,11 @@ func primExact(ctx *Scheme, args []Val) (Val, int) {
 func primAbs(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	if iv, ok := v.(*big.Int); ok {
-		var r *big.Int
+		var r big.Int
 		return r.Abs(iv), 1
 	}
 	if fv, ok := v.(*big.Float); ok {
-		var r *big.Float
+		var r big.Float
 		return r.Abs(fv), 1
 	}
 	return ctx.Error("abs: Not a number", v)

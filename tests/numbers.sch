@@ -84,6 +84,47 @@
 ;; Issue #32
 ;;(assert (infinite? (string->number "+inf.0")) "number->string #5")
 
+(assert (string=? (number->string -1234) "-1234") "number->string #1")
+(assert (string=? (number->string 1234.5) "1234.5") "number->string #2")
+
+(assert (= (inexact 37) 37.0) "inexact #1")
+(assert (inexact? (inexact 37)) "inexact #2")
+(assert (inexact? (inexact 37.0)) "inexact #3")
+
+(assert (= (exact 37.0) 37) "exact #1")
+(assert (exact? (exact 37.0)) "exact #2")
+(assert (exact? (exact 37)) "exact #3")
+
+(assert (= 37 (abs -37)) "abs #1")
+(assert (= 37.5 (abs -37.5)) "abs #2")
+(assert (= 37.5 (abs 37.5)) "abs #3")
+
+(assert (= -37 (floor -36.7)) "floor #1")
+(assert (= 12 (floor 12.3)) "floor #2")
+
+(assert (= -36 (ceiling -36.7)) "ceiling #1")
+(assert (= 13 (ceiling 12.3)) "ceiling #2")
+
+(assert (= -36 (truncate -36.7)) "truncate #1")
+(assert (= 12 (truncate 12.3)) "truncate #2")
+
+(assert (= -36 (round -36.5)) "round #1")
+(assert (= 12 (round 12.5)) "round #2")
+;; Issue #2
+;;(assert (= -36 (round -35.5)) "round #3")
+;;(assert (= 12 (round 11.5)) "round #4")
+
+(assert (= 6 (bitwise-and 7 -2)) "bitwise-and #1")
+
+(assert (= -2 (bitwise-or -4 2)) "bitwise-or #1")
+
+(assert (= -2 (bitwise-xor -4 2)) "bitwise-xor #1")
+(assert (= 4 (bitwise-xor 7 3)) "bitwise-xor #2")
+
+(assert (= 9 (bitwise-and-not 13 6)) "bitwise-and-not #1") 
+
+(assert (= -2 (bitwise-not 1)) "bitwise-not #1")
+
 (assert (finite? 37) "finite? #1")
 (assert (finite? 42.5) "finite? #2")
 (assert-not (finite? *inf*) "finite? #3")
