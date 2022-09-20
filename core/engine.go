@@ -5,6 +5,7 @@ package core
 import (
 	"math/big"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -226,6 +227,24 @@ func (c *SharedScheme) Intern(s string) *Symbol {
 
 func (c *Scheme) Intern(s string) *Symbol {
 	return c.Shared.Intern(s)
+}
+
+func (c *SharedScheme) FindSymbolsByName(pattern string) []*Symbol {
+	syms := []*Symbol{}
+	c.oblist.Range(func(key, value any) bool {
+		if strings.Contains(key.(string), pattern) {
+			sym := value.(*Symbol)
+			if sym.Value != c.UndefinedVal {
+				syms = append(syms, sym)
+			}
+		}
+		return true
+	})
+	return syms
+}
+
+func (c *Scheme) FindSymbolsByName(pattern string) []*Symbol {
+	return c.Shared.FindSymbolsByName(pattern)
 }
 
 func (c *SharedScheme) Gensym(s string) *Symbol {

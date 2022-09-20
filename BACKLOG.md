@@ -24,7 +24,6 @@ Also see many TODO comments in the source code.
   to do this from Scheme, since values are created at
   hard-to-determine times.
 - Go FFI.  Note plugins as a way of loading code dynamically, but nice also to be able to link in user code statically.
-- apropos
 - "doc" function (or form) on functions at least
 - "source" function on functions
 - lots of documentation: variable names, function names, function comments, doc strings, ...

@@ -11,4 +11,12 @@
 (assert (symbol=? 'foo 'foo (string->symbol "foo")) "symbol=? #1")
 (assert-not (symbol=? 'foo 'foo (string->symbol "Foo")) "symbol=? #2")
 
+(let ((xs (apropos "char")))
+  (assert (and (memq 'char->integer xs)
+	       (memq 'integer->char xs)
+	       (memq 'char? xs))
+	  "apropos #1"))
+
+(assert (null? (apropos 'fnord)) "apropos #2")
+
 (display "OK\n")

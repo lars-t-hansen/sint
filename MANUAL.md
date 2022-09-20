@@ -147,3 +147,7 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 ## Generators
 
 * `(make-generator p [end]) => thunk` takes a procedure `p` of one argument, `yield`, and optionally an `end` value.  `p` is invoked once and must call `yield` on values to generate them.  Calls to the returned thunk retrieve successively yielded values.  If `end` is present it is yielded once `p` returns.  After that, the generator yields `#!unspecified` indefinitely.  See samples/generator.sch.
+
+## Apropos
+
+* `(apropos pattern)` where `pattern` is a string or a symbol returns a list of the names (symbols) of all the global variables whose names have `pattern` as a substring.
