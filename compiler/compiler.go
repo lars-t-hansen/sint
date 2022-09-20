@@ -468,7 +468,6 @@ func (c *Compiler) compileLetrec(l Val, llen int, env *cenv) (Code, error) {
 
 func (c *Compiler) compileLetStar(l Val, llen int, env *cenv) (Code, error) {
 	// (let* ((id expr) ...) expr expr ...)
-	// (letrec ((id expr) ...) expr expr ...)
 	return c.compileLetOrLetrecOrLetStar(l, llen, env, kLetStar)
 }
 
@@ -490,18 +489,10 @@ const (
 	kLetStar
 )
 
+var letNames []string = []string{"let", "letrec", "let*"}
+
 func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind LetKind) (Code, error) {
-	name := ""
-	switch kind {
-	case kLet:
-		name = "let"
-	case kLetrec:
-		name = "letrec"
-	case kLetStar:
-		name = "let*"
-	default:
-		panic("Bad LetKind")
-	}
+	name := letNames[kind]
 	if llen < 3 {
 		return c.reportError(name + ": Illegal form: " + l.String())
 	}
@@ -536,7 +527,7 @@ func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind 
 			newEnv.names = append(newEnv.names, names[i])
 		}
 	default:
-		panic("Bad LetKind")
+		panic("Unexpected LetKind")
 	}
 	if err != nil {
 		return nil, err
@@ -553,7 +544,7 @@ func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind 
 	case kLetStar:
 		return &LetStar{Exprs: compiledInits, Body: compiledBody}, nil
 	default:
-		panic("Bad LetKind")
+		panic("Unexpected LetKind")
 	}
 }
 
