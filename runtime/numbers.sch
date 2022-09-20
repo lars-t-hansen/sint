@@ -102,3 +102,27 @@
     (lambda (x . xs)
       (loop (inexact? x) x xs))))
   
+;; k^1 = k
+;; k^n = k^n-1 * k^1 if n odd
+;; k^n = (k^(n/2))^2 if n even
+
+(define expt
+  (letrec ((expt
+            (lambda (x y)
+              (cond ((= y 1)
+                     x)
+                    ((even? y)
+                     (square (expt x (quotient y 2))))
+                    (else
+                     (* (expt x (- y 1)) x))))))
+    (lambda (x y)
+      (if (not (and (exact-integer? y) (>= y 0)))
+          (error "expt: Exponent must be exact nonnegative integer" y))
+      (if (not (rational? x))
+          (error "expt: Base must be rational number" x))
+      (cond ((= x 0)
+             (if (= y 0) 1 0))
+            ((= y 0)
+             1)
+            (else
+             (expt x y))))))

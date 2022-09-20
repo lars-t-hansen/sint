@@ -489,4 +489,120 @@ Body:&Call{Exprs:[]Code{
 }}}}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
+code22 := 
+&Setglobal{Name:c.Intern("expt"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("=")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(1)},
+}},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("even?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("square")},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("quotient")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(2)},
+}},
+}},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("*")},
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("-")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(1)},
+}},
+}},
+&Lexical{Levels:0, Offset:0},
+}},
+},
+}},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("exact-integer?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern(">=")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(0)},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"expt: Exponent must be exact nonnegative integer"}},
+&Lexical{Levels:0, Offset:1},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("rational?")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("error")},
+&Quote{Value:&Str{Value:"expt: Base must be rational number"}},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+},
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("=")},
+&Lexical{Levels:0, Offset:0},
+&Quote{Value:big.NewInt(0)},
+}},
+Consequent:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("=")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(0)},
+}},
+Consequent:&Quote{Value:big.NewInt(1)},
+Alternate:&Quote{Value:big.NewInt(0)},
+},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("=")},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:big.NewInt(0)},
+}},
+Consequent:&Quote{Value:big.NewInt(1)},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+},
+},
+}}}}}
+_, unwcode22 := c.EvalToplevel(code22)
+if unwcode22 != nil { panic(unwcode22.String()) }
 }
