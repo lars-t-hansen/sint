@@ -31,6 +31,7 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "inexact", 1, false, primInexact)
 	addPrimitive(ctx, "exact", 1, false, primExact)
 	addPrimitive(ctx, "abs", 1, false, primAbs)
+	addPrimitive(ctx, "sqrt", 1, false, primSqrt)
 	addPrimitive(ctx, "floor", 1, false, primFloor)
 	addPrimitive(ctx, "ceiling", 1, false, primCeiling)
 	addPrimitive(ctx, "truncate", 1, false, primTruncate)
@@ -345,6 +346,22 @@ func primAbs(ctx *Scheme, args []Val) (Val, int) {
 		return r.Abs(fv), 1
 	}
 	return ctx.Error("abs: Not a number", v)
+}
+
+func primSqrt(ctx *Scheme, args []Val) (Val, int) {
+	v := args[0]
+	var r big.Float
+	if iv, ok := v.(*big.Int); ok {
+		r.SetInt(iv)
+	} else if fv, ok := v.(*big.Float); ok {
+		r = *fv
+	} else {
+		return ctx.Error("sqrt: Not a number", v)
+	}
+	if r.Cmp(big.NewFloat(0.0)) < 0 {
+		return ctx.Error("sqrt: Can't take square root of negative number", v)
+	}
+	return r.Sqrt(&r), 1
 }
 
 const (

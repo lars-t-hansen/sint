@@ -99,6 +99,9 @@
 (assert (= 37.5 (abs -37.5)) "abs #2")
 (assert (= 37.5 (abs 37.5)) "abs #3")
 
+(assert (= 2 (sqrt 4.0)) "sqrt #1")
+(assert (= 3.0 (sqrt 9)) "sqrt #2")
+
 (assert (= -37 (floor -36.7)) "floor #1")
 (assert (= 12 (floor 12.3)) "floor #2")
 
