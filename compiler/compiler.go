@@ -46,8 +46,9 @@ func NewCompiler(s *SharedScheme) *Compiler {
 	c.keywords[s.OrSym] = true
 	c.keywords[s.ParameterizeSym] = true
 	c.keywords[s.QuoteSym] = true
+	c.keywords[s.SelectSym] = true
 	c.keywords[s.SetSym] = true
-	// arrowSym and elseSym are not reserved
+	// arrowSym, elseSym, sendSym and receiveSym are not reserved
 
 	return c
 }
@@ -194,6 +195,9 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			if kwd == c.s.GoSym {
 				return c.compileGo(e, llen, env)
 			}
+			if kwd == c.s.IfSym {
+				return c.compileIf(e, llen, env)
+			}
 			if kwd == c.s.LambdaSym {
 				return c.compileLambda(e, llen, env)
 			}
@@ -221,8 +225,8 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 			if kwd == c.s.QuoteSym {
 				return c.compileQuote(e, llen, env)
 			}
-			if kwd == c.s.IfSym {
-				return c.compileIf(e, llen, env)
+			if kwd == c.s.SelectSym {
+				return c.compileSelect(e, llen, env)
 			}
 			if kwd == c.s.SetSym {
 				return c.compileSet(e, llen, env)
@@ -630,6 +634,83 @@ func (c *Compiler) compileRef(s *Symbol, env *cenv) (Code, error) {
 		return c.reportError("Keyword used as variable reference: " + s.Name)
 	}
 	return &Global{Name: s}, nil
+}
+
+func (c *Compiler) compileSelect(l Val, llen int, env *cenv) (Code, error) {
+	// See DESIGN.md and MANUAL.md for more about how this works and how it is
+	// implemented.
+	//
+	// (select ((pattern1 body ...) ...)
+	// (select ((pattern1 body ...) ... (else else1 else2 ...))
+	// where pattern is one of
+	// (send channel-expr value-expr)
+	// (receive (receive-value-var receive-status-var) channel-expr)
+	// initNames and initExprs are in sync
+	var initNames []*Symbol
+	var initExprs []Code
+	var selects []SelectCase
+	l = cdr(l)
+	for l != c.s.NullVal {
+		clause := car(l)
+		clauseLen, clauseIsList := c.checkProperList(clause)
+		if !clauseIsList || clauseLen < 1 {
+			return c.reportError("select: Bad form: " + l.String())
+		}
+		pattern := car(clause)
+		if pattern == c.s.ElseSym {
+			if cdr(l) != c.s.NullVal {
+				return c.reportError("select: The `else` clause must come last: " + l.String())
+			}
+			eBody, eErr := c.compileExpr(cons(c.s.BeginSym, cdr(clause)), env)
+			if eErr != nil {
+				return eBody, eErr
+			}
+			selects = append(selects, SelectDefault{Body: eBody})
+		} else {
+			patternLen, patternIsList := c.checkProperList(pattern)
+			if !patternIsList || patternLen != 3 || (car(pattern) != c.s.SendSym && car(pattern) != c.s.ReceiveSym) {
+				return c.reportError("select: Bad pattern: " + pattern.String())
+			}
+			if car(pattern) == c.s.SendSym {
+				chName := c.s.Gensym("SEL")
+				valName := c.s.Gensym("SEL")
+				initNames = append(initNames, chName, valName)
+				chExpr, chErr := c.compileExpr(cadr(pattern), env)
+				if chErr != nil {
+					return chExpr, chErr
+				}
+				valExpr, valErr := c.compileExpr(caddr(pattern), env)
+				if valErr != nil {
+					return valExpr, valErr
+				}
+				initExprs = append(initExprs, chExpr, valExpr)
+				cBody, cErr := c.compileExpr(cons(c.s.BeginSym, cdr(clause)), env)
+				if cErr != nil {
+					return cBody, cErr
+				}
+				selects = append(selects, SelectSend{ChName: chName, ValName: valName, Body: cBody})
+			} else {
+				chName := c.s.Gensym("SEL")
+				initNames = append(initNames, chName)
+				chExpr, chErr := c.compileExpr(caddr(pattern), env)
+				if chErr != nil {
+					return chExpr, chErr
+				}
+				initExprs = append(initExprs, chExpr)
+				// FIXME: type checking
+				// FIXME: names can't be the same
+				recvValName := car(cadr(pattern)).(*Symbol)
+				recvStatusName := cadr(cadr(pattern)).(*Symbol)
+				newEnv := &cenv{link: env, names: []*Symbol{recvValName, recvStatusName}}
+				cBody, cErr := c.compileExpr(cons(c.s.BeginSym, cdr(clause)), newEnv)
+				if cErr != nil {
+					return cBody, cErr
+				}
+				selects = append(selects, SelectReceive{ChName: chName, Body: cBody})
+			}
+		}
+	}
+	return &Select{}, nil
 }
 
 func (c *Compiler) compileSet(l Val, llen int, env *cenv) (Code, error) {

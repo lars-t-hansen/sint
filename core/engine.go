@@ -4,9 +4,11 @@ package core
 
 import (
 	"math/big"
+	"reflect"
 	"strconv"
 	"sync"
 	"sync/atomic"
+	"unsafe"
 )
 
 // Well-known tls key values.  The ones below 100 are embedded in Scheme code as
@@ -84,6 +86,9 @@ type SharedScheme struct {
 	OrSym            *Symbol
 	ParameterizeSym  *Symbol
 	QuoteSym         *Symbol
+	ReceiveSym       *Symbol
+	SelectSym        *Symbol
+	SendSym          *Symbol
 	SetSym           *Symbol
 	ArrowSym         *Symbol
 	DotSym           *Symbol
@@ -123,6 +128,9 @@ func newSharedScheme() *SharedScheme {
 	s.OrSym = s.Intern("or")
 	s.ParameterizeSym = s.Intern("parameterize")
 	s.QuoteSym = s.Intern("quote")
+	s.ReceiveSym = s.Intern("receive")
+	s.SelectSym = s.Intern("select")
+	s.SendSym = s.Intern("send")
 	s.SetSym = s.Intern("set!")
 	s.ArrowSym = s.Intern("=>")
 	s.DotSym = s.Intern(".")
@@ -557,11 +565,7 @@ again:
 		env = newEnv
 		goto again
 	case *Lexical:
-		rib := env
-		for levels := instr.Levels; levels > 0; levels-- {
-			rib = rib.link
-		}
-		return rib.slots[instr.Offset], 1
+		return c.lookupLexical(env, instr.Levels, instr.Offset), 1
 	case *Setlex:
 		rhs, rhsRes := c.eval(instr.Rhs, env)
 		if rhsRes == EvalUnwind {
@@ -586,9 +590,41 @@ again:
 		}
 		instr.Name.Value = rhs
 		return c.UnspecifiedVal, 1
+	case *Select:
+		// There's a let wrapping this.  It binds all the values used by the send
+		// and receive clauses and has two empty slots that we will use to store
+		// the values for whatever receive works.
+		cases := make([]reflect.SelectCase, len(instr.cases))
+		for i, caze := range instr.cases {
+			if caze, ok := caze.(*SelectSend); ok {
+				chanVal := c.lookupLexical(env, caze.ChanLevels, caze.ChanOffset)
+				cases[i] = reflect.SelectCase{
+					Dir:  reflect.SelectSend,
+					Chan: reflect.NewAt(reflect.TypeOf(chanVal), unsafe.Pointer(chanVal)),
+					Send: c.lookupLexical(env, caze.ValLevels, caze.ValOffset)}
+			} else if caze, ok := caze.(*SelectReceive); ok {
+				cases[i] = reflect.SelectCase{
+					Dir:  reflect.SelectRecv,
+					Chan: c.lookupLexical(env, caze.ChanLevels, caze.ChanOffset)}
+			} else {
+				cases[i] = reflect.SelectCase{
+					Dir: reflect.SelectDefault,
+				}
+			}
+		}
+		chosen, recv, recvOk := reflect.Select(cases)
+		panic("Select unimplemented")
 	default:
 		panic("Bad expression: " + expr.String())
 	}
+}
+
+func (c *Scheme) lookupLexical(rib *lexenv, levels int, offset int) Val {
+	for ; levels > 0; levels-- {
+		rib = rib.link
+	}
+	return rib.slots[offset]
+
 }
 
 // Returns either (values, nil) or (nil, unwind-object)

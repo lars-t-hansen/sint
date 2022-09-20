@@ -146,6 +146,36 @@ func (c *Lexical) String() string {
 	return "(lexical " + strconv.Itoa(c.Levels) + " " + strconv.Itoa(c.Offset) + ")"
 }
 
+// SelectCase = union { SelectSend, SelectReceive, SelectDefault }
+type SelectCase any
+
+type SelectSend struct {
+	ChanLevels int
+	ChanOffset int
+	ValLevels  int
+	ValOffset  int
+	Body       Code
+}
+
+type SelectReceive struct {
+	ChanLevels int
+	ChanOffset int
+	Body       Code
+}
+
+type SelectDefault struct {
+	Body Code
+}
+
+type Select struct {
+	cases []SelectCase
+}
+
+func (c *Select) String() string {
+	// TODO: fix this
+	return "select"
+}
+
 type Setlex struct {
 	Levels int
 	Offset int

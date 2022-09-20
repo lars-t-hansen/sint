@@ -104,21 +104,7 @@ TODO: The GC must close a channel when the channel object is reaped.  Don't know
 
 ### Select (not yet implemented)
 
-In principle there should be a `select` as in Go to allow communication to proceed on some channel that is ready:
-
-```
-(select ((send send-ch-expr send-value-expr) send-body-expr ...)
-        (((recv-value-var recv-status-var) receive recv-ch-expr) receive-body-expr ...)
-        (else else-expr ...))
-```
-
-In the case of receive, either variable can be the identifier _.  (Generally, a binding for name _ should be a shorthand for a gensym'd name.)
-
-As in Go, this would evaluate the send-ch-expr, the send-value-expr, and the recv-ch-expr, and only when everything has been evaluated would it pick a channel, if any, to operate on, and then to evaluate the body expressions of.
-
-Implementing this is a little tricky.  It can use an arbitrary number of channels but those must be written into the statement in Go, there isn't a notion of higher-order select clauses.  We could probably have a hack where we have "up to n" but the combinations of sends and receives means the number of variants is exponential in n, so this is limited to about five, in practice.
-
-If we have a channel that always delivers a value then it may be possible to chain those fixed-size nests.  Closed channels deliver the null value, ie, nil, which is basically perfect for this.  This dummy channel will be selected with probability 1/n for n-1 cases.  Thus a second-level chain is selected with probability 1/n, and the cases in that will have probability 1/n*1/m where m is the size of the second level - ie, the probabilities are not going to be uniform.   To fix that, if we need more than one level then the leaves - the true channels - must all be at the same level, ie, say we have up to five for a baked in select stmt and we have seven channels to select from.  Then a first-level switch will have two dummy input channels, selecting one of two lower-level switches with equal priority, and these (one of size four, the other of size three, maybe) will then select on the true channels.  It is true that the priorities will still not be the same, but they will be close to each other.
+TBD.
 
 ## Synchronization and atomics (evolving)
 

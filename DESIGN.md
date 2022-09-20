@@ -44,6 +44,18 @@ the parameter object.
 In turn, the thread-local storage is supported by new primitives `sint:new-tls-key`, 
 `sint:read-tls-value` and `sint:write-tls-value`.
 
+## Select
+
+```
+(select ((send send-ch-expr send-value-expr) send-body-expr ...)
+        ((receive (recv-value-var recv-status-var) recv-ch-expr) receive-body-expr ...)
+        (else else-expr ...))
+```
+
+As in Go, this would evaluate the send-ch-expr, the send-value-expr, and the recv-ch-expr, and only when everything has been evaluated would it pick a channel, if any, to operate on, and then to evaluate the body expressions of the appropriate clause.
+
+Implementing this requires the use of reflection in the general case: SelectCase, SelectDir, and Select.  However, in the common case there will be few cases and we can have ready-made select functions that just open-code the select statement appropriately.  For four cases + default we need 16 functions.  If we have fewer than four cases we can pad with dummy channels that are never ready.
+
 ## Thread safety
 
 ### Ports
