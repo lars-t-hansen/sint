@@ -88,10 +88,19 @@
 (define (list-set! l k v)
   (set-car! (list-tail l k) v))
 
-;; FIXME: Issue #34: list-copy is a lot weirder than this
-
-(define (list-copy l)
-  (append l '()))
+(define list-copy
+  (letrec ((loop (lambda (l last)
+                   (if (not (pair? l))
+                       (set-cdr! last l)
+                       (let ((new (cons (car l) '())))
+                         (set-cdr! last new)
+                         (loop (cdr l) new))))))
+    (lambda (l)
+      (if (not (pair? l))
+          l
+          (let ((new (cons (car l) '())))
+            (loop (cdr l) new)
+            new)))))
 
 ;; TODO: For efficiency, the list? test could be rolled into the loops below so that we don't need
 ;; to loop across the list twice.

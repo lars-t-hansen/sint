@@ -39,6 +39,8 @@
   (assert (equal? l '(a d c)) "list-set! #1"))
 
 (assert (equal? (list-copy '(a b c)) '(a b c)) "list-copy #1")
+(assert (equal? (list-copy 'a) 'a) "list-copy #2")
+(assert (equal? (list-copy '(a b . c)) '(a b . c)) "list-copy #3")
 
 (assert (eq? 'a (car (memq 'a '(b c a b)))) "memq #1")
 (assert-not (memq 'd '(b c a b)) "memq #2")

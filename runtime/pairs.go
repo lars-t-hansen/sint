@@ -687,12 +687,78 @@ Body:&Call{Exprs:[]Code{
 _, unwcode35 := c.EvalToplevel(code35)
 if unwcode35 != nil { panic(unwcode35.String()) }
 code36 := 
-&Setglobal{Name:c.Intern("list-copy"), Rhs:&Lambda{
-Fixed:1, Rest:false,
-Body:&Call{Exprs:[]Code{
-&Global{Name:c.Intern("append")},
+&Setglobal{Name:c.Intern("list-copy"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("pair?")},
 &Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("set-cdr!")},
+&Lexical{Levels:0, Offset:1},
+&Lexical{Levels:0, Offset:0},
+}},
+Alternate:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cons")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:0},
+}},
 &Quote{Value:c.NullVal},
+}},
+}, Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("set-cdr!")},
+&Lexical{Levels:1, Offset:1},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:1, Offset:0},
+}},
+&Lexical{Levels:0, Offset:0},
+}},
+}}},
+}},
+}, Body:&Lambda{
+Fixed:1, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("pair?")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cons")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("car")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Quote{Value:c.NullVal},
+}},
+}, Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:1, Offset:0},
+}},
+&Lexical{Levels:0, Offset:0},
+}},
+&Lexical{Levels:0, Offset:0},
+}}},
 }}}}
 _, unwcode36 := c.EvalToplevel(code36)
 if unwcode36 != nil { panic(unwcode36.String()) }
