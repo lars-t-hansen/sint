@@ -162,6 +162,11 @@ type Scheme struct {
 	//
 	// Per-thread mutable state
 
+	// Last-ditch unwind reporter which the engine will use to report unwinds on goroutines
+	// if they propagate past any installed error handler.  A goroutine inherits the
+	// unwind handler from its parent goroutine.
+	UnwindReporter func(*Scheme, *UnwindPkg)
+
 	// This is interpreted in the context of the number-of-values flag passed back
 	// in the evaluator.
 	MultiVals []Val
@@ -176,7 +181,7 @@ type Scheme struct {
 // oldScheme can be nil, in which case we create a new globally shared
 // SharedScheme instance.  For new goroutines, oldScheme must never be nil.
 
-func NewScheme(oldScheme *Scheme) *Scheme {
+func NewScheme(oldScheme *Scheme, unwReporter func(*Scheme, *UnwindPkg)) *Scheme {
 	var ss *SharedScheme
 	if oldScheme != nil {
 		ss = oldScheme.Shared
@@ -194,6 +199,7 @@ func NewScheme(oldScheme *Scheme) *Scheme {
 		Zero:           big.NewInt(0),
 		tlsValues:      make(map[int32]Val),
 		GoroutineId:    big.NewInt(atomic.AddInt64(&ss.nextGoroutineId, 1)),
+		UnwindReporter: unwReporter,
 	}
 
 	// Inherit initial parameter values from oldScheme.
@@ -332,10 +338,21 @@ func (c *Scheme) InvokeConcurrent(proc Val) *WrappedError {
 	if prim != nil {
 		return c.WrapError("Primitive procedures cannot be invoked concurrently")
 	}
-	// FIXME: Issue #30: This makes any error disappear.  It needs to invoke something
-	// that instead will call an error reporter if there's an unwinding.
-	go NewScheme(c).eval(newCode, newEnv)
+	go NewScheme(c, c.UnwindReporter).evalWithUnwindReport(newCode, newEnv)
 	return nil
+}
+
+// Returns nothing, but will report unwinding on the installed unwind reporter
+
+func (c *Scheme) evalWithUnwindReport(expr Code, env *lexenv) {
+	v, unw := c.eval(expr, env)
+	if unw == EvalUnwind {
+		if c.UnwindReporter != nil {
+			c.UnwindReporter(c, v.(*UnwindPkg))
+		} else {
+			panic("No unwind reporter installed")
+		}
+	}
 }
 
 func (c *Scheme) InvokeWithUnwindHandler(filterKey Val, thunkProc *Procedure, handleProc *Procedure) (Val, int) {

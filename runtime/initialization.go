@@ -1,6 +1,7 @@
 package runtime
 
 import (
+	"os"
 	. "sint/core"
 )
 
@@ -14,7 +15,23 @@ func StandardInitialization(engine *Scheme) (reader ClosableInputStream, writer 
 	engine.SetTlsValue(CurrentOutputPort, NewOutputPort(writer, true /* isText */, "<standard output>"))
 	errWriter = NewStderrWriter()
 	engine.SetTlsValue(CurrentErrorPort, NewOutputPort(errWriter, true /* isText */, "<standard error>"))
+	engine.UnwindReporter = LastDitchUnwindHandler
 	return
+}
+
+func LastDitchUnwindHandler(engine *Scheme, unw *UnwindPkg) {
+	// As the last-ditch unwind handler this always goes directly to os.Stderr.
+	if unw.Key == engine.FalseVal {
+		// The payload is a list
+		// The first element is a string
+		// The rest are irritants
+		os.Stderr.WriteString("ERROR: " + unw.Payload.(*Cons).Car.(*Str).Value + "\n")
+		for l := unw.Payload.(*Cons).Cdr; l != engine.NullVal; l = l.(*Cons).Cdr {
+			os.Stderr.WriteString(l.(*Cons).Car.String() + "\n")
+		}
+	} else {
+		os.Stderr.WriteString("UNHANDLED UNWINDING\n" + unw.String() + "\n")
+	}
 }
 
 // Code compiled from Scheme to Go is initialized here.  An alternative would be to just emit an init()
