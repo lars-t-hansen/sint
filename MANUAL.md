@@ -150,5 +150,7 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 
 ## Introspection and reflection
 
-* `(filter-global-variables pattern)` returns an unsorted list of the names (symbols) of all the global variables whose names have `pattern` as a substring.
-* `(apropos pattern)` where `pattern` is a string or a symbol prints (on the current output port) the sorted result of `(filter-global-variables pattern)`, one name per line.
+* `(filter-global-variables pattern)` where `pattern` is a string or a symbol returns an unsorted list of the names (symbols) of all the global variables whose names have `pattern` as a substring.
+* `(apropos pattern)` prints (on the current output port) the sorted result of `(filter-global-variables pattern)`, one name per line.
+* `(symbol-has-value? symbol)` returns true iff there is a global variable with the name `symbol`
+* `(symbol-value symbol)` returns the value of the global variable with the name `symbol`.  It throws if there is no such variable.

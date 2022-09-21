@@ -19,4 +19,9 @@
 
 (assert (null? (filter-global-variables 'fnord)) "apropos #2")
 
+(assert (symbol-has-value? 'car) "symbol-has-value? #1")
+(assert-not (symbol-has-value? 'never-defined) "symbol-has-value? #2")
+
+(assert (eq? (symbol-value 'car) car) "symbol-value #1")
+
 (display "OK\n")
