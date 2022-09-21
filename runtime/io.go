@@ -241,7 +241,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
-}}},
+}},
+Name:"current-input-port"},
 }}}
 _, unwcode15 := c.EvalToplevel(code15)
 if unwcode15 != nil { panic(unwcode15.String()) }
@@ -268,7 +269,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
-}}},
+}},
+Name:"current-output-port"},
 }}}
 _, unwcode16 := c.EvalToplevel(code16)
 if unwcode16 != nil { panic(unwcode16.String()) }
@@ -295,7 +297,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
-}}},
+}},
+Name:"current-error-port"},
 }}}
 _, unwcode17 := c.EvalToplevel(code17)
 if unwcode17 != nil { panic(unwcode17.String()) }
@@ -311,19 +314,22 @@ Body:&Let{Exprs:[]Code{
 &Global{Name:c.Intern("dynamic-wind")},
 &Lambda{
 Fixed:0, Rest:false,
-Body:&Quote{Value:c.TrueVal}},
+Body:&Quote{Value:c.TrueVal},
+Name:"call-with-input-file > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:1},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-input-file > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-input-port")},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-input-file > "},
 }}},
 Name:"call-with-input-file"}}
 _, unwcode18 := c.EvalToplevel(code18)
@@ -340,19 +346,22 @@ Body:&Let{Exprs:[]Code{
 &Global{Name:c.Intern("dynamic-wind")},
 &Lambda{
 Fixed:0, Rest:false,
-Body:&Quote{Value:c.TrueVal}},
+Body:&Quote{Value:c.TrueVal},
+Name:"call-with-output-file > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:1},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-output-file > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-output-port")},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-output-file > "},
 }}},
 Name:"call-with-output-file"}}
 _, unwcode19 := c.EvalToplevel(code19)
@@ -380,19 +389,22 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Global{Name:c.Intern("dynamic-wind")},
 &Lambda{
 Fixed:0, Rest:false,
-Body:&Quote{Value:c.TrueVal}},
+Body:&Quote{Value:c.TrueVal},
+Name:"call-with-port > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-port > "},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-port")},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"call-with-port > "},
 }},
 }},
 Name:"call-with-port"}}

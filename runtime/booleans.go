@@ -60,7 +60,8 @@ Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
-}},
+},
+Name:"boolean=? > check"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -97,7 +98,8 @@ Alternate:&Begin{Exprs:[]Code{
 &Quote{Value:c.FalseVal},
 }},
 },
-}},
+},
+Name:"boolean=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -122,7 +124,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}}}}}
+}},
+Name:"boolean=?"}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 }

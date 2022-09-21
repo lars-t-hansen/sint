@@ -553,7 +553,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-}},
+},
+Name:"make-list > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -573,7 +574,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 &Quote{Value:c.NullVal},
-}}}}}
+}},
+Name:"make-list"}}}
 _, unwcode31 := c.EvalToplevel(code31)
 if unwcode31 != nil { panic(unwcode31.String()) }
 code32 := 
@@ -604,7 +606,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-}},
+},
+Name:"append > loop"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -628,7 +631,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-}},
+},
+Name:"append > loop2"},
 }, Body:&Lambda{
 Fixed:0, Rest:true,
 Body:&If{
@@ -653,7 +657,8 @@ Alternate:&Let{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}},
-}}}}
+},
+Name:"append"}}}
 _, unwcode32 := c.EvalToplevel(code32)
 if unwcode32 != nil { panic(unwcode32.String()) }
 code33 := 
@@ -679,14 +684,16 @@ Alternate:&Call{Exprs:[]Code{
 &Quote{Value:big.NewInt(1)},
 }},
 }},
-}},
+},
+Name:"list-tail > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"list-tail"}}}
 _, unwcode33 := c.EvalToplevel(code33)
 if unwcode33 != nil { panic(unwcode33.String()) }
 code34 := 
@@ -759,7 +766,8 @@ Alternate:&Let{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}},
-}},
+},
+Name:"list-copy > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&If{
@@ -791,7 +799,8 @@ Alternate:&Let{Exprs:[]Code{
 }},
 &Lexical{Levels:0, Offset:0},
 }}},
-}}}}
+},
+Name:"list-copy"}}}
 _, unwcode36 := c.EvalToplevel(code36)
 if unwcode36 != nil { panic(unwcode36.String()) }
 code37 := 
@@ -823,7 +832,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"memq > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -847,7 +857,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}}}
+}},
+Name:"memq"}}}
 _, unwcode37 := c.EvalToplevel(code37)
 if unwcode37 != nil { panic(unwcode37.String()) }
 code38 := 
@@ -879,7 +890,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"memv > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -903,7 +915,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}}}
+}},
+Name:"memv"}}}
 _, unwcode38 := c.EvalToplevel(code38)
 if unwcode38 != nil { panic(unwcode38.String()) }
 code39 := 
@@ -936,7 +949,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 },
-}},
+},
+Name:"member > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -971,7 +985,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }},
-}}}}}
+}},
+Name:"member"}}}
 _, unwcode39 := c.EvalToplevel(code39)
 if unwcode39 != nil { panic(unwcode39.String()) }
 code40 := 
@@ -1006,7 +1021,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"assq > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -1030,7 +1046,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}}}
+}},
+Name:"assq"}}}
 _, unwcode40 := c.EvalToplevel(code40)
 if unwcode40 != nil { panic(unwcode40.String()) }
 code41 := 
@@ -1065,7 +1082,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"assv > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -1089,7 +1107,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}}}
+}},
+Name:"assv"}}}
 _, unwcode41 := c.EvalToplevel(code41)
 if unwcode41 != nil { panic(unwcode41.String()) }
 code42 := 
@@ -1125,7 +1144,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 },
-}},
+},
+Name:"assoc > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -1160,7 +1180,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }},
-}}}}}
+}},
+Name:"assoc"}}}
 _, unwcode42 := c.EvalToplevel(code42)
 if unwcode42 != nil { panic(unwcode42.String()) }
 code43 := 
@@ -1185,14 +1206,16 @@ Alternate:&Call{Exprs:[]Code{
 &Quote{Value:big.NewInt(1)},
 }},
 }},
-}},
+},
+Name:"length > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
-}}}}}
+}},
+Name:"length"}}}
 _, unwcode43 := c.EvalToplevel(code43)
 if unwcode43 != nil { panic(unwcode43.String()) }
 code44 := 
@@ -1220,14 +1243,16 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-}},
+},
+Name:"reverse > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:c.NullVal},
-}}}}}
+}},
+Name:"reverse"}}}
 _, unwcode44 := c.EvalToplevel(code44)
 if unwcode44 != nil { panic(unwcode44.String()) }
 code45 := 
@@ -1255,14 +1280,16 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-}},
+},
+Name:"reverse-append > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"reverse-append"}}}
 _, unwcode45 := c.EvalToplevel(code45)
 if unwcode45 != nil { panic(unwcode45.String()) }
 }

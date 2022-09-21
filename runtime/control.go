@@ -132,7 +132,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }}},
 },
-}},
+},
+Name:"apply > build-apply-args"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -159,7 +160,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-}}}}}
+}},
+Name:"apply"}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -219,7 +221,8 @@ Test:&Call{Exprs:[]Code{
 }},
 Consequent:&Lambda{
 Fixed:1, Rest:false,
-Body:&Lexical{Levels:0, Offset:0}},
+Body:&Lexical{Levels:0, Offset:0},
+Name:"make-parameter >  > conv"},
 Alternate:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:1},
@@ -284,7 +287,8 @@ Alternate:&Call{Exprs:[]Code{
 &Quote{Value:&Str{Value:"Invalid call to parameter function"}},
 }},
 },
-}},
+},
+Name:"sint:make-parameter-function > "},
 Name:"sint:make-parameter-function"}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
@@ -346,8 +350,10 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:3, Offset:2},
 &Lexical{Levels:0, Offset:0},
 }},
-}}},
-}}},
+}},
+Name:"call-with-current-continuation >  > [lambda] > [lambda]"},
+}},
+Name:"call-with-current-continuation >  > [lambda]"},
 &Lambda{
 Fixed:0, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -357,15 +363,18 @@ Body:&Begin{Exprs:[]Code{
 &Global{Name:c.Intern("values")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}},
-}}},
+}},
+Name:"call-with-current-continuation >  > [lambda]"},
+}},
+Name:"call-with-current-continuation > "},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("apply")},
 &Global{Name:c.Intern("values")},
 &Lexical{Levels:0, Offset:1},
-}}},
+}},
+Name:"call-with-current-continuation > "},
 }}},
 Name:"call-with-current-continuation"}}
 _, unwcode6 := c.EvalToplevel(code6)
@@ -403,8 +412,10 @@ Body:&Begin{Exprs:[]Code{
 &Global{Name:c.Intern("values")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}},
-}}},
+}},
+Name:"dynamic-wind >  > [lambda]"},
+}},
+Name:"dynamic-wind > "},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -423,7 +434,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}},
+}},
+Name:"dynamic-wind > "},
 }}},
 }},
 Name:"dynamic-wind"}}
@@ -457,7 +469,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"map > map1"},
 &Lambda{
 Fixed:3, Rest:false,
 Body:&If{
@@ -501,7 +514,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"map > map2"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -532,7 +546,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"map > mapn"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&If{
@@ -572,7 +587,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}}}}
+},
+Name:"map"}}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -604,7 +620,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"for-each > each1"},
 &Lambda{
 Fixed:3, Rest:false,
 Body:&If{
@@ -649,7 +666,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"for-each > each2"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -681,7 +699,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 }},
-}},
+},
+Name:"for-each > eachn"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&If{
@@ -721,7 +740,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}}}}
+},
+Name:"for-each"}}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -755,14 +775,16 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"every? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"every?"}}}
 _, unwcode11 := c.EvalToplevel(code11)
 if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
@@ -793,14 +815,16 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"some? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"some?"}}}
 _, unwcode12 := c.EvalToplevel(code12)
 if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
@@ -845,14 +869,16 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-}},
+},
+Name:"filter > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"filter"}}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 }

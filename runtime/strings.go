@@ -79,7 +79,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}},
+},
+Name:"string=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -90,7 +91,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:2},
 }},
-}}}}}
+}},
+Name:"string=?"}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -129,7 +131,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}},
+},
+Name:"string<? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -140,7 +143,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:2},
 }},
-}}}}}
+}},
+Name:"string<?"}}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -179,7 +183,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}},
+},
+Name:"string<=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -190,7 +195,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:2},
 }},
-}}}}}
+}},
+Name:"string<=?"}}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -229,7 +235,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}},
+},
+Name:"string>? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -240,7 +247,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:2},
 }},
-}}}}}
+}},
+Name:"string>?"}}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -279,7 +287,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}},
+},
+Name:"string>=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -290,7 +299,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:2},
 }},
-}}}}}
+}},
+Name:"string>=?"}}}
 _, unwcode7 := c.EvalToplevel(code7)
 if unwcode7 != nil { panic(unwcode7.String()) }
 code8 := 
@@ -315,7 +325,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("string-ref")},
 &Lexical{Levels:1, Offset:2},
 &Lexical{Levels:1, Offset:3},
-}}},
+}},
+Name:"string->list > loop > [lambda]"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Let{Exprs:[]Code{
@@ -348,9 +359,11 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
 }},
 }},
-}}}},
+}}},
+Name:"string->list > loop > [lambda]"},
 }},
-}},
+},
+Name:"string->list > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -407,7 +420,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }},
-}}}}}
+}},
+Name:"string->list"}}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 

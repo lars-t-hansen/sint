@@ -422,7 +422,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }}},
-}},
+},
+Name:"max > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -433,7 +434,8 @@ Body:&Call{Exprs:[]Code{
 }},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"max"}}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
@@ -492,7 +494,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }}},
-}},
+},
+Name:"min > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -503,7 +506,8 @@ Body:&Call{Exprs:[]Code{
 }},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
-}}}}}
+}},
+Name:"min"}}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
 code22 := 
@@ -548,7 +552,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 },
-}},
+},
+Name:"expt > expt"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -619,7 +624,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-}}}}}
+}},
+Name:"expt"}}}
 _, unwcode22 := c.EvalToplevel(code22)
 if unwcode22 != nil { panic(unwcode22.String()) }
 }

@@ -46,7 +46,8 @@ Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("eval")},
 &Lexical{Levels:1, Offset:0},
-}}},
+}},
+Name:"load > loop > [lambda]"},
 &Lambda{
 Fixed:0, Rest:true,
 Body:&If{
@@ -86,11 +87,13 @@ Body:&Begin{Exprs:[]Code{
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("newline")},
 }},
-}}},
+}},
+Name:"load > loop > [lambda] > [lambda]"},
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
-}},
+},
+Name:"load > loop > [lambda]"},
 }},
 &Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:0},
@@ -98,14 +101,16 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
-}}},
+}},
+Name:"load > loop"},
 }, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("call-with-input-file")},
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:1, Offset:0},
-}}}}}
+}},
+Name:"load"}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }
