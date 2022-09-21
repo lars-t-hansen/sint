@@ -81,7 +81,7 @@ The form `(go (expr expr ...))` is syntax.  The exprs are evaluated on the curre
 
 The memory model is that of Go.  All Scheme values are word-sized and racy accesses have sensible outcomes with no torn values, provided the implementation does not detect the race and terminate the program.  Atomic operations and channels (see subsequent sections) can be used to synchronize concurrent access to avoid races.
 
-TODO: It's possible we want some type of primitive to identify the goroutine we're in, like a thread ID?
+* `(goroutine-id)` -> exact nonnegative integer, an ID for the current goroutine
 
 ## Channels and communication (evolving)
 

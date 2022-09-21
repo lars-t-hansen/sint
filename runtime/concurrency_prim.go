@@ -13,7 +13,7 @@ import (
 
 func initConcurrencyPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:go", 1, false, primGo)
-	addPrimitive(ctx, "sint:goroutine-id", 0, false, primGoroutineId)
+	addPrimitive(ctx, "goroutine-id", 0, false, primGoroutineId)
 	addPrimitive(ctx, "make-channel", 0, true, primMakeChannel)
 	addPrimitive(ctx, "channel?", 0, true, primChannelp)
 	addPrimitive(ctx, "channel-send", 2, false, primChannelSend)

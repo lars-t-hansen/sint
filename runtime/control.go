@@ -293,7 +293,7 @@ code6 :=
 Fixed:1, Rest:false,
 Body:&Let{Exprs:[]Code{
 &Call{Exprs:[]Code{
-&Global{Name:c.Intern("sint:goroutine-id")},
+&Global{Name:c.Intern("goroutine-id")},
 }},
 &Quote{Value:c.FalseVal},
 &Call{Exprs:[]Code{
@@ -329,7 +329,7 @@ Test:&Call{Exprs:[]Code{
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("=")},
 &Call{Exprs:[]Code{
-&Global{Name:c.Intern("sint:goroutine-id")},
+&Global{Name:c.Intern("goroutine-id")},
 }},
 &Lexical{Levels:3, Offset:0},
 }},
