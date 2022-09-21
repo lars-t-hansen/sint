@@ -61,7 +61,8 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 Alternate:&Quote{Value:c.FalseVal},
 },
-}}}}
+}},
+Name:"equal?"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

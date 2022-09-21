@@ -16,7 +16,8 @@ Fixed:0, Rest:true,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:list->string")},
 &Lexical{Levels:0, Offset:0},
-}}}}
+}},
+Name:"string"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -41,7 +42,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}}
+}}},
+Name:"make-string"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -464,7 +466,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}
+},
+Name:"string-copy"}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -490,7 +493,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Global{Name:c.Intern("sint:list->string")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"list->string"}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 }

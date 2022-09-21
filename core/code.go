@@ -86,6 +86,7 @@ type Lambda struct {
 	Fixed int
 	Rest  bool
 	Body  Code
+	Name  string
 	// TODO: Documentation: this should carry the doc string and the source code
 	// TODO: Documentation: This should carry the names of locals in the rib
 }

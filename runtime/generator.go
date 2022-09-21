@@ -75,7 +75,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }}},
 }}},
-}}}}
+}},
+Name:"make-generator"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

@@ -27,7 +27,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Quote{Value:c.FalseVal},
 }},
-}}}}
+}},
+Name:"boolean?"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -37,7 +38,8 @@ Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Quote{Value:c.FalseVal},
 Alternate:&Quote{Value:c.TrueVal},
-}}}
+},
+Name:"not"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 

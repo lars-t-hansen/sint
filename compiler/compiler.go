@@ -128,7 +128,8 @@ func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
 		lam := &Lambda{
 			Fixed: fixed,
 			Rest:  rest,
-			Body:  bodyc}
+			Body:  bodyc,
+			Name:  globName.Name}
 		return &Setglobal{
 			Name: globName,
 			Rhs:  lam,

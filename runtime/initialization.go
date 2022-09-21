@@ -75,5 +75,5 @@ func initPrimitives(ctx *Scheme) {
 
 func addPrimitive(ctx *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) (Val, int)) {
 	sym := ctx.Intern(name)
-	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil}, Env: nil, Primop: primop}
+	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil, Name: name}, Env: nil, Primop: primop}
 }

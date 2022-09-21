@@ -65,7 +65,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 }},
 Alternate:&Quote{Value:c.FalseVal},
-}}}
+},
+Name:"input-port?"}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -91,7 +92,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 }},
 Alternate:&Quote{Value:c.FalseVal},
-}}}
+},
+Name:"output-port?"}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -117,7 +119,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 }},
 Alternate:&Quote{Value:c.FalseVal},
-}}}
+},
+Name:"textual-port?"}}
 _, unwcode11 := c.EvalToplevel(code11)
 if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
@@ -143,7 +146,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 }},
 Alternate:&Quote{Value:c.FalseVal},
-}}}
+},
+Name:"binary-port?"}}
 _, unwcode12 := c.EvalToplevel(code12)
 if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
@@ -176,7 +180,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Global{Name:c.Intern("*closed-port-flag*")},
 }},
 }},
-}}}}
+}},
+Name:"input-port-open?"}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 code14 := 
@@ -209,7 +214,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Global{Name:c.Intern("*closed-port-flag*")},
 }},
 }},
-}}}}
+}},
+Name:"output-port-open?"}}
 _, unwcode14 := c.EvalToplevel(code14)
 if unwcode14 != nil { panic(unwcode14.String()) }
 code15 := 
@@ -318,7 +324,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-input-port")},
 &Lexical{Levels:1, Offset:0},
 }}},
-}}}}}
+}}},
+Name:"call-with-input-file"}}
 _, unwcode18 := c.EvalToplevel(code18)
 if unwcode18 != nil { panic(unwcode18.String()) }
 code19 := 
@@ -346,7 +353,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-output-port")},
 &Lexical{Levels:1, Offset:0},
 }}},
-}}}}}
+}}},
+Name:"call-with-output-file"}}
 _, unwcode19 := c.EvalToplevel(code19)
 if unwcode19 != nil { panic(unwcode19.String()) }
 code20 := 
@@ -386,7 +394,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }}},
 }},
-}}}}
+}},
+Name:"call-with-port"}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
@@ -439,7 +448,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
-}}}}
+}},
+Name:"close-port"}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
 }

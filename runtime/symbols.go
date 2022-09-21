@@ -142,7 +142,8 @@ Body:&Begin{Exprs:[]Code{
 }},
 }}},
 &Lexical{Levels:0, Offset:0},
-}}}}}
+}}},
+Name:"apropos"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }

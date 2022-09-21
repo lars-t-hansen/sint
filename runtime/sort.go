@@ -286,7 +286,8 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 }},
 }},
-}}}}
+}},
+Name:"list-sorted?"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }

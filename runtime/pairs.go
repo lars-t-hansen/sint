@@ -19,7 +19,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"caar"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -31,7 +32,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"cadr"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -43,7 +45,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"cdar"}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -55,7 +58,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"cddr"}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -70,7 +74,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"caaar"}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -85,7 +90,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"caadr"}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -100,7 +106,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"cadar"}}
 _, unwcode7 := c.EvalToplevel(code7)
 if unwcode7 != nil { panic(unwcode7.String()) }
 code8 := 
@@ -115,7 +122,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"caddr"}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
@@ -130,7 +138,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"cdaar"}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -145,7 +154,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"cdadr"}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -160,7 +170,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"cddar"}}
 _, unwcode11 := c.EvalToplevel(code11)
 if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
@@ -175,7 +186,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"cdddr"}}
 _, unwcode12 := c.EvalToplevel(code12)
 if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
@@ -193,7 +205,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"caaaar"}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 code14 := 
@@ -211,7 +224,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"caaadr"}}
 _, unwcode14 := c.EvalToplevel(code14)
 if unwcode14 != nil { panic(unwcode14.String()) }
 code15 := 
@@ -229,7 +243,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"caadar"}}
 _, unwcode15 := c.EvalToplevel(code15)
 if unwcode15 != nil { panic(unwcode15.String()) }
 code16 := 
@@ -247,7 +262,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"caaddr"}}
 _, unwcode16 := c.EvalToplevel(code16)
 if unwcode16 != nil { panic(unwcode16.String()) }
 code17 := 
@@ -265,7 +281,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cadaar"}}
 _, unwcode17 := c.EvalToplevel(code17)
 if unwcode17 != nil { panic(unwcode17.String()) }
 code18 := 
@@ -283,7 +300,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cadadr"}}
 _, unwcode18 := c.EvalToplevel(code18)
 if unwcode18 != nil { panic(unwcode18.String()) }
 code19 := 
@@ -301,7 +319,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"caddar"}}
 _, unwcode19 := c.EvalToplevel(code19)
 if unwcode19 != nil { panic(unwcode19.String()) }
 code20 := 
@@ -319,7 +338,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cadddr"}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
@@ -337,7 +357,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cdaaar"}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
 code22 := 
@@ -355,7 +376,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cdaadr"}}
 _, unwcode22 := c.EvalToplevel(code22)
 if unwcode22 != nil { panic(unwcode22.String()) }
 code23 := 
@@ -373,7 +395,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cdadar"}}
 _, unwcode23 := c.EvalToplevel(code23)
 if unwcode23 != nil { panic(unwcode23.String()) }
 code24 := 
@@ -391,7 +414,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cdaddr"}}
 _, unwcode24 := c.EvalToplevel(code24)
 if unwcode24 != nil { panic(unwcode24.String()) }
 code25 := 
@@ -409,7 +433,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cddaar"}}
 _, unwcode25 := c.EvalToplevel(code25)
 if unwcode25 != nil { panic(unwcode25.String()) }
 code26 := 
@@ -427,7 +452,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cddadr"}}
 _, unwcode26 := c.EvalToplevel(code26)
 if unwcode26 != nil { panic(unwcode26.String()) }
 code27 := 
@@ -445,7 +471,8 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cdddar"}}
 _, unwcode27 := c.EvalToplevel(code27)
 if unwcode27 != nil { panic(unwcode27.String()) }
 code28 := 
@@ -463,13 +490,15 @@ Body:&Call{Exprs:[]Code{
 }},
 }},
 }},
-}}}}
+}},
+Name:"cddddr"}}
 _, unwcode28 := c.EvalToplevel(code28)
 if unwcode28 != nil { panic(unwcode28.String()) }
 code29 := 
 &Setglobal{Name:c.Intern("list"), Rhs:&Lambda{
 Fixed:0, Rest:true,
-Body:&Lexical{Levels:0, Offset:0}}}
+Body:&Lexical{Levels:0, Offset:0},
+Name:"list"}}
 _, unwcode29 := c.EvalToplevel(code29)
 if unwcode29 != nil { panic(unwcode29.String()) }
 code30 := 
@@ -495,7 +524,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}}}
+},
+Name:"list?"}}
 _, unwcode30 := c.EvalToplevel(code30)
 if unwcode30 != nil { panic(unwcode30.String()) }
 code31 := 
@@ -669,7 +699,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}}
+}},
+Name:"list-ref"}}
 _, unwcode34 := c.EvalToplevel(code34)
 if unwcode34 != nil { panic(unwcode34.String()) }
 code35 := 
@@ -683,7 +714,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 &Lexical{Levels:0, Offset:2},
-}}}}
+}},
+Name:"list-set!"}}
 _, unwcode35 := c.EvalToplevel(code35)
 if unwcode35 != nil { panic(unwcode35.String()) }
 code36 := 

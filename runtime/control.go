@@ -18,7 +18,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:compile-toplevel-phrase")},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}
+}},
+Name:"eval"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -203,7 +204,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-}}}}
+}},
+Name:"call-with-values"}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -240,7 +242,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Lexical{Levels:0, Offset:0},
 }},
-}}}}}
+}}},
+Name:"make-parameter"}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -281,7 +284,8 @@ Alternate:&Call{Exprs:[]Code{
 &Quote{Value:&Str{Value:"Invalid call to parameter function"}},
 }},
 },
-}}}}
+}},
+Name:"sint:make-parameter-function"}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -362,7 +366,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("values")},
 &Lexical{Levels:0, Offset:1},
 }}},
-}}}}}
+}}},
+Name:"call-with-current-continuation"}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -420,7 +425,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }}},
 }}},
-}}}}
+}},
+Name:"dynamic-wind"}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
