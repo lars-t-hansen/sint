@@ -23,3 +23,12 @@
         (if (string=? sa (symbol->string b))
             (loop sa xs)
             #f)))))
+
+(define (apropos pattern)
+  (let ((xs (list-sort! (lambda (a b)
+                          (string<? (symbol->string a) (symbol->string b)))
+                        (filter-global-variables pattern))))
+    (for-each (lambda (x)
+                (display x)
+                (newline))
+              xs)))

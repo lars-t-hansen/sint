@@ -13,7 +13,7 @@ func initSymbolPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "symbol->string", 1, false, primSymbol2String)
 	addPrimitive(ctx, "string->symbol", 1, false, primString2Symbol)
 	addPrimitive(ctx, "gensym", 0, false, primGensym)
-	addPrimitive(ctx, "apropos", 1, false, primApropos)
+	addPrimitive(ctx, "filter-global-variables", 1, false, primFilterGlobals)
 }
 
 func primSymbolp(ctx *Scheme, args []Val) (Val, int) {
@@ -43,7 +43,7 @@ func primGensym(ctx *Scheme, _ []Val) (Val, int) {
 	return ctx.Gensym("S"), 1
 }
 
-func primApropos(ctx *Scheme, args []Val) (Val, int) {
+func primFilterGlobals(ctx *Scheme, args []Val) (Val, int) {
 	v := args[0]
 	pattern := ""
 	if s, ok := v.(*Str); ok {
@@ -51,7 +51,7 @@ func primApropos(ctx *Scheme, args []Val) (Val, int) {
 	} else if s, ok := v.(*Symbol); ok {
 		pattern = s.Name
 	} else {
-		return ctx.Error("apropos: Not a string", v)
+		return ctx.Error("filter-global-variables: Not a string", v)
 	}
 	syms := ctx.FindSymbolsByName(pattern)
 	l := ctx.NullVal
