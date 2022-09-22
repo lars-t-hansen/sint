@@ -334,6 +334,10 @@ func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
+func (c *Scheme) DefineToplevel(name string, v Val) {
+	c.Intern(name).Value = v
+}
+
 // Returns (values, nil) on success, otherwise (nil, unwind-package)
 
 func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {

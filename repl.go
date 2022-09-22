@@ -114,18 +114,19 @@ func reportUnwinding(engine *core.Scheme, unw *core.UnwindPkg) {
 
 func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	stdin, stdout, stderr := runtime.StandardInitialization(engine)
+	nextResultId := 1
 	for {
 		stdout.WriteString("> ")
-		v, rdrErr := runtime.Read(engine, stdin)
+		form, rdrErr := runtime.Read(engine, stdin)
 		if rdrErr != nil {
 			stderr.WriteString(rdrErr.Error() + "\n")
 			continue
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			stdout.WriteRune('\n')
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			stderr.WriteString(progErr.Error() + "\n")
 			continue
@@ -135,10 +136,15 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			reportUnwinding(engine, unw.(*core.UnwindPkg))
 			continue
 		}
-		for _, r := range results {
-			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, stdout)
+		for _, result := range results {
+			if result != engine.UnspecifiedVal {
+				rName := nextResultId
+				nextResultId++
+				name := fmt.Sprintf("$%d", rName)
+				fmt.Printf("%s = ", name)
+				runtime.Write(result, false, stdout)
 				stdout.WriteRune('\n')
+				engine.DefineToplevel(name, result)
 			}
 		}
 	}
