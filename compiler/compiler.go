@@ -74,7 +74,7 @@ func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	if exprIsList && length >= 3 && car(v) == c.s.DefineSym {
 		compiled, err = c.compileToplevelDefinition(v)
 	} else {
-		compiled, err = c.compileExpr(v, nil)
+		compiled, err = c.compileExpr(v, &cenv{doc: ""})
 	}
 	if err != nil {
 		return nil, err
@@ -82,8 +82,9 @@ func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	return compiled, nil
 }
 
-// Compile-time environment.  There is one of these per lexical rib, and there can be
-// an empty one that is outermost.  The `doc` is a string that can be attached to
+// Compile-time environment.  There is one of these per lexical rib, and there is always
+// an empty one that is outermost, so nil checks for the cenv are never required except
+// when walking the environment chain.  The `doc` is a string that can be attached to
 // lambda expressions that appear in certain value positions.
 //
 // Note that this is currently mutable: `doc`` is updated destructively when compiling
