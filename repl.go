@@ -153,11 +153,11 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
 	_, stdout, _ := runtime.StandardInitialization(engine)
 	sourceReader := bufio.NewReader(strings.NewReader(expr))
-	v, rdrErr := runtime.Read(engine, sourceReader)
+	form, rdrErr := runtime.Read(engine, sourceReader)
 	if rdrErr != nil {
 		return rdrErr
 	}
-	prog, progErr := comp.CompileToplevel(v)
+	prog, progErr := comp.CompileToplevel(form)
 	if progErr != nil {
 		return progErr
 	}
@@ -165,9 +165,9 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
 	if unw != nil {
 		return unw.(*core.UnwindPkg)
 	}
-	for _, r := range results {
-		if r != engine.UnspecifiedVal {
-			runtime.Write(r, false, stdout)
+	for _, result := range results {
+		if result != engine.UnspecifiedVal {
+			runtime.Write(result, false, stdout)
 			stdout.WriteRune('\n')
 			stdout.Flush()
 		}
@@ -183,14 +183,14 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 	}
 	sourceReader := bufio.NewReader(input)
 	for {
-		v, rdrErr := runtime.Read(engine, sourceReader)
+		form, rdrErr := runtime.Read(engine, sourceReader)
 		if rdrErr != nil {
 			return rdrErr
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			return progErr
 		}
@@ -198,9 +198,9 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 		if unw != nil {
 			return unw.(*core.UnwindPkg)
 		}
-		for _, r := range results {
-			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, stdout)
+		for _, result := range results {
+			if result != engine.UnspecifiedVal {
+				runtime.Write(result, false, stdout)
 				stdout.WriteRune('\n')
 			}
 		}
@@ -219,8 +219,9 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error 
 	if ix != -1 {
 		moduleName = moduleName[ix+1:]
 	}
+	// TODO: Strip special characters from the module name
 	if len(moduleName) == 0 {
-		return compiler.NewCompilerError("Input file name is empty after stripping suffix: " + fn)
+		return compiler.NewCompilerError("Input file name is empty after stripping suffix and path: " + fn)
 	}
 	moduleName = strings.ToUpper(moduleName[0:1]) + strings.ToLower(moduleName[1:])
 	tmpFn := withoutExt + ".tmp"
@@ -260,14 +261,14 @@ func init%s(c *Scheme) {
 `, fn, moduleName, moduleName)
 	id := 1
 	for {
-		v, rdrErr := runtime.Read(engine, reader)
+		form, rdrErr := runtime.Read(engine, reader)
 		if rdrErr != nil {
 			return rdrErr
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			return progErr
 		}
