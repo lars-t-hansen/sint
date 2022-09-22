@@ -25,7 +25,7 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "=", 2, true, primEqual)
 	addPrimitive(ctx, ">", 2, true, primGreater)
 	addPrimitive(ctx, ">=", 2, true, primGreaterOrEqual)
-	addPrimitive(ctx, "number->string", 1, false, primNumber2String)
+	addPrimitive(ctx, "number->string", 1, true, primNumber2String)
 	addPrimitive(ctx, "string->number", 1, true, primString2Number)
 	addPrimitive(ctx, "inexact", 1, false, primInexact)
 	addPrimitive(ctx, "exact", 1, false, primExact)
@@ -265,10 +265,30 @@ func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.TrueVal, 1
 }
 
+func parseRadix(v Val) (radix int, ok bool) {
+	if iv, ok := v.(*big.Int); ok {
+		if iv.IsInt64() {
+			i := iv.Int64()
+			if i == 2 || i == 8 || i == 10 || i == 16 {
+				radix = int(i)
+			}
+		}
+	}
+	ok = radix != 0
+	return
+}
+
 func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
-	// FIXME: Issue #5: Handle radix
 	v0 := args[0]
-	v := NumberToString(v0, 10)
+	radix := 10
+	if len(args) >= 2 {
+		radixOk := true
+		radix, radixOk = parseRadix(args[1])
+		if !radixOk {
+			return ctx.Error("number->string: Invalid radix", args[1])
+		}
+	}
+	v := NumberToString(v0, radix)
 	if v == nil {
 		return ctx.Error("number->string: Not a number", v0)
 	}
@@ -283,17 +303,10 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 		return ctx.Error("string->number: Not a string", args[0])
 	}
 	radix := -10
-	if len(args) > 1 {
-		if r, ok := args[1].(*big.Int); ok {
-			requestedRadix := int(r.Int64())
-			switch requestedRadix {
-			case 2, 8, 10, 16:
-				radix = requestedRadix
-				break
-			default:
-				return ctx.Error("string->number: Bad radix", args[1])
-			}
-		} else {
+	if len(args) >= 2 {
+		radixOk := true
+		radix, radixOk = parseRadix(args[1])
+		if !radixOk {
 			return ctx.Error("string->number: Bad radix", args[1])
 		}
 	}
