@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"fmt"
 	"math/big"
 	. "sint/core"
 )
@@ -268,14 +267,12 @@ func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 
 func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
 	// FIXME: Issue #5: Handle radix
-	v := args[0]
-	if iv, ok := v.(*big.Int); ok {
-		return &Str{Value: fmt.Sprint(iv)}, 1
+	v0 := args[0]
+	v := NumberToString(v0, 10)
+	if v == nil {
+		return ctx.Error("number->string: Not a number", v0)
 	}
-	if fv, ok := v.(*big.Float); ok {
-		return &Str{Value: fmt.Sprint(fv)}, 1
-	}
-	return ctx.Error("number->string: Not a number", v)
+	return v, 1
 }
 
 func primString2Number(ctx *Scheme, args []Val) (Val, int) {

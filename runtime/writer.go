@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	. "sint/core"
+	"strings"
 )
 
 type Writer interface {
@@ -11,12 +12,25 @@ type Writer interface {
 	WriteRune(r rune) (int, error)
 }
 
+// Returns nil on error, otherwise a string Val
+func NumberToString(v Val, radix int) Val {
+	if iv, ok := v.(*big.Int); ok {
+		return &Str{Value: fmt.Sprint(iv)}
+	}
+	if fv, ok := v.(*big.Float); ok {
+		s := fv.String()
+		if !strings.ContainsAny(s, "eE.") {
+			s = s + ".0"
+		}
+		return &Str{Value: s}
+	}
+	return nil
+}
+
 func Write(v Val, quoted bool, w Writer) {
 	switch x := v.(type) {
-	case *big.Int:
-		w.WriteString(x.String())
-	case *big.Float:
-		w.WriteString(x.String())
+	case *big.Int, *big.Float:
+		w.WriteString(NumberToString(v, 10).(*Str).Value)
 	case *Char:
 		if quoted {
 			switch x.Value {
