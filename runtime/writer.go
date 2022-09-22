@@ -15,9 +15,10 @@ type Writer interface {
 // Returns nil on error, otherwise a string Val
 func NumberToString(v Val, radix int) Val {
 	if iv, ok := v.(*big.Int); ok {
-		return &Str{Value: fmt.Sprint(iv)}
+		return &Str{Value: iv.Text(radix)}
 	}
 	if fv, ok := v.(*big.Float); ok {
+		// We ignore the radix here
 		s := fv.String()
 		if !strings.ContainsAny(s, "eE.") {
 			s = s + ".0"

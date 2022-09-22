@@ -265,16 +265,16 @@ func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.TrueVal, 1
 }
 
-func parseRadix(v Val) (radix int, ok bool) {
+func parseRadix(v Val) (radix int, radixOk bool) {
 	if iv, ok := v.(*big.Int); ok {
 		if iv.IsInt64() {
 			i := iv.Int64()
 			if i == 2 || i == 8 || i == 10 || i == 16 {
 				radix = int(i)
+				radixOk = true
 			}
 		}
 	}
-	ok = radix != 0
 	return
 }
 
@@ -285,7 +285,7 @@ func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
 		radixOk := true
 		radix, radixOk = parseRadix(args[1])
 		if !radixOk {
-			return ctx.Error("number->string: Invalid radix", args[1])
+			return ctx.Error("number->string: Bad radix", args[1])
 		}
 	}
 	v := NumberToString(v0, radix)
