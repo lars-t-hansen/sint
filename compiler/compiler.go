@@ -85,6 +85,10 @@ func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 // Compile-time environment.  There is one of these per lexical rib, and there can be
 // an empty one that is outermost.  The `doc` is a string that can be attached to
 // lambda expressions that appear in certain value positions.
+//
+// Note that this is currently mutable: `doc`` is updated destructively when compiling
+// let-like expressions, and `names` is updated during the compilation of let*.  It
+// wouldn't be too hard to fix that.
 
 type cenv struct {
 	link  *cenv
