@@ -44,6 +44,9 @@ func emit(expr Code, w *bufio.Writer) {
 	case *Lambda:
 		fmt.Fprintf(w, "&Lambda{\nFixed:%d, Rest:%t,\nBody:", e.Fixed, e.Rest)
 		emit(e.Body, w)
+		if e.Name != "" {
+			fmt.Fprintf(w, ",\nName:%q", e.Name)
+		}
 		w.WriteString("}")
 	case *Let:
 		w.WriteString("&Let{Exprs:")

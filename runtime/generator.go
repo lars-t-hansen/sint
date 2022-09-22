@@ -50,7 +50,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("channel-send")},
 &Lexical{Levels:2, Offset:0},
 &Lexical{Levels:0, Offset:0},
-}}},
+}},
+Name:"make-generator >  > .G1001.GO > [lambda]"},
 }},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("channel-send")},
@@ -61,21 +62,25 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-channel")},
 &Lexical{Levels:1, Offset:0},
 }},
-}}},
+}},
+Name:"make-generator >  > .G1001.GO"},
 }, Body:&Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
-}}}},
+}},
+Name:"make-generator > "}},
 }},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("channel-receive")},
 &Lexical{Levels:1, Offset:0},
+}},
+Name:"make-generator > "},
 }}},
-}}},
-}}}}
+}},
+Name:"make-generator"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

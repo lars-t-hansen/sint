@@ -89,7 +89,7 @@
 ;; will abort.
 
 (define (call-with-current-continuation proc)
-  (let ((originating-goroutine (sint:goroutine-id))
+  (let ((originating-goroutine (goroutine-id))
         (returned?             #f)
         (key                   (cons 'call/cc '())))
     (sint:call-with-unwind-handler
@@ -100,7 +100,7 @@
              (proc (lambda vs
                      (if returned?
                          (error "call-with-current-continuation: already returned"))
-                     (if (not (= (sint:goroutine-id) originating-goroutine))
+                     (if (not (= (goroutine-id) originating-goroutine))
                          (error "call-with-current-continuation: different goroutine"))
                      (set! returned? #t)
                      (sint:unwind key vs))))

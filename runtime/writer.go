@@ -86,7 +86,11 @@ func Write(v Val, quoted bool, w Writer) {
 	case *Null:
 		w.WriteString("()")
 	case *Procedure:
-		w.WriteString("#<procedure>")
+		if x.Lam.Name != "" {
+			w.WriteString(fmt.Sprintf("#<procedure %s>", x.Lam.Name))
+		} else {
+			w.WriteString("#<procedure>")
+		}
 	case *UnwindPkg:
 		w.WriteString("#<unwind-package>")
 	case *Symbol:

@@ -96,7 +96,8 @@ Alternate:&Let{Exprs:[]Code{
 }}},
 },
 },
-}},
+},
+Name:"list-sort! > list-merge!"},
 &Lambda{
 Fixed:4, Rest:false,
 Body:&If{
@@ -159,7 +160,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
 &Lexical{Levels:1, Offset:2},
 &Lexical{Levels:1, Offset:3},
-}}},
+}},
+Name:"list-sort! > build-sorted! > [lambda]"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -186,7 +188,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:1},
 &Lexical{Levels:1, Offset:1},
 &Lexical{Levels:2, Offset:3},
-}}},
+}},
+Name:"list-sort! > build-sorted! > [lambda] > [lambda]"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -210,13 +213,16 @@ Body:&Begin{Exprs:[]Code{
 }},
 &Lexical{Levels:0, Offset:1},
 }},
-}}},
 }},
+Name:"list-sort! > build-sorted! > [lambda] > [lambda]"},
 }},
+},
+Name:"list-sort! > build-sorted! > [lambda]"},
 }},
 },
 },
-}},
+},
+Name:"list-sort! > build-sorted!"},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -232,7 +238,8 @@ Body:&Begin{Exprs:[]Code{
 &Quote{Value:c.FalseVal},
 }},
 }},
-}}}}}
+}},
+Name:"list-sort!"}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -286,7 +293,8 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 }},
 }},
-}}}}
+}},
+Name:"list-sorted?"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }

@@ -81,7 +81,7 @@ The form `(go (expr expr ...))` is syntax.  The exprs are evaluated on the curre
 
 The memory model is that of Go.  All Scheme values are word-sized and racy accesses have sensible outcomes with no torn values, provided the implementation does not detect the race and terminate the program.  Atomic operations and channels (see subsequent sections) can be used to synchronize concurrent access to avoid races.
 
-TODO: It's possible we want some type of primitive to identify the goroutine we're in, like a thread ID?
+* `(goroutine-id)` -> exact nonnegative integer, an ID for the current goroutine
 
 ## Channels and communication (evolving)
 
@@ -133,3 +133,12 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 ## Generators
 
 * `(make-generator p [end]) => thunk` takes a procedure `p` of one argument, `yield`, and optionally an `end` value.  `p` is invoked once and must call `yield` on values to generate them.  Calls to the returned thunk retrieve successively yielded values.  If `end` is present it is yielded once `p` returns.  After that, the generator yields `#!unspecified` indefinitely.  See samples/generator.sch.
+
+## Introspection and reflection
+
+* `(apropos pattern)` prints (on the current output port) the sorted result of `(filter-global-variables pattern)`, one name per line.
+* `(filter-global-variables pattern)` where `pattern` is a string or a symbol returns an unsorted list of the names (symbols) of all the global variables whose names have `pattern` as a substring.
+* `(procedure-name proc)` returns the name of the procedure as a string, derived from the source code
+* `(procedure-arity proc)` returns the arity of the procedure as a number.  The number denotes the number of fixed arguments of the procedure; it is inexact iff the procedure accepts rest arguments.
+* `(symbol-has-value? symbol)` returns true iff there is a global variable with the name `symbol`
+* `(symbol-value symbol)` returns the value of the global variable with the name `symbol`.  It throws if there is no such variable.

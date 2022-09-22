@@ -27,7 +27,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 &Quote{Value:c.FalseVal},
 }},
-}}}}
+}},
+Name:"boolean?"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -37,7 +38,8 @@ Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Quote{Value:c.FalseVal},
 Alternate:&Quote{Value:c.TrueVal},
-}}}
+},
+Name:"not"}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -58,7 +60,8 @@ Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
-}},
+},
+Name:"boolean=? > check"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -95,7 +98,8 @@ Alternate:&Begin{Exprs:[]Code{
 &Quote{Value:c.FalseVal},
 }},
 },
-}},
+},
+Name:"boolean=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -120,7 +124,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-}}}}}
+}},
+Name:"boolean=?"}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 }

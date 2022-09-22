@@ -28,7 +28,8 @@ Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
-}},
+},
+Name:"symbol=? > check"},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -68,7 +69,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 }},
-}},
+},
+Name:"symbol=? > loop"},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -101,7 +103,52 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 }},
-}}}}}
+}},
+Name:"symbol=?"}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
+code2 := 
+&Setglobal{Name:c.Intern("apropos"), Rhs:&Lambda{
+Fixed:1, Rest:false,
+Body:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list-sort!")},
+&Lambda{
+Fixed:2, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string<?")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("symbol->string")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("symbol->string")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Name:"apropos >  > xs"},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("filter-global-variables")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+}, Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("for-each")},
+&Lambda{
+Fixed:1, Rest:false,
+Body:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("display")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("newline")},
+}},
+}},
+Name:"apropos > "},
+&Lexical{Levels:0, Offset:0},
+}}},
+Name:"apropos"}}
+_, unwcode2 := c.EvalToplevel(code2)
+if unwcode2 != nil { panic(unwcode2.String()) }
 }

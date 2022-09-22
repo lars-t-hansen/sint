@@ -31,7 +31,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-}}}
+},
+Name:"error"}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

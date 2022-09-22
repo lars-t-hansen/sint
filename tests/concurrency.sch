@@ -34,4 +34,6 @@
 (close-channel chan)
 (assert (eq? (unspecified) (channel-receive chan)) "channel-receive on closed channel")
 
+(assert (exact-integer? (goroutine-id)) "goroutine-id")
+
 (display "OK\n")

@@ -83,8 +83,17 @@ func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	return compiled, nil
 }
 
+// Compile-time environment.  There is one of these per lexical rib, and there can be
+// an empty one that is outermost.  The `doc` is a string that can be attached to
+// lambda expressions that appear in certain value positions.
+//
+// Note that this is currently mutable: `doc`` is updated destructively when compiling
+// let-like expressions, and `names` is updated during the compilation of let*.  It
+// wouldn't be too hard to fix that.
+
 type cenv struct {
 	link  *cenv
+	doc   string
 	names []*Symbol
 }
 
@@ -110,7 +119,7 @@ func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
 	nameOrSignature := cadr(v)
 	// (define x v)
 	if globName, ok := nameOrSignature.(*Symbol); ok {
-		rhs, err := c.compileExpr(caddr(v), nil)
+		rhs, err := c.compileExpr(caddr(v), &cenv{doc: globName.Name})
 		if err != nil {
 			return nil, err
 		}
@@ -122,14 +131,15 @@ func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
 	// (define (f arg ... . arg) body ...)
 	if fixed, rest, globName, formals, ok := c.checkDefinitionSignature(nameOrSignature); ok {
 		body := c.wrapBodyList(cddr(v))
-		bodyc, err := c.compileExpr(body, &cenv{link: nil, names: formals})
+		bodyc, err := c.compileExpr(body, &cenv{names: formals, doc: globName.Name + " > "})
 		if err != nil {
 			return nil, err
 		}
 		lam := &Lambda{
 			Fixed: fixed,
 			Rest:  rest,
-			Body:  bodyc}
+			Body:  bodyc,
+			Name:  globName.Name}
 		return &Setglobal{
 			Name: globName,
 			Rhs:  lam,
@@ -446,12 +456,12 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) (Code, error) {
 		return c.reportError("lambda: Illegal form: " + l.String())
 	}
 	bodyExpr := c.wrapBodyList(cddr(l))
-	newEnv := &cenv{link: env, names: formals}
+	newEnv := &cenv{link: env, names: formals, doc: env.doc + " > [lambda]"}
 	compiledBodyExpr, err := c.compileExpr(bodyExpr, newEnv)
 	if err != nil {
 		return nil, err
 	}
-	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr}, nil
+	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr, Name: env.doc}, nil
 }
 
 func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {
@@ -514,14 +524,34 @@ func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind 
 	var err error
 	switch kind {
 	case kLet:
-		newEnv = &cenv{link: env, names: names}
-		compiledInits, err = c.compileExprSlice(inits, env)
+		savedEnvDoc := env.doc
+		for i, init := range inits {
+			env.doc = savedEnvDoc + " > " + names[i].Name
+			compiledInit, compileErr := c.compileExpr(init, env)
+			if compileErr != nil {
+				err = compileErr
+				break
+			}
+			compiledInits = append(compiledInits, compiledInit)
+		}
+		env.doc = savedEnvDoc
+		newEnv = &cenv{link: env, names: names, doc: env.doc}
 	case kLetrec:
 		newEnv = &cenv{link: env, names: names}
-		compiledInits, err = c.compileExprSlice(inits, newEnv)
+		for i, init := range inits {
+			newEnv.doc = env.doc + " > " + names[i].Name
+			compiledInit, compileErr := c.compileExpr(init, newEnv)
+			if compileErr != nil {
+				err = compileErr
+				break
+			}
+			compiledInits = append(compiledInits, compiledInit)
+		}
+		newEnv.doc = env.doc
 	case kLetStar:
 		newEnv = &cenv{link: env, names: []*Symbol{}}
 		for i, init := range inits {
+			newEnv.doc = env.doc + " > " + names[i].Name
 			compiledInit, compileErr := c.compileExpr(init, newEnv)
 			if compileErr != nil {
 				err = compileErr
@@ -530,6 +560,7 @@ func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind 
 			compiledInits = append(compiledInits, compiledInit)
 			newEnv.names = append(newEnv.names, names[i])
 		}
+		newEnv.doc = env.doc
 	default:
 		panic("Unexpected LetKind")
 	}

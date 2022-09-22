@@ -3,6 +3,16 @@
 (assert (procedure? assert) "procedure? #1")
 (assert-not (procedure? #f) "procedure? #2")
 
+(assert (string=? (procedure-name car) "car") "procedure-name #1")
+(define (dummy-named-function x)
+  (+ x 1))
+(assert (string=? (procedure-name dummy-named-function) "dummy-named-function") "procedure-name #2")
+
+(assert (= 0 (procedure-arity +)) "procedure-arity #1")
+(assert (inexact? (procedure-arity +)) "procedure-arity #2")
+(assert (= 1 (procedure-arity dummy-named-function)) "procedure-arity #3")
+(assert (exact? (procedure-arity dummy-named-function)) "procedure-arity #4")
+
 (assert (string=? "bcd" (string-map (lambda (x)
 				      (integer->char (+ 1 (char->integer x))))
 				    "abc"))
