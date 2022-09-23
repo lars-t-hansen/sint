@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"sint/compiler"
 	"sint/core"
 	"sint/runtime"
@@ -41,6 +42,14 @@ Usage:
 `
 
 func main() {
+	// Profiling stuff
+	f, err := os.Create("cpu.prof")
+	if err != nil {
+		panic(err)
+	}
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
 	engine := core.NewScheme(nil, nil)
 	comp := compiler.NewCompiler(engine.Shared)
 

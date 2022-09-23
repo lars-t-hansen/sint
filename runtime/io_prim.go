@@ -38,18 +38,18 @@ func init() {
 	portDiagnostics[IsOutputPort] = "output"
 }
 
-// If args[maybePort] exists it must be a port, otherwise get the port parameter at
+// If maybePort is not undefined it must be a port, otherwise get the port parameter at
 // the tlsKey.  The port must have the right direction and type.
 //
 // If the `v` value is not nil then (v, nv) is an error return and `port` should be ignored.
 
-func getPort(ctx *Scheme, args []Val, maybePort int, name string, tlsKey int32, direction PortFlags, ty PortFlags) (port *Port, v Val, nv int) {
+func getPort(ctx *Scheme, maybePort Val, name string, tlsKey int32, direction PortFlags, ty PortFlags) (port *Port, v Val, nv int) {
 	ok := true
-	if len(args) > maybePort {
-		if port, ok = args[maybePort].(*Port); ok {
+	if maybePort != ctx.UndefinedVal {
+		if port, ok = maybePort.(*Port); ok {
 			goto checkPort
 		}
-		v, nv = ctx.Error(name+": not an "+portDiagnostics[int(direction)]+" port", args[maybePort])
+		v, nv = ctx.Error(name+": not an "+portDiagnostics[int(direction)]+" port", maybePort)
 		return
 	}
 	{
@@ -72,48 +72,48 @@ checkPort:
 	return
 }
 
-func primWrite(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 1, "write", CurrentOutputPort, IsOutputPort, IsTextPort)
+func primWrite(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a1, "write", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], true, writer)
+		Write(a0, true, writer)
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
 }
 
-func primWriteln(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 1, "writeln", CurrentOutputPort, IsOutputPort, IsTextPort)
+func primWriteln(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a1, "writeln", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], true, writer)
+		Write(a0, true, writer)
 		writer.WriteRune('\n')
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
 }
 
-func primDisplay(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 1, "display", CurrentOutputPort, IsOutputPort, IsTextPort)
+func primDisplay(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a1, "display", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
 	{
 		writer := p.AcquireOutputStream()
-		Write(args[0], false, writer)
+		Write(a0, false, writer)
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
 }
 
-func primNewline(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 0, "newline", CurrentOutputPort, IsOutputPort, IsTextPort)
+func primNewline(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a0, "newline", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
@@ -125,12 +125,12 @@ func primNewline(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
 }
 
-func primWriteChar(ctx *Scheme, args []Val) (Val, int) {
-	c, ok := args[0].(*Char)
+func primWriteChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	c, ok := a0.(*Char)
 	if !ok {
-		return ctx.Error("write-char: not a character", args[0])
+		return ctx.Error("write-char: not a character", a0)
 	}
-	p, v, nv := getPort(ctx, args, 1, "write-char", CurrentOutputPort, IsOutputPort, IsTextPort)
+	p, v, nv := getPort(ctx, a1, "write-char", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
@@ -142,8 +142,8 @@ func primWriteChar(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
 }
 
-func primRead(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 0, "read", CurrentInputPort, IsInputPort, IsTextPort)
+func primRead(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a0, "read", CurrentInputPort, IsInputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
@@ -156,8 +156,8 @@ func primRead(ctx *Scheme, args []Val) (Val, int) {
 	return readv, 1
 }
 
-func primReadChar(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 0, "read-char", CurrentInputPort, IsInputPort, IsTextPort)
+func primReadChar(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a0, "read-char", CurrentInputPort, IsInputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
@@ -175,8 +175,8 @@ func primReadChar(ctx *Scheme, args []Val) (Val, int) {
 }
 
 // TODO: This is just read-char + unread, it would be nice to merge the two functions.
-func primPeekChar(ctx *Scheme, args []Val) (Val, int) {
-	p, v, nv := getPort(ctx, args, 0, "peek-char", CurrentInputPort, IsInputPort, IsTextPort)
+func primPeekChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a0, "peek-char", CurrentInputPort, IsInputPort, IsTextPort)
 	if v != nil {
 		return v, nv
 	}
@@ -194,26 +194,26 @@ func primPeekChar(ctx *Scheme, args []Val) (Val, int) {
 	return &Char{Value: readv}, 1
 }
 
-func primEofObject(ctx *Scheme, args []Val) (Val, int) {
+func primEofObject(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
 	return ctx.EofVal, 1
 }
 
-func primEofObjectp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*EofObject); ok {
+func primEofObjectp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*EofObject); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primPortp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Port); ok {
+func primPortp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*Port); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primPortFlags(ctx *Scheme, args []Val) (Val, int) {
-	if p, ok := args[0].(*Port); ok {
+func primPortFlags(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if p, ok := a0.(*Port); ok {
 		return big.NewInt(int64(p.Flags())), 1
 	}
 	return ctx.Zero, 1
@@ -252,10 +252,10 @@ func (f *SchemeFile) Close() {
 	f.handle.Close()
 }
 
-func primOpenInputFile(ctx *Scheme, args []Val) (Val, int) {
-	fn, fnOk := args[0].(*Str)
+func primOpenInputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	fn, fnOk := a0.(*Str)
 	if !fnOk {
-		return ctx.Error("open-input-file: file name must be a string", args[0])
+		return ctx.Error("open-input-file: file name must be a string", a0)
 	}
 	input, inErr := os.Open(fn.Value)
 	if inErr != nil {
@@ -265,10 +265,10 @@ func primOpenInputFile(ctx *Scheme, args []Val) (Val, int) {
 	return NewInputPort(f, true, fn.Value), 1
 }
 
-func primOpenOutputFile(ctx *Scheme, args []Val) (Val, int) {
-	fn, fnOk := args[0].(*Str)
+func primOpenOutputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	fn, fnOk := a0.(*Str)
 	if !fnOk {
-		return ctx.Error("open-output-file: file name must be a string", args[0])
+		return ctx.Error("open-output-file: file name must be a string", a0)
 	}
 	output, outErr := os.Create(fn.Value)
 	if outErr != nil {
@@ -278,11 +278,10 @@ func primOpenOutputFile(ctx *Scheme, args []Val) (Val, int) {
 	return NewOutputPort(f, true, fn.Value), 1
 }
 
-func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	port, portOk := v.(*Port)
+func primCloseInputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	port, portOk := a0.(*Port)
 	if !portOk {
-		return ctx.Error("close-input-port: not a port", v)
+		return ctx.Error("close-input-port: not a port", a0)
 	}
 	f := port.Flags()
 	if (f & IsInputPort) == 0 {
@@ -297,11 +296,10 @@ func primCloseInputPort(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
 }
 
-func primCloseOutputPort(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	port, portOk := v.(*Port)
+func primCloseOutputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	port, portOk := a0.(*Port)
 	if !portOk {
-		return ctx.Error("close-output-port: not a port", v)
+		return ctx.Error("close-output-port: not a port", a0)
 	}
 	f := port.Flags()
 	if (f & IsOutputPort) == 0 {

@@ -55,10 +55,16 @@ func (c *Symbol) String() string {
 	return "[symbol " + c.Name + "]"
 }
 
+// As a concession to performance, primitive procedures take the two first argument values
+// directly and then a slice of additional arguments.  The slice can be nil.  For the two
+// first arguments, the Undefined singleton is used for absent values.  This design slightly
+// complicates the evaluator but the performance gains can be impressive, depending on the
+// mix of primitives and user procedures in the code.
+
 type Procedure struct {
 	Lam    *Lambda
-	Env    *lexenv                         // closed-over lexical environment, nil for global procedures and primitives
-	Primop func(*Scheme, []Val) (Val, int) // nil for non-primitives
+	Env    *lexenv                                   // closed-over lexical environment, nil for global procedures and primitives
+	Primop func(*Scheme, Val, Val, []Val) (Val, int) // nil for non-primitives
 }
 
 func (c *Procedure) String() string {

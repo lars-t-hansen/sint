@@ -20,22 +20,22 @@ func initCharPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "char<=?", 2, false, primCharLe)
 }
 
-func primCharp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Char); ok {
+func primCharp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if _, ok := a0.(*Char); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primChar2Int(ctx *Scheme, args []Val) (Val, int) {
-	if ch, ok := args[0].(*Char); ok {
+func primChar2Int(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if ch, ok := a0.(*Char); ok {
 		return big.NewInt(int64(ch.Value)), 1
 	}
-	return ctx.Error("char->integer: Not a character", args[0])
+	return ctx.Error("char->integer: Not a character", a0)
 }
 
-func primInt2Char(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
+func primInt2Char(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	v := a0
 	if n, ok := v.(*big.Int); ok {
 		if !n.IsInt64() {
 			ctx.Error("char->integer: Integer outside character range", v)
@@ -50,8 +50,8 @@ func primInt2Char(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.Error("char->integer: Not an exact integer", v)
 }
 
-func primCharEq(ctx *Scheme, args []Val) (Val, int) {
-	c1, c2, err := checkBothChars(ctx, args[0], args[1], "char=?")
+func primCharEq(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	c1, c2, err := checkBothChars(ctx, a0, a1, "char=?")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -61,8 +61,8 @@ func primCharEq(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func primCharGt(ctx *Scheme, args []Val) (Val, int) {
-	c1, c2, err := checkBothChars(ctx, args[0], args[1], "char>?")
+func primCharGt(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	c1, c2, err := checkBothChars(ctx, a0, a1, "char>?")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -72,8 +72,8 @@ func primCharGt(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func primCharGe(ctx *Scheme, args []Val) (Val, int) {
-	c1, c2, err := checkBothChars(ctx, args[0], args[1], "char>=?")
+func primCharGe(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	c1, c2, err := checkBothChars(ctx, a0, a1, "char>=?")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -83,8 +83,8 @@ func primCharGe(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func primCharLt(ctx *Scheme, args []Val) (Val, int) {
-	c1, c2, err := checkBothChars(ctx, args[0], args[1], "char<?")
+func primCharLt(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	c1, c2, err := checkBothChars(ctx, a0, a1, "char<?")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -94,8 +94,8 @@ func primCharLt(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func primCharLe(ctx *Scheme, args []Val) (Val, int) {
-	c1, c2, err := checkBothChars(ctx, args[0], args[1], "char<=?")
+func primCharLe(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	c1, c2, err := checkBothChars(ctx, a0, a1, "char<=?")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}

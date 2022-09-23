@@ -10,10 +10,10 @@ func initSystemPrimitives(c *Scheme) {
 	addPrimitive(c, "exit", 0, true, primExit)
 }
 
-func primExit(ctx *Scheme, args []Val) (Val, int) {
+func primExit(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	code := 0
-	if len(args) > 0 {
-		v := args[0]
+	if a0 != ctx.UndefinedVal {
+		v := a0
 		if _, ok := v.(*True); ok {
 			// nothing
 		} else if _, ok := v.(*False); ok {

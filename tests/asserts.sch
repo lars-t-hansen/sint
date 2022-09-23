@@ -1,8 +1,12 @@
 (define (assert x msg)
   (if (not x)
-      (error msg)))
+      (error msg))
+;  (display msg) (newline)
+  )
 
 (define (assert-not x msg)
   (if x
-      (error msg)))
+      (error msg))
+;  (display msg) (newline)
+  )
 

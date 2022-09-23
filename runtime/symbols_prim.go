@@ -18,65 +18,59 @@ func initSymbolPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "filter-global-variables", 1, false, primFilterGlobals)
 }
 
-func primSymbolp(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if _, ok := v0.(*Symbol); ok {
+func primSymbolp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if _, ok := a0.(*Symbol); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primSymbolHasValue(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if sym, ok := v0.(*Symbol); ok {
+func primSymbolHasValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if sym, ok := a0.(*Symbol); ok {
 		if sym.Value != ctx.UndefinedVal {
 			return ctx.TrueVal, 1
 		}
 		return ctx.FalseVal, 1
 	}
-	return ctx.Error("symbol-has-value?: Not a symbol", v0)
+	return ctx.Error("symbol-has-value?: Not a symbol", a0)
 }
 
-func primSymbolValue(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if sym, ok := v0.(*Symbol); ok {
+func primSymbolValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if sym, ok := a0.(*Symbol); ok {
 		if sym.Value != ctx.UndefinedVal {
 			return sym.Value, 1
 		}
-		return ctx.Error("symbol-value: Has no value", v0)
+		return ctx.Error("symbol-value: Has no value", a0)
 	}
-	return ctx.Error("symbol-value: Not a symbol", v0)
+	return ctx.Error("symbol-value: Not a symbol", a0)
 }
 
-func primSymbol2String(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if s, ok := v0.(*Symbol); ok {
+func primSymbol2String(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if s, ok := a0.(*Symbol); ok {
 		return &Str{Value: s.Name}, 1
 	}
-	return ctx.Error("symbol->string: Not a symbol", v0)
+	return ctx.Error("symbol->string: Not a symbol", a0)
 }
 
-func primString2Symbol(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if s, ok := v0.(*Str); ok {
+func primString2Symbol(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if s, ok := a0.(*Str); ok {
 		return ctx.Intern(s.Value), 1
 	}
-	return ctx.Error("string->symbol: Not a string", v0)
+	return ctx.Error("string->symbol: Not a string", a0)
 }
 
-func primGensym(ctx *Scheme, _ []Val) (Val, int) {
+func primGensym(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
 	return ctx.Gensym("S"), 1
 }
 
-func primFilterGlobals(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
+func primFilterGlobals(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	pattern := ""
-	if s, ok := v0.(*Str); ok {
+	if s, ok := a0.(*Str); ok {
 		pattern = s.Value
-	} else if s, ok := v0.(*Symbol); ok {
+	} else if s, ok := a0.(*Symbol); ok {
 		pattern = s.Name
 	} else {
-		return ctx.Error("filter-global-variables: Not a string", v0)
+		return ctx.Error("filter-global-variables: Not a string", a0)
 	}
 	syms := ctx.FindSymbolsByName(pattern)
 	l := ctx.NullVal

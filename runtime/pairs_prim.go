@@ -18,50 +18,50 @@ func initPairPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "set-cdr!", 2, false, primSetcdr)
 }
 
-func primNullp(ctx *Scheme, args []Val) (Val, int) {
-	if args[0] == ctx.NullVal {
+func primNullp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if a0 == ctx.NullVal {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primPairp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Cons); ok {
+func primPairp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if _, ok := a0.(*Cons); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primCons(_ *Scheme, args []Val) (Val, int) {
-	return &Cons{Car: args[0], Cdr: args[1]}, 1
+func primCons(_ *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	return &Cons{Car: a0, Cdr: a1}, 1
 }
 
-func primCar(ctx *Scheme, args []Val) (Val, int) {
-	if c, ok := args[0].(*Cons); ok {
+func primCar(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if c, ok := a0.(*Cons); ok {
 		return c.Car, 1
 	}
-	return ctx.Error("car: Not a pair", args[0])
+	return ctx.Error("car: Not a pair", a0)
 }
 
-func primCdr(ctx *Scheme, args []Val) (Val, int) {
-	if c, ok := args[0].(*Cons); ok {
+func primCdr(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if c, ok := a0.(*Cons); ok {
 		return c.Cdr, 1
 	}
-	return ctx.Error("cdr: Not a pair", args[0])
+	return ctx.Error("cdr: Not a pair", a0)
 }
 
-func primSetcar(ctx *Scheme, args []Val) (Val, int) {
-	if c, ok := args[0].(*Cons); ok {
-		c.Car = args[1]
+func primSetcar(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if c, ok := a0.(*Cons); ok {
+		c.Car = a1
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("set-car!: Not a pair", args[0])
+	return ctx.Error("set-car!: Not a pair", a0)
 }
 
-func primSetcdr(ctx *Scheme, args []Val) (Val, int) {
-	if c, ok := args[0].(*Cons); ok {
-		c.Cdr = args[1]
+func primSetcdr(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if c, ok := a0.(*Cons); ok {
+		c.Cdr = a1
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("set-cdr!: Not a pair", args[0])
+	return ctx.Error("set-cdr!: Not a pair", a0)
 }

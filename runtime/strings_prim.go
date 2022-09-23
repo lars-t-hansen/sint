@@ -25,61 +25,71 @@ func initStringPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:list->string", 1, false, primList2String)
 }
 
-func primStringp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Str); ok {
+func primStringp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if _, ok := a0.(*Str); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primStringLength(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if s, ok := v0.(*Str); ok {
+func primStringLength(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if s, ok := a0.(*Str); ok {
 		return big.NewInt(int64(len(s.Value))), 1
 	}
-	return ctx.Error("string-length: Not a string", v0)
+	return ctx.Error("string-length: Not a string", a0)
 }
 
-func primStringRef(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	v1 := args[1]
-	if s, ok := v0.(*Str); ok {
-		if ix, ok := v1.(*big.Int); ok {
+func primStringRef(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if s, ok := a0.(*Str); ok {
+		if ix, ok := a1.(*big.Int); ok {
 			if ix.IsInt64() && ix.Int64() >= 0 && ix.Int64() < int64(len(s.Value)) {
 				ch, size := utf8.DecodeRuneInString(s.Value[int(ix.Int64()):])
 				if ch == utf8.RuneError {
 					// This can happen when indexing into the middle of a char, for example.
-					return ctx.Error("string-ref: Invalid code point in string at index", v1)
+					return ctx.Error("string-ref: Invalid code point in string at index", a1)
 				}
 				ctx.MultiVals = []Val{big.NewInt(int64(size))}
 				return &Char{Value: ch}, 2
 			}
-			return ctx.Error("string-ref: Out of range", v1)
+			return ctx.Error("string-ref: Out of range", a1)
 		}
-		return ctx.Error("string-ref: Not an exact integer index", v1)
+		return ctx.Error("string-ref: Not an exact integer index", a1)
 	}
-	return ctx.Error("string-ref: Not a string", v0)
+	return ctx.Error("string-ref: Not a string", a0)
 }
 
-func primStringCompare(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	v1 := args[1]
-	s0, ok0 := v0.(*Str)
+func primStringCompare(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	s0, ok0 := a0.(*Str)
 	if !ok0 {
-		return ctx.Error("sint:string-compare: not a string", v0)
+		return ctx.Error("sint:string-compare: not a string", a0)
 	}
-	s1, ok1 := v1.(*Str)
+	s1, ok1 := a1.(*Str)
 	if !ok1 {
-		return ctx.Error("sint:string-compare: not a string", v1)
+		return ctx.Error("sint:string-compare: not a string", a1)
 	}
 	return big.NewInt(int64(strings.Compare(s0.Value, s1.Value))), 1
 }
 
-func primStringAppend(ctx *Scheme, args []Val) (Val, int) {
+func primStringAppend(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	// TODO: Maybe use a strings.Builder instead?  Depends on the typical number
 	// of strings that are appended.
-	s := ""
-	for _, v := range args {
+	if a0 == ctx.UndefinedVal {
+		return &Str{Value: ""}, 1
+	}
+	str0, ok := a0.(*Str)
+	if !ok {
+		return ctx.Error("string-append: Not a string", a0)
+	}
+	if a1 == ctx.UndefinedVal {
+		return str0, 1
+	}
+	s := str0.Value
+	str1, ok := a1.(*Str)
+	if !ok {
+		return ctx.Error("string-append: Not a string", a1)
+	}
+	s = s + str1.Value
+	for _, v := range rest {
 		s2, ok := v.(*Str)
 		if !ok {
 			return ctx.Error("string-append: Not a string", v)
@@ -89,24 +99,22 @@ func primStringAppend(ctx *Scheme, args []Val) (Val, int) {
 	return &Str{Value: s}, 1
 }
 
-func primSubstring(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	v1 := args[1]
-	v2 := args[2]
-	s0, ok0 := v0.(*Str)
+func primSubstring(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	a2 := rest[0]
+	s0, ok0 := a0.(*Str)
 	if !ok0 {
-		return ctx.Error("substring: not a string", v0)
+		return ctx.Error("substring: not a string", a0)
 	}
-	i1, i2, ok := bothInt(v1, v2)
+	i1, i2, ok := bothInt(a1, a2)
 	if !ok {
-		return ctx.Error("substring: invalid indices", v1, v2)
+		return ctx.Error("substring: invalid indices", a1, a2)
 	}
 	if i1.IsInt64() && i1.Int64() >= 0 && i1.Int64() <= int64(len(s0.Value)) &&
 		i2.IsInt64() && i2.Int64() >= 0 && i2.Int64() <= int64(len(s0.Value)) &&
 		i1.Int64() <= i2.Int64() {
 		return &Str{Value: s0.Value[i1.Int64():i2.Int64()]}, 1
 	} else {
-		return ctx.Error("substring: indices out of range", v1, v2)
+		return ctx.Error("substring: indices out of range", a1, a2)
 	}
 }
 
@@ -116,19 +124,18 @@ func primSubstring(ctx *Scheme, args []Val) (Val, int) {
 // TODO: Again, may be interesting to use a strings.Builder here for efficiency.
 // This might be different than for string-append.
 
-func primList2String(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
+func primList2String(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	s := ""
 	for {
-		if v == ctx.NullVal {
+		if a0 == ctx.NullVal {
 			return &Str{Value: s}, 1
 		}
-		c := v.(*Cons)
+		c := a0.(*Cons)
 		ch, ok := c.Car.(*Char)
 		if !ok {
 			return ctx.Error("sint:list->string: not a character", c.Car)
 		}
 		s = s + string(ch.Value)
-		v = c.Cdr
+		a0 = c.Cdr
 	}
 }
