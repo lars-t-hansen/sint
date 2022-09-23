@@ -502,7 +502,70 @@ Name:"list"}}
 _, unwcode29 := c.EvalToplevel(code29)
 if unwcode29 != nil { panic(unwcode29.String()) }
 code30 := 
-&Setglobal{Name:c.Intern("list?"), Rhs:&Lambda{
+&Setglobal{Name:c.Intern("list?"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.TrueVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eq?")},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("pair?")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+Consequent:&Quote{Value:c.TrueVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("pair?")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cddr")},
+&Lexical{Levels:0, Offset:1},
+}},
+}},
+},
+},
+},
+},
+},
+Name:"list? > loop"},
+}, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&If{
 Test:&Call{Exprs:[]Code{
@@ -512,20 +575,34 @@ Test:&Call{Exprs:[]Code{
 Consequent:&Quote{Value:c.TrueVal},
 Alternate:&If{
 Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
 &Global{Name:c.Intern("pair?")},
 &Lexical{Levels:0, Offset:0},
 }},
-Consequent:&Call{Exprs:[]Code{
-&Global{Name:c.Intern("list?")},
+}},
+Consequent:&Quote{Value:c.FalseVal},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("null?")},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("cdr")},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Alternate:&Quote{Value:c.FalseVal},
+Consequent:&Quote{Value:c.TrueVal},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cdr")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
 },
 },
-Name:"list?"}}
+},
+Name:"list?"}}}
 _, unwcode30 := c.EvalToplevel(code30)
 if unwcode30 != nil { panic(unwcode30.String()) }
 code31 := 

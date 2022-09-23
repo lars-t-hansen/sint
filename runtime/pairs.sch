@@ -36,12 +36,20 @@
 
 (define (list . xs) xs)
 
-;; FIXME: Issue #26: This is totally insufficient, it needs to deal properly with circular lists.
-
-(define (list? x)
-  (cond ((null? x) #t)
-        ((pair? x) (list? (cdr x)))
-        (else      #f)))
+(define list?
+  (letrec ((loop
+            (lambda (slow fast)
+              (cond ((null? fast) #t)
+                    ((eq? slow fast) #f)
+                    ((not (pair? fast)) #f)
+                    ((null? (cdr fast)) #t)
+                    ((not (pair? (cdr fast))) #f)
+                    (else (loop (cdr slow) (cddr fast)))))))
+    (lambda (x)
+      (cond ((null? x) #t)
+            ((not (pair? x)) #f)
+            ((null? (cdr x)) #t)
+            (else (loop x (cdr x)))))))
 
 (define make-list
   (letrec ((loop
