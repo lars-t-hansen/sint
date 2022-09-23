@@ -2,7 +2,7 @@
 
 ;; R7R7 6.1 "Equivalence predicates"
 ;;
-;; TODO: strings and vectors, eventually
+;; TODO: vectors and bytevectors, eventually
 
 ;; TODO: This may not terminate
 
@@ -11,5 +11,9 @@
       (and (pair? a)
            (pair? b)
            (equal? (car a) (car b))
-           (equal? (cdr a) (cdr b)))))
+           (equal? (cdr a) (cdr b)))
+      (and (string? a)
+           (string? b)
+           (string=? a b))))
+
 

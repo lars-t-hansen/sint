@@ -22,7 +22,8 @@ Body:&Let{Exprs:[]Code{
 }, Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Lexical{Levels:0, Offset:0},
-Alternate:&If{
+Alternate:&Let{Exprs:[]Code{
+&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("pair?")},
 &Lexical{Levels:1, Offset:0},
@@ -61,6 +62,29 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 Alternate:&Quote{Value:c.FalseVal},
 },
+}, Body:&If{
+Test:&Lexical{Levels:0, Offset:0},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string?")},
+&Lexical{Levels:2, Offset:0},
+}},
+Consequent:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string?")},
+&Lexical{Levels:2, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string=?")},
+&Lexical{Levels:2, Offset:0},
+&Lexical{Levels:2, Offset:1},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
+Alternate:&Quote{Value:c.FalseVal},
+},
+}},
 }},
 Name:"equal?"}}
 _, unwcode1 := c.EvalToplevel(code1)
