@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"sint/compiler"
 	"sint/core"
 	"sint/runtime"
@@ -20,16 +21,19 @@ v0.1 (pre-mvp)
 
 Usage:
 
-  sint
+  sint 
   sint repl
     Enter the interactive repl
 
   sint eval expr ...
     Evaluate the expressions, print their result(s), and exit after the last.
 
-  sint load filename.sch ...
+  sint [-cpuprofile|-memprofile] load filename.sch ...
     Load filename.sch: read its expressions, evaluate them in order and
     print their results, and exit after the last expression of the last file.
+    A profile is written to sint.cprof or sint.mprof if the options are
+    present.  (CPU profiling excludes the initialization of the built-in
+    libraries, but memory profiling needs to include that.)
 
   sint compile filename.sch ...
     Compile each filename.sch into filename.go and exit.  The output will have
@@ -41,24 +45,29 @@ Usage:
 `
 
 func main() {
-	// Profiling stuff
-	/*
-		f, err := os.Create("cpu.prof")
-		if err != nil {
-			panic(err)
-		}
-		pprof.StartCPUProfile(f)
-		defer pprof.StopCPUProfile()
-	*/
+	cpuprofile := false
+	memprofile := false
+
+	args := os.Args[1:]
+
+	if len(args) > 0 && args[0] == "-cpuprofile" {
+		cpuprofile = true
+	} else if len(args) > 0 && args[0] == "-memprofile" {
+		memprofile = true
+	}
+	if cpuprofile || memprofile {
+		args = args[1:]
+	}
 
 	engine := core.NewScheme(nil, nil)
 	comp := compiler.NewCompiler(engine.Shared)
 
-	args := os.Args[1:]
-
 	if len(args) == 0 {
-		enterRepl(engine, comp)
-		return
+		args = []string{"repl"}
+	}
+
+	if args[0] != "load" && (cpuprofile || memprofile) {
+		panic("Profiling only with the `load` verb")
 	}
 
 	switch args[0] {
@@ -76,8 +85,9 @@ func main() {
 		if len(args) < 2 {
 			panic("Bad 'eval' command, at least one expression argument required")
 		}
+		_, stdout, _ := runtime.StandardInitialization(engine)
 		for _, ex := range args[1:] {
-			err := evalExpr(engine, comp, ex)
+			err := evalExpr(engine, comp, ex, stdout)
 			if err != nil {
 				if unw, ok := err.(*core.UnwindPkg); ok {
 					reportUnwinding(engine, unw)
@@ -87,12 +97,22 @@ func main() {
 				}
 			}
 		}
+		stdout.Flush()
 	case "load":
 		if len(args) < 2 {
 			panic("Bad 'load' command, at least one file name argument required")
 		}
+		_, stdout, _ := runtime.StandardInitialization(engine)
+		if cpuprofile {
+			f, err := os.Create("sint.cprof")
+			if err != nil {
+				panic(err)
+			}
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
 		for _, fn := range args[1:] {
-			err := loadFile(engine, comp, fn)
+			err := loadFile(engine, comp, fn, stdout)
 			if err != nil {
 				if unw, ok := err.(*core.UnwindPkg); ok {
 					reportUnwinding(engine, unw)
@@ -102,12 +122,22 @@ func main() {
 				}
 			}
 		}
+		stdout.Flush()
 	case "help":
 		fmt.Print(HelpText)
 	case "repl":
-		enterRepl(engine, comp)
+		stdin, stdout, stderr := runtime.StandardInitialization(engine)
+		enterRepl(engine, comp, stdin, stdout, stderr)
 	default:
 		panic("Bad verb '" + args[0] + "', try `sint help`")
+	}
+	if memprofile {
+		f, err := os.Create("sint.mprof")
+		if err != nil {
+			panic(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
 	}
 }
 
@@ -122,8 +152,8 @@ func reportUnwinding(engine *core.Scheme, unw *core.UnwindPkg) {
 	engine.UnwindReporter(engine, unw)
 }
 
-func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
-	stdin, stdout, stderr := runtime.StandardInitialization(engine)
+func enterRepl(engine *core.Scheme, comp *compiler.Compiler,
+	stdin runtime.InputStream, stdout runtime.OutputStream, stderr runtime.OutputStream) {
 	nextResultId := 1
 	for {
 		stdout.WriteString("> ")
@@ -160,8 +190,7 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 	}
 }
 
-func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
-	_, stdout, _ := runtime.StandardInitialization(engine)
+func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string, stdout runtime.OutputStream) error {
 	sourceReader := bufio.NewReader(strings.NewReader(expr))
 	form, rdrErr := runtime.Read(engine, sourceReader)
 	if rdrErr != nil {
@@ -179,14 +208,12 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
 		if result != engine.UnspecifiedVal {
 			runtime.Write(result, false, stdout)
 			stdout.WriteRune('\n')
-			stdout.Flush()
 		}
 	}
 	return nil
 }
 
-func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
-	_, stdout, _ := runtime.StandardInitialization(engine)
+func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string, stdout runtime.OutputStream) error {
 	input, inErr := os.Open(fn)
 	if inErr != nil {
 		panic(inErr)

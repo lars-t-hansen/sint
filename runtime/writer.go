@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Writer interface {
+type OutputStream interface {
 	WriteString(s string) (int, error)
 	WriteRune(r rune) (int, error)
 }
@@ -28,7 +28,7 @@ func NumberToString(v Val, radix int) Val {
 	return nil
 }
 
-func Write(v Val, quoted bool, w Writer) {
+func Write(v Val, quoted bool, w OutputStream) {
 	switch x := v.(type) {
 	case *big.Int, *big.Float:
 		w.WriteString(NumberToString(v, 10).(*Str).Value)
@@ -117,7 +117,7 @@ func Write(v Val, quoted bool, w Writer) {
 	}
 }
 
-func writeList(c *Cons, quoted bool, w Writer) {
+func writeList(c *Cons, quoted bool, w OutputStream) {
 	w.WriteRune('(')
 	for {
 		Write(c.Car, quoted, w)
