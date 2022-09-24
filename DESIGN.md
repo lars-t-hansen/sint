@@ -104,6 +104,12 @@ values becomes necessary to make sure the words are seen together by all cores.
 
 Lexical ribs must not be heap-allocated except when necessary.  There are several aspects to this.  A more sophisticated compiler will be required to flatten ribs and perform assignment elimination / escape analysis (mutable variables that escape must be boxed).  A more sophisticated runtime must avoid creating ribs and must instead manage variables differently.
 
+An inbetween solution is to avoid the double allocation for the rib: for the rib spine, and for the slice of values.  This may be done by encoding the spine within the rib (the first or last slot can be the link pointer) or by placing some of the first slots of the rib in the spine object itself.  The former is sleeker, but may preclude later inclusion of documentation in the rib object, or at least make it more difficult.
+
 ### Some results
 
-The time to run fib(30) dropped by 50% by avoiding the creation of slices of values for calls to most primitive operations, and in other redundant cases.  (In practice, almost no primitives take more than two arguments in almost all cases.)
+Things that have helped (sometimes a lot):
+
+- do not create slices of values for calls to most primitive operations
+- do not use `evalExprs` when it can be avoided (eg for BEGIN)
+- do not use `append` to grow a slice if its size is known and it can be preallocated with `make`
