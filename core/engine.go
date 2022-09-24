@@ -394,10 +394,9 @@ func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
 	if numVal == EvalUnwind {
 		return nil, v
 	}
-	vs := []Val{v}
-	if numVal > 1 {
-		vs = append(vs, c.MultiVals[:numVal-1]...)
-	}
+	vs := make([]Val, numVal)
+	vs[0] = v
+	copy(vs[1:], c.MultiVals[:numVal-1])
 	return vs, nil
 }
 
@@ -739,13 +738,13 @@ again:
 // Returns either (values, nil) or (nil, unwind-object)
 
 func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
-	vs := []Val{}
-	for _, e := range es {
+	vs := make([]Val, len(es))
+	for i, e := range es {
 		r, nres := c.eval(e, env)
 		if nres == EvalUnwind {
 			return nil, r
 		}
-		vs = append(vs, r)
+		vs[i] = r
 	}
 	return vs, nil
 }
