@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"runtime/pprof"
 	"sint/compiler"
 	"sint/core"
 	"sint/runtime"
@@ -43,12 +42,14 @@ Usage:
 
 func main() {
 	// Profiling stuff
-	f, err := os.Create("cpu.prof")
-	if err != nil {
-		panic(err)
-	}
-	pprof.StartCPUProfile(f)
-	defer pprof.StopCPUProfile()
+	/*
+		f, err := os.Create("cpu.prof")
+		if err != nil {
+			panic(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	*/
 
 	engine := core.NewScheme(nil, nil)
 	comp := compiler.NewCompiler(engine.Shared)
@@ -219,20 +220,29 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 }
 
 func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
+	// TODO: Are there path name utilities that could be brought to bear here?
+	// Note the spec explicitly prohibits \ from being interpreted as a path separator,
+	// only / is a valid path separator, see fs.ValidPath.
 	if strings.LastIndex(fn, ".sch") != len(fn)-4 {
 		return compiler.NewCompilerError("Input file for 'compile' must have type '.sch': " + fn)
 	}
 	withoutExt := fn[:len(fn)-4]
 	ix := strings.LastIndexAny(withoutExt, "/\\")
+	// The module name is the base file name without any special characters
 	moduleName := withoutExt
 	if ix != -1 {
 		moduleName = moduleName[ix+1:]
 	}
-	// TODO: Strip special characters from the module name
-	if len(moduleName) == 0 {
-		return compiler.NewCompilerError("Input file name is empty after stripping suffix and path: " + fn)
+	newModuleName := ""
+	for _, c := range moduleName {
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9') {
+			newModuleName += string(c)
+		}
 	}
-	moduleName = strings.ToUpper(moduleName[0:1]) + strings.ToLower(moduleName[1:])
+	if len(newModuleName) == 0 {
+		return compiler.NewCompilerError("Module name would be empty: " + fn)
+	}
+	moduleName = strings.ToUpper(newModuleName[0:1]) + strings.ToLower(newModuleName[1:])
 	tmpFn := withoutExt + ".tmp"
 	outFn := withoutExt + ".go"
 	input, inErr := os.Open(fn)
