@@ -2,6 +2,10 @@
 
 (assert (not (null? (memq 'sint (features)))) "features")
 
+;; We don't want to call this, but check that it's here
+(assert (= (procedure-arity emergency-exit) 0.0) "emergency-exit #1")
+(assert (inexact? (procedure-arity emergency-exit)) "emergency-exit #2")
+
 (load "tests/define-x.sch")
 (assert (= defined-x 37) "load")
 
