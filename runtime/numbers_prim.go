@@ -6,7 +6,6 @@ package runtime
 
 import (
 	"math/big"
-	//lint:ignore ST1001 dot import
 	. "sint/core"
 )
 

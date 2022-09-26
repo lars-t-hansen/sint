@@ -7,8 +7,6 @@ import (
 	"io"
 	"math/big"
 	"os"
-
-	//lint:ignore ST1001 dot import
 	. "sint/core"
 )
 

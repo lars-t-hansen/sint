@@ -3,7 +3,6 @@
 package runtime
 
 import (
-	//lint:ignore ST1001 dot import
 	. "sint/core"
 )
 

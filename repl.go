@@ -292,7 +292,6 @@ func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error 
 // Generated from %s
 package runtime
 import (
-	//lint:ignore ST1001 dot import
 	. "sint/core"
 	"math/big"
 )

@@ -3,8 +3,6 @@ package runtime
 import (
 	"math/big"
 	"os"
-
-	//lint:ignore ST1001 dot import
 	. "sint/core"
 	"time"
 )
