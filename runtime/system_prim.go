@@ -4,13 +4,16 @@ import (
 	"math/big"
 	"os"
 	. "sint/core"
+	"time"
 )
 
 func initSystemPrimitives(c *Scheme) {
 	addPrimitive(c, "exit", 0, true, primExit)
+	addPrimitive(c, "current-jiffy", 0, false, primCurrentJiffy)
+	addPrimitive(c, "jiffies-per-second", 0, false, primJiffiesPerSecond)
 }
 
-func primExit(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+func primExit(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	code := 0
 	if a0 != ctx.UndefinedVal {
 		v := a0
@@ -30,4 +33,12 @@ func primExit(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	}
 	os.Exit(code)
 	return ctx.UnspecifiedVal, 1
+}
+
+func primCurrentJiffy(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
+	return big.NewInt(time.Now().UnixMicro()), 1
+}
+
+func primJiffiesPerSecond(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
+	return big.NewInt(1000000), 1
 }
