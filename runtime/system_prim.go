@@ -8,12 +8,12 @@ import (
 )
 
 func initSystemPrimitives(c *Scheme) {
-	addPrimitive(c, "exit", 0, true, primExit)
+	addPrimitive(c, "emergency-exit", 0, true, primEmergencyExit)
 	addPrimitive(c, "current-jiffy", 0, false, primCurrentJiffy)
 	addPrimitive(c, "jiffies-per-second", 0, false, primJiffiesPerSecond)
 }
 
-func primExit(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+func primEmergencyExit(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	code := 0
 	if a0 != ctx.UndefinedVal {
 		v := a0
