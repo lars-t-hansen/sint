@@ -141,10 +141,6 @@ func main() {
 	}
 }
 
-type errorReporter interface {
-	WriteString(s string) (int, error)
-}
-
 func reportUnwinding(engine *core.Scheme, unw *core.UnwindPkg) {
 	if engine.UnwindReporter == nil {
 		panic("UNHANDLED UNWINDING WITHOUT AN INSTALLED UNWIND REPORTER")
