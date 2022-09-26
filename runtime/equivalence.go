@@ -5,10 +5,8 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummyEquivalence() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func initEquivalence(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("equal?"), Rhs:&Lambda{

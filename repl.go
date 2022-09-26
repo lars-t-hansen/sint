@@ -299,12 +299,10 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummy%s() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func init%s(c *Scheme) {
-`, fn, moduleName, moduleName)
+`, fn, moduleName)
 	id := 1
 	for {
 		form, rdrErr := runtime.Read(engine, reader)
