@@ -2,11 +2,15 @@
 
 Extended subset of R7RS-small Scheme, embedded in Go, with many Go facilities
 
+The purpose here is not really to have another Scheme system, but rather to explore Go.
+
 ## Mottos
 
 "Vigor is better than rigor, unless you're already dead."  --Larry Wall
 
 "LISP programmers know the value of everything, and the cost of nothing."  --Alan Perlis
+
+"You can't think about thinking without thinking about thinking about something." --Seymour Papert
 
 ## Status
 

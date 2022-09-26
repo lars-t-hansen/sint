@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"sint/compiler"
 	"sint/core"
 	"sint/runtime"
@@ -20,16 +21,19 @@ v0.1 (pre-mvp)
 
 Usage:
 
-  sint
+  sint 
   sint repl
     Enter the interactive repl
 
   sint eval expr ...
     Evaluate the expressions, print their result(s), and exit after the last.
 
-  sint load filename.sch ...
+  sint [-cpuprofile|-memprofile] load filename.sch ...
     Load filename.sch: read its expressions, evaluate them in order and
     print their results, and exit after the last expression of the last file.
+    A profile is written to sint.cprof or sint.mprof if the options are
+    present.  (CPU profiling excludes the initialization of the built-in
+    libraries, but memory profiling needs to include that.)
 
   sint compile filename.sch ...
     Compile each filename.sch into filename.go and exit.  The output will have
@@ -41,14 +45,29 @@ Usage:
 `
 
 func main() {
-	engine := core.NewScheme(nil, nil)
-	comp := compiler.NewCompiler(engine.Shared)
+	cpuprofile := false
+	memprofile := false
 
 	args := os.Args[1:]
 
+	if len(args) > 0 && args[0] == "-cpuprofile" {
+		cpuprofile = true
+	} else if len(args) > 0 && args[0] == "-memprofile" {
+		memprofile = true
+	}
+	if cpuprofile || memprofile {
+		args = args[1:]
+	}
+
+	engine := core.NewScheme(nil, nil)
+	comp := compiler.NewCompiler(engine.Shared)
+
 	if len(args) == 0 {
-		enterRepl(engine, comp)
-		return
+		args = []string{"repl"}
+	}
+
+	if args[0] != "load" && (cpuprofile || memprofile) {
+		panic("Profiling only with the `load` verb")
 	}
 
 	switch args[0] {
@@ -66,8 +85,9 @@ func main() {
 		if len(args) < 2 {
 			panic("Bad 'eval' command, at least one expression argument required")
 		}
+		_, stdout, _ := runtime.StandardInitialization(engine)
 		for _, ex := range args[1:] {
-			err := evalExpr(engine, comp, ex)
+			err := evalExpr(engine, comp, ex, stdout)
 			if err != nil {
 				if unw, ok := err.(*core.UnwindPkg); ok {
 					reportUnwinding(engine, unw)
@@ -77,12 +97,22 @@ func main() {
 				}
 			}
 		}
+		stdout.Flush()
 	case "load":
 		if len(args) < 2 {
 			panic("Bad 'load' command, at least one file name argument required")
 		}
+		_, stdout, _ := runtime.StandardInitialization(engine)
+		if cpuprofile {
+			f, err := os.Create("sint.cprof")
+			if err != nil {
+				panic(err)
+			}
+			pprof.StartCPUProfile(f)
+			defer pprof.StopCPUProfile()
+		}
 		for _, fn := range args[1:] {
-			err := loadFile(engine, comp, fn)
+			err := loadFile(engine, comp, fn, stdout)
 			if err != nil {
 				if unw, ok := err.(*core.UnwindPkg); ok {
 					reportUnwinding(engine, unw)
@@ -92,17 +122,23 @@ func main() {
 				}
 			}
 		}
+		stdout.Flush()
 	case "help":
 		fmt.Print(HelpText)
 	case "repl":
-		enterRepl(engine, comp)
+		stdin, stdout, stderr := runtime.StandardInitialization(engine)
+		enterRepl(engine, comp, stdin, stdout, stderr)
 	default:
 		panic("Bad verb '" + args[0] + "', try `sint help`")
 	}
-}
-
-type errorReporter interface {
-	WriteString(s string) (int, error)
+	if memprofile {
+		f, err := os.Create("sint.mprof")
+		if err != nil {
+			panic(err)
+		}
+		pprof.WriteHeapProfile(f)
+		f.Close()
+	}
 }
 
 func reportUnwinding(engine *core.Scheme, unw *core.UnwindPkg) {
@@ -112,20 +148,21 @@ func reportUnwinding(engine *core.Scheme, unw *core.UnwindPkg) {
 	engine.UnwindReporter(engine, unw)
 }
 
-func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
-	stdin, stdout, stderr := runtime.StandardInitialization(engine)
+func enterRepl(engine *core.Scheme, comp *compiler.Compiler,
+	stdin runtime.InputStream, stdout runtime.OutputStream, stderr runtime.OutputStream) {
+	nextResultId := 1
 	for {
 		stdout.WriteString("> ")
-		v, rdrErr := runtime.Read(engine, stdin)
+		form, rdrErr := runtime.Read(engine, stdin)
 		if rdrErr != nil {
 			stderr.WriteString(rdrErr.Error() + "\n")
 			continue
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			stdout.WriteRune('\n')
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			stderr.WriteString(progErr.Error() + "\n")
 			continue
@@ -135,23 +172,27 @@ func enterRepl(engine *core.Scheme, comp *compiler.Compiler) {
 			reportUnwinding(engine, unw.(*core.UnwindPkg))
 			continue
 		}
-		for _, r := range results {
-			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, stdout)
+		for _, result := range results {
+			if result != engine.UnspecifiedVal {
+				rName := nextResultId
+				nextResultId++
+				name := fmt.Sprintf("$%d", rName)
+				fmt.Printf("%s = ", name)
+				runtime.Write(result, false, stdout)
 				stdout.WriteRune('\n')
+				engine.DefineToplevel(name, result)
 			}
 		}
 	}
 }
 
-func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
-	_, stdout, _ := runtime.StandardInitialization(engine)
+func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string, stdout runtime.OutputStream) error {
 	sourceReader := bufio.NewReader(strings.NewReader(expr))
-	v, rdrErr := runtime.Read(engine, sourceReader)
+	form, rdrErr := runtime.Read(engine, sourceReader)
 	if rdrErr != nil {
 		return rdrErr
 	}
-	prog, progErr := comp.CompileToplevel(v)
+	prog, progErr := comp.CompileToplevel(form)
 	if progErr != nil {
 		return progErr
 	}
@@ -159,32 +200,30 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string) error {
 	if unw != nil {
 		return unw.(*core.UnwindPkg)
 	}
-	for _, r := range results {
-		if r != engine.UnspecifiedVal {
-			runtime.Write(r, false, stdout)
+	for _, result := range results {
+		if result != engine.UnspecifiedVal {
+			runtime.Write(result, false, stdout)
 			stdout.WriteRune('\n')
-			stdout.Flush()
 		}
 	}
 	return nil
 }
 
-func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
-	_, stdout, _ := runtime.StandardInitialization(engine)
+func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string, stdout runtime.OutputStream) error {
 	input, inErr := os.Open(fn)
 	if inErr != nil {
 		panic(inErr)
 	}
 	sourceReader := bufio.NewReader(input)
 	for {
-		v, rdrErr := runtime.Read(engine, sourceReader)
+		form, rdrErr := runtime.Read(engine, sourceReader)
 		if rdrErr != nil {
 			return rdrErr
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			return progErr
 		}
@@ -192,9 +231,9 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 		if unw != nil {
 			return unw.(*core.UnwindPkg)
 		}
-		for _, r := range results {
-			if r != engine.UnspecifiedVal {
-				runtime.Write(r, false, stdout)
+		for _, result := range results {
+			if result != engine.UnspecifiedVal {
+				runtime.Write(result, false, stdout)
 				stdout.WriteRune('\n')
 			}
 		}
@@ -204,19 +243,29 @@ func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
 }
 
 func compileFile(engine *core.Scheme, comp *compiler.Compiler, fn string) error {
+	// TODO: Are there path name utilities that could be brought to bear here?
+	// Note the spec explicitly prohibits \ from being interpreted as a path separator,
+	// only / is a valid path separator, see fs.ValidPath.
 	if strings.LastIndex(fn, ".sch") != len(fn)-4 {
 		return compiler.NewCompilerError("Input file for 'compile' must have type '.sch': " + fn)
 	}
 	withoutExt := fn[:len(fn)-4]
 	ix := strings.LastIndexAny(withoutExt, "/\\")
+	// The module name is the base file name without any special characters
 	moduleName := withoutExt
 	if ix != -1 {
 		moduleName = moduleName[ix+1:]
 	}
-	if len(moduleName) == 0 {
-		return compiler.NewCompilerError("Input file name is empty after stripping suffix: " + fn)
+	newModuleName := ""
+	for _, c := range moduleName {
+		if (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || (c >= '0' && c <= '9') {
+			newModuleName += string(c)
+		}
 	}
-	moduleName = strings.ToUpper(moduleName[0:1]) + strings.ToLower(moduleName[1:])
+	if len(newModuleName) == 0 {
+		return compiler.NewCompilerError("Module name would be empty: " + fn)
+	}
+	moduleName = strings.ToUpper(newModuleName[0:1]) + strings.ToLower(newModuleName[1:])
 	tmpFn := withoutExt + ".tmp"
 	outFn := withoutExt + ".go"
 	input, inErr := os.Open(fn)
@@ -246,22 +295,20 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummy%s() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func init%s(c *Scheme) {
-`, fn, moduleName, moduleName)
+`, fn, moduleName)
 	id := 1
 	for {
-		v, rdrErr := runtime.Read(engine, reader)
+		form, rdrErr := runtime.Read(engine, reader)
 		if rdrErr != nil {
 			return rdrErr
 		}
-		if v == engine.EofVal {
+		if form == engine.EofVal {
 			break
 		}
-		prog, progErr := comp.CompileToplevel(v)
+		prog, progErr := comp.CompileToplevel(form)
 		if progErr != nil {
 			return progErr
 		}

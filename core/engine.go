@@ -342,6 +342,10 @@ func (c *Scheme) EvalToplevel(expr Code) ([]Val, Val) {
 	return c.captureValues(c.eval(expr, nil))
 }
 
+func (c *Scheme) DefineToplevel(name string, v Val) {
+	c.Intern(name).Value = v
+}
+
 // Returns (values, nil) on success, otherwise (nil, unwind-package)
 
 func (c *Scheme) Invoke(proc Val, args []Val) ([]Val, Val) {
@@ -398,14 +402,13 @@ func (c *Scheme) captureValues(v Val, numVal int) ([]Val, Val) {
 	if numVal == EvalUnwind {
 		return nil, v
 	}
-	vs := []Val{v}
-	if numVal > 1 {
-		vs = append(vs, c.MultiVals[:numVal-1]...)
-	}
+	vs := make([]Val, numVal)
+	vs[0] = v
+	copy(vs[1:], c.MultiVals[:numVal-1])
 	return vs, nil
 }
 
-func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv, thePrim func(*Scheme, []Val) (Val, int), theErr *WrappedError) {
+func (c *Scheme) invokeSetup(proc Val, args []Val) (theCode Code, newEnv *lexenv, thePrim func(*Scheme, Val, Val, []Val) (Val, int), theErr *WrappedError) {
 	if p, ok := proc.(*Procedure); ok {
 		if len(args) < p.Lam.Fixed {
 			theErr = c.WrapError("Not enough arguments") // TODO msg
@@ -462,7 +465,18 @@ func (c *Scheme) invokeInternal(proc Val, args []Val) (Val, int) {
 		return c.SignalWrappedError(unw)
 	}
 	if prim != nil {
-		return prim(c, args)
+		var a0, a1 Val = c.UndefinedVal, c.UndefinedVal
+		var an []Val
+		if len(args) > 0 {
+			a0 = args[0]
+			if len(args) > 1 {
+				a1 = args[1]
+				if len(args) > 2 {
+					an = args[2:]
+				}
+			}
+		}
+		return prim(c, a0, a1, an)
 	}
 	return c.eval(newCode, newEnv)
 }
@@ -493,25 +507,67 @@ again:
 		if len(instr.Exprs) == 0 {
 			return c.UnspecifiedVal, 1
 		}
-		_, unw := c.evalExprs(instr.Exprs[:len(instr.Exprs)-1], env)
-		if unw != nil {
-			return unw, EvalUnwind
+		for _, e := range instr.Exprs[:len(instr.Exprs)-1] {
+			r, nres := c.eval(e, env)
+			if nres == EvalUnwind {
+				return r, nres
+			}
 		}
 		expr = instr.Exprs[len(instr.Exprs)-1]
 		goto again
 	case *Call:
-		vals, eUnw := c.evalExprs(instr.Exprs, env)
+		// We do things differently depending on the procedure, so evaluate that first
+		// separately.
+		maybeProc, procErr := c.eval(instr.Exprs[0], env)
+		if procErr == EvalUnwind {
+			return maybeProc, procErr
+		}
+
+		// Fast path for primitives to avoid allocating a temp slice in common cases.
+		// Primitives take two fixed arguments and a slice, which can be nil.  If
+		// an argument is not present, the value is Undefined, which is a value that
+		// cannot be produced by Scheme code.
+		if proc, ok := maybeProc.(*Procedure); ok && proc.Primop != nil {
+			numActuals := len(instr.Exprs) - 1
+			if numActuals < proc.Lam.Fixed || numActuals > proc.Lam.Fixed && !proc.Lam.Rest {
+				return c.Error("Wrong number of arguments to procedure")
+			}
+			var arg0, arg1 Val = c.UndefinedVal, c.UndefinedVal
+			var res0, res1 int
+			var vals []Val
+			if numActuals > 0 {
+				arg0, res0 = c.eval(instr.Exprs[1], env)
+				if res0 == EvalUnwind {
+					return arg0, res0
+				}
+				if numActuals > 1 {
+					arg1, res1 = c.eval(instr.Exprs[2], env)
+					if res1 == EvalUnwind {
+						return arg1, res1
+					}
+					if numActuals > 2 {
+						var eUnw Val
+						vals, eUnw = c.evalExprs(instr.Exprs[3:], env)
+						if eUnw != nil {
+							return eUnw, EvalUnwind
+						}
+					}
+				}
+			}
+			return proc.Primop(c, arg0, arg1, vals)
+		}
+		// For now, unavoidable use of evalExprs.  Mostly this is being reused for the rib,
+		// so it's OK.
+		args, eUnw := c.evalExprs(instr.Exprs[1:], env)
 		if eUnw != nil {
 			return eUnw, EvalUnwind
 		}
-		maybeProc := vals[0]
-		args := vals[1:]
 		newCode, newEnv, prim, iUnw := c.invokeSetup(maybeProc, args)
 		if iUnw != nil {
 			return c.SignalWrappedError(iUnw)
 		}
 		if prim != nil {
-			return prim(c, args)
+			panic("Should not happen")
 		}
 		expr = newCode
 		env = newEnv
@@ -542,7 +598,18 @@ again:
 			return c.SignalWrappedError(unw)
 		}
 		if prim != nil {
-			return prim(c, args)
+			var a0, a1 Val = c.UndefinedVal, c.UndefinedVal
+			var an []Val
+			if len(args) > 0 {
+				a0 = args[0]
+				if len(args) > 1 {
+					a1 = args[1]
+					if len(args) > 2 {
+						an = args[2:]
+					}
+				}
+			}
+			return prim(c, a0, a1, an)
 		}
 		expr = newCode
 		env = newEnv
@@ -550,6 +617,8 @@ again:
 	case *Lambda:
 		return &Procedure{Lam: instr, Env: env, Primop: nil}, 1
 	case *Let:
+		// evalExprs is OK here because the allocation is reused for the rib, which will always
+		// have one.
 		vals, unw := c.evalExprs(instr.Exprs, env)
 		if unw != nil {
 			return unw, EvalUnwind
@@ -565,10 +634,9 @@ again:
 		// Then evaluate the body in that environment
 		panic("LetValues not implemented")
 	case *LetStar:
-		// TODO: See below about initializing the rib
-		slotvals := []Val{}
-		for i := 0; i < len(instr.Exprs); i++ {
-			slotvals = append(slotvals, c.UnspecifiedVal)
+		slotvals := make([]Val, len(instr.Exprs))
+		for i := range slotvals {
+			slotvals[i] = c.UnspecifiedVal
 		}
 		newEnv := &lexenv{slots: slotvals, link: env}
 		for i, e := range instr.Exprs {
@@ -582,20 +650,60 @@ again:
 		env = newEnv
 		goto again
 	case *Letrec:
-		// TODO: Probably there's a more efficient way to do this?  Note we need
-		// fresh storage, so at a minimum we need to copy out of a master slice of
-		// undefined values.
-		slotvals := []Val{}
-		for i := 0; i < len(instr.Exprs); i++ {
-			slotvals = append(slotvals, c.UnspecifiedVal)
+		slotvals := make([]Val, len(instr.Exprs))
+		for i := range slotvals {
+			slotvals[i] = c.UnspecifiedVal
 		}
 		newEnv := &lexenv{slots: slotvals, link: env}
-		vals, unw := c.evalExprs(instr.Exprs, newEnv)
-		if unw != nil {
-			return unw, EvalUnwind
-		}
-		for i, v := range vals {
-			slotvals[i] = v
+		// Specialize this to avoid allocating a temp slice for evalExprs().  This evaluates
+		// expressions in reverse order but that's OK, the order is unspecified.
+		if len(slotvals) < 4 {
+			var t0, t1, t2, t3 Val
+			var r0, r1, r2, r3 int
+			if len(slotvals) > 0 {
+				if len(slotvals) > 1 {
+					if len(slotvals) > 2 {
+						if len(slotvals) > 3 {
+							t3, r3 = c.eval(instr.Exprs[3], newEnv)
+							if r3 == EvalUnwind {
+								return t3, r3
+							}
+						}
+						t2, r2 = c.eval(instr.Exprs[2], newEnv)
+						if r2 == EvalUnwind {
+							return t2, r2
+						}
+					}
+					t1, r1 = c.eval(instr.Exprs[1], newEnv)
+					if r1 == EvalUnwind {
+						return t1, r1
+					}
+				}
+				t0, r0 = c.eval(instr.Exprs[0], newEnv)
+				if r0 == EvalUnwind {
+					return t0, r0
+				}
+			}
+			if len(slotvals) > 0 {
+				if len(slotvals) > 1 {
+					if len(slotvals) > 2 {
+						if len(slotvals) > 3 {
+							slotvals[3] = t3
+						}
+						slotvals[2] = t2
+					}
+					slotvals[1] = t1
+				}
+				slotvals[0] = t0
+			}
+		} else {
+			// evalExprs and the intermediate allocation are unavoidable here, though if it
+			// becomes really hot we can consider adding more cases above.
+			vals, unw := c.evalExprs(instr.Exprs, newEnv)
+			if unw != nil {
+				return unw, EvalUnwind
+			}
+			copy(slotvals, vals)
 		}
 		expr = instr.Body
 		env = newEnv
@@ -666,13 +774,13 @@ func (c *Scheme) lookupLexical(rib *lexenv, levels int, offset int) Val {
 // Returns either (values, nil) or (nil, unwind-object)
 
 func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
-	vs := []Val{}
-	for _, e := range es {
+	vs := make([]Val, len(es))
+	for i, e := range es {
 		r, nres := c.eval(e, env)
 		if nres == EvalUnwind {
 			return nil, r
 		}
-		vs = append(vs, r)
+		vs[i] = r
 	}
 	return vs, nil
 }

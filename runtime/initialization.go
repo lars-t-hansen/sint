@@ -71,9 +71,10 @@ func initPrimitives(ctx *Scheme) {
 	initExceptionsPrimitives(ctx)
 	initIoPrimitives(ctx)
 	initConcurrencyPrimitives(ctx)
+	initSystemPrimitives(ctx)
 }
 
-func addPrimitive(ctx *Scheme, name string, fixed int, rest bool, primop func(*Scheme, []Val) (Val, int)) {
+func addPrimitive(ctx *Scheme, name string, fixed int, rest bool, primop func(*Scheme, Val, Val, []Val) (Val, int)) {
 	sym := ctx.Intern(name)
 	sym.Value = &Procedure{Lam: &Lambda{Fixed: fixed, Rest: rest, Body: nil, Name: name}, Env: nil, Primop: primop}
 }

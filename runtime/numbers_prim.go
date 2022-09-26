@@ -5,7 +5,6 @@
 package runtime
 
 import (
-	"fmt"
 	"math/big"
 	. "sint/core"
 )
@@ -26,7 +25,7 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "=", 2, true, primEqual)
 	addPrimitive(ctx, ">", 2, true, primGreater)
 	addPrimitive(ctx, ">=", 2, true, primGreaterOrEqual)
-	addPrimitive(ctx, "number->string", 1, false, primNumber2String)
+	addPrimitive(ctx, "number->string", 1, true, primNumber2String)
 	addPrimitive(ctx, "string->number", 1, true, primString2Number)
 	addPrimitive(ctx, "inexact", 1, false, primInexact)
 	addPrimitive(ctx, "exact", 1, false, primExact)
@@ -43,60 +42,58 @@ func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "bitwise-not", 1, false, primBitwiseNot)
 }
 
-func primInexactFloatp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*big.Float); ok {
+func primInexactFloatp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Float); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primExactIntegerp(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*big.Int); ok {
+func primExactIntegerp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Int); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primFinitep(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if _, ok := v.(*big.Int); ok {
+func primFinitep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Int); ok {
 		return ctx.TrueVal, 1
 	}
-	if fv, ok := v.(*big.Float); ok {
+	if fv, ok := a0.(*big.Float); ok {
 		if fv.IsInf() {
 			return ctx.FalseVal, 1
 		}
 		return ctx.TrueVal, 1
 	}
-	return ctx.Error("finite?: Not a number", v)
+	return ctx.Error("finite?: Not a number", a0)
 }
 
-func primInfinitep(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if _, ok := v.(*big.Int); ok {
+func primInfinitep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Int); ok {
 		return ctx.FalseVal, 1
 	}
-	if fv, ok := v.(*big.Float); ok {
+	if fv, ok := a0.(*big.Float); ok {
 		if fv.IsInf() {
 			return ctx.TrueVal, 1
 		}
 		return ctx.FalseVal, 1
 	}
-	return ctx.Error("infinite?: Not a number", v)
+	return ctx.Error("infinite?: Not a number", a0)
 }
 
-func primAdd(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
+func primAdd(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return ctx.Zero, 1
 	}
-	if len(args) == 1 {
-		return checkNumber(ctx, args[0], "+")
+	if a1 == ctx.UndefinedVal {
+		return checkNumber(ctx, a0, "+")
 	}
-	r, nres := add2(ctx, args[0], args[1])
+	r, nres := add2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = add2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -105,9 +102,9 @@ func primAdd(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primSub(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 1 {
-		switch v := args[0].(type) {
+func primSub(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a1 == ctx.UndefinedVal {
+		switch v := a0.(type) {
 		case *big.Int:
 			var r big.Int
 			r.Neg(v)
@@ -117,14 +114,14 @@ func primSub(ctx *Scheme, args []Val) (Val, int) {
 			r.Neg(v)
 			return &r, 1
 		default:
-			return ctx.Error("'-': Not a number", args[0])
+			return ctx.Error("'-': Not a number", a0)
 		}
 	}
-	r, nres := sub2(ctx, args[0], args[1])
+	r, nres := sub2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = sub2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -133,18 +130,18 @@ func primSub(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primMul(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
+func primMul(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return big.NewInt(1), 1
 	}
-	if len(args) == 1 {
-		return checkNumber(ctx, args[0], "*")
+	if a1 == ctx.UndefinedVal {
+		return checkNumber(ctx, a0, "*")
 	}
-	r, nres := mul2(ctx, args[0], args[1])
+	r, nres := mul2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = mul2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -153,24 +150,24 @@ func primMul(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primDiv(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 1 {
+func primDiv(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a1 == ctx.UndefinedVal {
 		var fv big.Float
-		switch v := args[0].(type) {
+		switch v := a0.(type) {
 		case *big.Int:
 			fv.SetInt(v)
 		case *big.Float:
 			fv = *v
 		default:
-			return ctx.Error("'-': Not a number", args[0])
+			return ctx.Error("'-': Not a number", a0)
 		}
 		return div2(ctx, big.NewFloat(1), &fv)
 	}
-	r, nres := div2(ctx, args[0], args[1])
+	r, nres := div2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = div2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -179,125 +176,176 @@ func primDiv(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primQuotient(ctx *Scheme, args []Val) (Val, int) {
-	a := args[0]
-	b := args[1]
-	if ia, ib, ok := bothInt(a, b); ok {
+func primQuotient(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	if ia, ib, ok := bothInt(a0, a1); ok {
 		var z big.Int
 		z.Quo(ia, ib)
 		return &z, 1
 	}
-	return ctx.Error("quotient: numbers must be exact integers", a, b)
+	return ctx.Error("quotient: numbers must be exact integers", a0, a1)
 }
 
-func primRemainder(ctx *Scheme, args []Val) (Val, int) {
-	a := args[0]
-	b := args[1]
-	if ia, ib, ok := bothInt(a, b); ok {
+func primRemainder(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	if ia, ib, ok := bothInt(a0, a1); ok {
 		var z big.Int
 		z.Rem(ia, ib)
 		return &z, 1
 	}
-	return ctx.Error("remainder: numbers must be exact integers", a, b)
+	return ctx.Error("remainder: numbers must be exact integers", a0, a1)
 }
 
-func primLess(ctx *Scheme, args []Val) (Val, int) {
-	for i := 1; i < len(args); i++ {
-		res, err := cmp2(ctx, args[i-1], args[i], "<")
+func primLess(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	res, err := cmp2(ctx, a0, a1, "<")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if res != -1 {
+		return ctx.FalseVal, 1
+	}
+	prev := a1
+	for _, v := range rest {
+		res, err := cmp2(ctx, prev, v, "<")
 		if err != nil {
 			return ctx.SignalWrappedError(err)
 		}
 		if res != -1 {
 			return ctx.FalseVal, 1
 		}
+		prev = v
 	}
 	return ctx.TrueVal, 1
 }
 
-func primLessOrEqual(ctx *Scheme, args []Val) (Val, int) {
-	for i := 1; i < len(args); i++ {
-		res, err := cmp2(ctx, args[i-1], args[i], "<=")
+func primLessOrEqual(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	res, err := cmp2(ctx, a0, a1, "<=")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if res == 1 {
+		return ctx.FalseVal, 1
+	}
+	prev := a1
+	for _, v := range rest {
+		res, err := cmp2(ctx, prev, v, "<=")
 		if err != nil {
 			return ctx.SignalWrappedError(err)
 		}
 		if res == 1 {
 			return ctx.FalseVal, 1
 		}
+		prev = v
 	}
 	return ctx.TrueVal, 1
 }
 
-func primEqual(ctx *Scheme, args []Val) (Val, int) {
-	for i := 1; i < len(args); i++ {
-		res, err := cmp2(ctx, args[i-1], args[i], "=")
+func primEqual(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	res, err := cmp2(ctx, a0, a1, "=")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if res != 0 {
+		return ctx.FalseVal, 1
+	}
+	prev := a1
+	for _, v := range rest {
+		res, err := cmp2(ctx, prev, v, "=")
 		if err != nil {
 			return ctx.SignalWrappedError(err)
 		}
 		if res != 0 {
 			return ctx.FalseVal, 1
 		}
+		prev = v
 	}
 	return ctx.TrueVal, 1
 }
 
-func primGreater(ctx *Scheme, args []Val) (Val, int) {
-	for i := 1; i < len(args); i++ {
-		res, err := cmp2(ctx, args[i-1], args[i], ">")
+func primGreater(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	res, err := cmp2(ctx, a0, a1, ">")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if res != 1 {
+		return ctx.FalseVal, 1
+	}
+	prev := a1
+	for _, v := range rest {
+		res, err := cmp2(ctx, prev, v, ">")
 		if err != nil {
 			return ctx.SignalWrappedError(err)
 		}
 		if res != 1 {
 			return ctx.FalseVal, 1
 		}
+		prev = v
 	}
 	return ctx.TrueVal, 1
 }
 
-func primGreaterOrEqual(ctx *Scheme, args []Val) (Val, int) {
-	for i := 1; i < len(args); i++ {
-		res, err := cmp2(ctx, args[i-1], args[i], ">=")
+func primGreaterOrEqual(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	res, err := cmp2(ctx, a0, a1, ">=")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if res == -1 {
+		return ctx.FalseVal, 1
+	}
+	prev := a1
+	for _, v := range rest {
+		res, err := cmp2(ctx, prev, v, ">=")
 		if err != nil {
 			return ctx.SignalWrappedError(err)
 		}
 		if res == -1 {
 			return ctx.FalseVal, 1
 		}
+		prev = v
 	}
 	return ctx.TrueVal, 1
 }
 
-func primNumber2String(ctx *Scheme, args []Val) (Val, int) {
-	// FIXME: Issue #5: Handle radix
-	v := args[0]
+func parseRadix(v Val) (radix int, radixOk bool) {
 	if iv, ok := v.(*big.Int); ok {
-		return &Str{Value: fmt.Sprint(iv)}, 1
+		if iv.IsInt64() {
+			i := iv.Int64()
+			if i == 2 || i == 8 || i == 10 || i == 16 {
+				radix = int(i)
+				radixOk = true
+			}
+		}
 	}
-	if fv, ok := v.(*big.Float); ok {
-		return &Str{Value: fmt.Sprint(fv)}, 1
-	}
-	return ctx.Error("number->string: Not a number", v)
+	return
 }
 
-func primString2Number(ctx *Scheme, args []Val) (Val, int) {
+func primNumber2String(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	radix := 10
+	if a1 != ctx.UndefinedVal {
+		radixOk := true
+		radix, radixOk = parseRadix(a1)
+		if !radixOk {
+			return ctx.Error("number->string: Bad radix", a1)
+		}
+	}
+	v := NumberToString(a0, radix)
+	if v == nil {
+		return ctx.Error("number->string: Not a number", a0)
+	}
+	return v, 1
+}
+
+func primString2Number(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	var s *Str
-	if v, ok := args[0].(*Str); ok {
+	if v, ok := a0.(*Str); ok {
 		s = v
 	} else {
-		return ctx.Error("string->number: Not a string", args[0])
+		return ctx.Error("string->number: Not a string", a0)
 	}
 	radix := -10
-	if len(args) > 1 {
-		if r, ok := args[1].(*big.Int); ok {
-			requestedRadix := int(r.Int64())
-			switch requestedRadix {
-			case 2, 8, 10, 16:
-				radix = requestedRadix
-				break
-			default:
-				return ctx.Error("string->number: Bad radix", args[1])
-			}
-		} else {
-			return ctx.Error("string->number: Bad radix", args[1])
+	if a1 != ctx.UndefinedVal {
+		radixOk := true
+		radix, radixOk = parseRadix(a1)
+		if !radixOk {
+			return ctx.Error("string->number: Bad radix", a1)
 		}
 	}
 	num := StringToNumber(s.Value, radix)
@@ -307,59 +355,55 @@ func primString2Number(ctx *Scheme, args []Val) (Val, int) {
 	return num, 1
 }
 
-func primInexact(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if iv, ok := v.(*big.Int); ok {
+func primInexact(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if iv, ok := a0.(*big.Int); ok {
 		var n big.Float
 		n.SetInt(iv)
 		return &n, 1
 	}
-	if _, ok := v.(*big.Float); ok {
-		return v, 1
+	if _, ok := a0.(*big.Float); ok {
+		return a0, 1
 	}
-	return ctx.Error("inexact: Not a number", v)
+	return ctx.Error("inexact: Not a number", a0)
 }
 
-func primExact(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if _, ok := v.(*big.Int); ok {
-		return v, 1
+func primExact(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Int); ok {
+		return a0, 1
 	}
-	if fv, ok := v.(*big.Float); ok {
+	if fv, ok := a0.(*big.Float); ok {
 		iv, _ := fv.Int(nil)
 		if iv == nil {
-			return ctx.Error("exact: Infinity can't be converted to exact", v)
+			return ctx.Error("exact: Infinity can't be converted to exact", a0)
 		}
 		return iv, 1
 	}
-	return ctx.Error("exact: Not a number", v)
+	return ctx.Error("exact: Not a number", a0)
 }
 
-func primAbs(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if iv, ok := v.(*big.Int); ok {
+func primAbs(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if iv, ok := a0.(*big.Int); ok {
 		var r big.Int
 		return r.Abs(iv), 1
 	}
-	if fv, ok := v.(*big.Float); ok {
+	if fv, ok := a0.(*big.Float); ok {
 		var r big.Float
 		return r.Abs(fv), 1
 	}
-	return ctx.Error("abs: Not a number", v)
+	return ctx.Error("abs: Not a number", a0)
 }
 
-func primSqrt(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
+func primSqrt(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	var r big.Float
-	if iv, ok := v.(*big.Int); ok {
+	if iv, ok := a0.(*big.Int); ok {
 		r.SetInt(iv)
-	} else if fv, ok := v.(*big.Float); ok {
+	} else if fv, ok := a0.(*big.Float); ok {
 		r = *fv
 	} else {
-		return ctx.Error("sqrt: Not a number", v)
+		return ctx.Error("sqrt: Not a number", a0)
 	}
 	if r.Cmp(big.NewFloat(0.0)) < 0 {
-		return ctx.Error("sqrt: Can't take square root of negative number", v)
+		return ctx.Error("sqrt: Can't take square root of negative number", a0)
 	}
 	return r.Sqrt(&r), 1
 }
@@ -371,20 +415,20 @@ const (
 	Round
 )
 
-func primFloor(ctx *Scheme, args []Val) (Val, int) {
-	return roundToInteger(ctx, args[0], "floor", TowardNegativeInfinity)
+func primFloor(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	return roundToInteger(ctx, a0, "floor", TowardNegativeInfinity)
 }
 
-func primCeiling(ctx *Scheme, args []Val) (Val, int) {
-	return roundToInteger(ctx, args[0], "ceiling", TowardPositiveInfinity)
+func primCeiling(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	return roundToInteger(ctx, a0, "ceiling", TowardPositiveInfinity)
 }
 
-func primTruncate(ctx *Scheme, args []Val) (Val, int) {
-	return roundToInteger(ctx, args[0], "truncate", None)
+func primTruncate(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	return roundToInteger(ctx, a0, "truncate", None)
 }
 
-func primRound(ctx *Scheme, args []Val) (Val, int) {
-	return roundToInteger(ctx, args[0], "round", Round)
+func primRound(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	return roundToInteger(ctx, a0, "round", Round)
 }
 
 func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
@@ -411,18 +455,18 @@ func roundToInteger(ctx *Scheme, v Val, name string, adjust int) (Val, int) {
 	return ctx.Error(name+": Not a number", v)
 }
 
-func primBitwiseAnd(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
+func primBitwiseAnd(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return ctx.Zero, 1
 	}
-	if len(args) == 1 {
-		return checkNumber(ctx, args[0], "bitwise-and")
+	if a1 == ctx.UndefinedVal {
+		return checkNumber(ctx, a0, "bitwise-and")
 	}
-	r, nres := and2(ctx, args[0], args[1])
+	r, nres := and2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = and2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -431,18 +475,18 @@ func primBitwiseAnd(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primBitwiseOr(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
+func primBitwiseOr(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return ctx.Zero, 1
 	}
-	if len(args) == 1 {
-		return checkNumber(ctx, args[0], "bitwise-or")
+	if a1 == ctx.UndefinedVal {
+		return checkNumber(ctx, a0, "bitwise-or")
 	}
-	r, nres := or2(ctx, args[0], args[1])
+	r, nres := or2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = or2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -451,18 +495,18 @@ func primBitwiseOr(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primBitwiseXor(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
+func primBitwiseXor(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return ctx.Zero, 1
 	}
-	if len(args) == 1 {
-		return checkNumber(ctx, args[0], "bitwise-xor")
+	if a1 == ctx.UndefinedVal {
+		return checkNumber(ctx, a0, "bitwise-xor")
 	}
-	r, nres := xor2(ctx, args[0], args[1])
+	r, nres := xor2(ctx, a0, a1)
 	if nres == EvalUnwind {
 		return r, nres
 	}
-	for _, v := range args[2:] {
+	for _, v := range rest {
 		r, nres = xor2(ctx, r, v)
 		if nres == EvalUnwind {
 			return r, nres
@@ -471,25 +515,22 @@ func primBitwiseXor(ctx *Scheme, args []Val) (Val, int) {
 	return r, 1
 }
 
-func primBitwiseAndNot(ctx *Scheme, args []Val) (Val, int) {
-	a := args[0]
-	b := args[1]
-	if ia, ib, ok := bothInt(a, b); ok {
+func primBitwiseAndNot(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	if ia, ib, ok := bothInt(a0, a1); ok {
 		var z big.Int
 		z.AndNot(ia, ib)
 		return &z, 1
 	}
-	return ctx.Error("bitwise-and-not: Numbers must be exact integers", a, b)
+	return ctx.Error("bitwise-and-not: Numbers must be exact integers", a0, a1)
 }
 
-func primBitwiseNot(ctx *Scheme, args []Val) (Val, int) {
-	a := args[0]
-	if ia, ok := a.(*big.Int); ok {
+func primBitwiseNot(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if ia, ok := a0.(*big.Int); ok {
 		var z big.Int
 		z.Not(ia)
 		return &z, 1
 	}
-	return ctx.Error("bitwise-not: Not an exact integer", a)
+	return ctx.Error("bitwise-not: Not an exact integer", a0)
 }
 
 func add2(ctx *Scheme, a Val, b Val) (Val, int) {

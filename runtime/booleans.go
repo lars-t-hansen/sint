@@ -5,10 +5,8 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummyBooleans() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func initBooleans(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("boolean?"), Rhs:&Lambda{

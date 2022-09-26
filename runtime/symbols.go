@@ -5,10 +5,8 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummySymbols() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func initSymbols(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("symbol=?"), Rhs:&Letrec{Exprs:[]Code{

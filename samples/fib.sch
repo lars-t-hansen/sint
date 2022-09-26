@@ -5,4 +5,8 @@
       n
       (+ (fib (- n 1)) (fib (- n 2)))))
 
-(fib 20)
+(let* ((then (current-jiffy))
+       (r (fib 30))
+       (now (current-jiffy)))
+  (values r (/ (- now then) (jiffies-per-second))))
+

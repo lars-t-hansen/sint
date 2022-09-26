@@ -5,10 +5,8 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummyGenerator() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func initGenerator(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("make-generator"), Rhs:&Lambda{

@@ -5,10 +5,8 @@ import (
 	. "sint/core"
 	"math/big"
 )
-func dummyEquivalence() {
-	// Make sure the imports are used, or the Go compiler barfs.
-	var _ Val = big.NewInt(0)
-}
+// Make sure the imports are used, or the Go compiler barfs.
+var _ Val = big.NewInt(0)
 func initEquivalence(c *Scheme) {
 code1 := 
 &Setglobal{Name:c.Intern("equal?"), Rhs:&Lambda{
@@ -22,7 +20,8 @@ Body:&Let{Exprs:[]Code{
 }, Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Lexical{Levels:0, Offset:0},
-Alternate:&If{
+Alternate:&Let{Exprs:[]Code{
+&If{
 Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("pair?")},
 &Lexical{Levels:1, Offset:0},
@@ -61,6 +60,29 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 Alternate:&Quote{Value:c.FalseVal},
 },
+}, Body:&If{
+Test:&Lexical{Levels:0, Offset:0},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string?")},
+&Lexical{Levels:2, Offset:0},
+}},
+Consequent:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string?")},
+&Lexical{Levels:2, Offset:1},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("string=?")},
+&Lexical{Levels:2, Offset:0},
+&Lexical{Levels:2, Offset:1},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
+Alternate:&Quote{Value:c.FalseVal},
+},
+}},
 }},
 Name:"equal?"}}
 _, unwcode1 := c.EvalToplevel(code1)

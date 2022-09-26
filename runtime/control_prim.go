@@ -43,43 +43,41 @@ func initControlPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:compile-toplevel-phrase", 1, false, primCompileToplevel)
 }
 
-func primProcedurep(ctx *Scheme, args []Val) (Val, int) {
-	if _, ok := args[0].(*Procedure); ok {
+func primProcedurep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*Procedure); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primProcedureName(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if proc, ok := v0.(*Procedure); ok {
+func primProcedureName(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if proc, ok := a0.(*Procedure); ok {
 		return &Str{Value: proc.Lam.Name}, 1
 	}
-	return ctx.Error("procedure-name: Not a procedure", v0)
+	return ctx.Error("procedure-name: Not a procedure", a0)
 }
 
-func primProcedureArity(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	if proc, ok := v0.(*Procedure); ok {
+func primProcedureArity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if proc, ok := a0.(*Procedure); ok {
 		if proc.Lam.Rest {
 			return big.NewFloat(float64(proc.Lam.Fixed)), 1
 		}
 		return big.NewInt(int64(proc.Lam.Fixed)), 1
 	}
-	return ctx.Error("procedure-arity: Not a procedure", v0)
+	return ctx.Error("procedure-arity: Not a procedure", a0)
 }
 
-func primStringMap(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) > 2 {
+func primStringMap(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if len(rest) > 0 {
 		return ctx.Error("string-map: Only supported for one string for now")
 	}
-	p, pOk := args[0].(*Procedure)
+	p, pOk := a0.(*Procedure)
 	if !pOk {
-		return ctx.Error("string-map: Not a procedure", args[0])
+		return ctx.Error("string-map: Not a procedure", a0)
 	}
-	s, sOk := args[1].(*Str)
+	s, sOk := a1.(*Str)
 	if !sOk {
-		return ctx.Error("string-map: Not a string", args[1])
+		return ctx.Error("string-map: Not a string", a1)
 	}
 	var callArgs [1]Val
 	result := ""
@@ -98,17 +96,17 @@ func primStringMap(ctx *Scheme, args []Val) (Val, int) {
 	return &Str{Value: result}, 1
 }
 
-func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) > 2 {
+func primStringForEach(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if len(rest) > 2 {
 		return ctx.Error("string-for-each: Only supported for one string for now")
 	}
-	p, pOk := args[0].(*Procedure)
+	p, pOk := a0.(*Procedure)
 	if !pOk {
-		return ctx.Error("string-for-each: Not a procedure: ", args[0])
+		return ctx.Error("string-for-each: Not a procedure: ", a0)
 	}
-	s, sOk := args[1].(*Str)
+	s, sOk := a1.(*Str)
 	if !sOk {
-		return ctx.Error("string-for-each: Not a string: ", args[1])
+		return ctx.Error("string-for-each: Not a string: ", a1)
 	}
 	var callArgs [1]Val
 	for _, ch := range s.Value {
@@ -120,17 +118,22 @@ func primStringForEach(ctx *Scheme, args []Val) (Val, int) {
 	}
 	return ctx.UnspecifiedVal, 1
 }
-func primValues(ctx *Scheme, args []Val) (Val, int) {
-	if len(args) == 0 {
-		ctx.MultiVals = []Val{}
+func primValues(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if a0 == ctx.UndefinedVal {
 		return ctx.UnspecifiedVal, 0
 	}
-	ctx.MultiVals = args[1:]
-	return args[0], len(args)
+	if a1 == ctx.UndefinedVal {
+		return a0, 1
+	}
+	// This is nuts, we should reuse whatever array is there
+	ctx.MultiVals = make([]Val, len(rest)+1)
+	ctx.MultiVals[0] = a1
+	copy(ctx.MultiVals[1:], rest)
+	return a0, len(rest) + 2
 }
 
-func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
-	results, unw := ctx.Invoke(args[0], []Val{})
+func primReceiveValues(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	results, unw := ctx.Invoke(a0, []Val{})
 	if unw != nil {
 		return unw, EvalUnwind
 	}
@@ -141,17 +144,16 @@ func primReceiveValues(ctx *Scheme, args []Val) (Val, int) {
 	return l, 1
 }
 
-func primUnspecified(ctx *Scheme, args []Val) (Val, int) {
+func primUnspecified(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
 	return ctx.UnspecifiedVal, 1
 }
 
-func primNewTlsKey(ctx *Scheme, args []Val) (Val, int) {
+func primNewTlsKey(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
 	return big.NewInt(int64(ctx.AllocateTlsKey())), 1
 }
 
-func primReadTlsValue(ctx *Scheme, args []Val) (Val, int) {
-	v := args[0]
-	if iv, ok := v.(*big.Int); ok {
+func primReadTlsValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+	if iv, ok := a0.(*big.Int); ok {
 		if iv.IsInt64() {
 			n := iv.Int64()
 			if n >= 0 && n <= math.MaxInt32 {
@@ -160,35 +162,34 @@ func primReadTlsValue(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("sint:read-tls-value: key must be exact integer", v)
+	return ctx.Error("sint:read-tls-value: key must be exact integer", a0)
 }
 
-func primWriteTlsValue(ctx *Scheme, args []Val) (Val, int) {
-	v0 := args[0]
-	v1 := args[1]
-	if iv, ok := v0.(*big.Int); ok {
+func primWriteTlsValue(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	if iv, ok := a0.(*big.Int); ok {
 		if iv.IsInt64() {
 			n := iv.Int64()
 			if n >= 0 && n <= math.MaxInt32 {
-				ctx.SetTlsValue(int32(n), v1)
+				ctx.SetTlsValue(int32(n), a1)
 			}
 		}
 		return ctx.UnspecifiedVal, 1
 	}
-	return ctx.Error("sint:write-tls-value: key must be exact integer", v0)
+	return ctx.Error("sint:write-tls-value: key must be exact integer", a0)
 }
 
 // The documentation for the unwinding primitives is in control.sch
 
-func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
+func primUnwindHandler(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	a2 := rest[0]
 	// (sint:call-with-unwind-handler key thunk handler)
-	filterKey := args[0]
-	thunk := args[1]
+	filterKey := a0
+	thunk := a1
 	thunkProc, thunkOk := thunk.(*Procedure)
 	if !thunkOk || thunkProc.Lam.Fixed != 0 {
 		return ctx.Error("sint:unwind-handler: not a thunk", thunk)
 	}
-	handler := args[2]
+	handler := a2
 	handlerProc, handlerOk := handler.(*Procedure)
 	if !handlerOk || handlerProc.Lam.Fixed != 2 {
 		return ctx.Error("sint:unwind-handler: not a handler", thunk)
@@ -196,17 +197,17 @@ func primUnwindHandler(ctx *Scheme, args []Val) (Val, int) {
 	return ctx.InvokeWithUnwindHandler(filterKey, thunkProc, handlerProc)
 }
 
-func primUnwind(ctx *Scheme, args []Val) (Val, int) {
+func primUnwind(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	// (sint:unwind key payload)
-	return ctx.NewUnwindPackage(args[0], args[1]), EvalUnwind
+	return ctx.NewUnwindPackage(a0, a1), EvalUnwind
 }
 
-func primCompileToplevel(ctx *Scheme, args []Val) (Val, int) {
+func primCompileToplevel(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	// Compiles args[0] into a lambda and then creates a toplevel procedure
 	// from that lambda, and returns the procedure
 	// TODO: The compiler is stateless and thread-safe and can be cached on the engine
 	comp := compiler.NewCompiler(ctx.Shared)
-	prog, err := comp.CompileToplevel(args[0])
+	prog, err := comp.CompileToplevel(a0)
 	if err != nil {
 		return ctx.Error(err.Error())
 	}

@@ -14,27 +14,27 @@ func initEquivalencePrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "eqv?", 2, false, primEqvp)
 }
 
-func primEqp(ctx *Scheme, args []Val) (Val, int) {
-	if args[0] == args[1] {
+func primEqp(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	if a0 == a1 {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primEqvp(ctx *Scheme, args []Val) (Val, int) {
-	if args[0] == args[1] {
+func primEqvp(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	if a0 == a1 {
 		return ctx.TrueVal, 1
 	}
-	if n1, ok := args[0].(*big.Int); ok {
-		if n2, ok := args[1].(*big.Int); ok {
+	if n1, ok := a0.(*big.Int); ok {
+		if n2, ok := a1.(*big.Int); ok {
 			if n1.Cmp(n2) == 0 {
 				return ctx.TrueVal, 1
 			}
 		}
 		return ctx.FalseVal, 1
 	}
-	if n1, ok := args[0].(*big.Float); ok {
-		if n2, ok := args[1].(*big.Float); ok {
+	if n1, ok := a0.(*big.Float); ok {
+		if n2, ok := a1.(*big.Float); ok {
 			// TODO: Some fine points here around NaN?
 			if n1.Cmp(n2) == 0 {
 				return ctx.TrueVal, 1
@@ -42,8 +42,8 @@ func primEqvp(ctx *Scheme, args []Val) (Val, int) {
 		}
 		return ctx.FalseVal, 1
 	}
-	if c1, ok := args[0].(*Char); ok {
-		if c2, ok := args[1].(*Char); ok {
+	if c1, ok := a0.(*Char); ok {
+		if c2, ok := a1.(*Char); ok {
 			if c1.Value == c2.Value {
 				return ctx.TrueVal, 1
 			}
