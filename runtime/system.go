@@ -2,6 +2,7 @@
 // Generated from runtime/system.sch
 package runtime
 import (
+	//lint:ignore ST1001 dot import
 	. "sint/core"
 	"math/big"
 )
