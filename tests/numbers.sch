@@ -164,8 +164,7 @@
 (assert (integer? 1) "integer? #1")
 (assert-not (integer? 1.5) "integer? #2")
 (assert-not (integer? *inf*) "integer? #3")
-;; Issue #28
-;;(assert (integer? 1.0) "integer? #4")
+(assert (integer? 1.0) "integer? #4")
 
 (assert (= (real-part 1) 1) "real-part #1")
 (assert (= (imag-part 1) 0) "imag-part #1")
