@@ -155,7 +155,12 @@ type Scheme struct {
 	// up anew every time.  That said, those are *constant* values and
 	// are only consed up when the program is deserialized, not at runtime,
 	// so they probably are not all that useful frankly.
-	Zero *big.Int
+	Zero  *big.Int
+	One   *big.Int
+	OneMM *big.Int
+	Zerof *big.Float
+	Onef  *big.Float
+	Halff *big.Float
 
 	GoroutineId *big.Int
 
@@ -198,6 +203,11 @@ func NewScheme(oldScheme *Scheme, unwReporter func(*Scheme, *UnwindPkg)) *Scheme
 		FalseVal:       ss.FalseVal,
 		EofVal:         ss.EofVal,
 		Zero:           big.NewInt(0),
+		One:            big.NewInt(1),
+		OneMM:          big.NewInt(1000000),
+		Zerof:          big.NewFloat(0.0),
+		Onef:           big.NewFloat(1.0),
+		Halff:          big.NewFloat(0.5),
 		tlsValues:      make(map[int32]Val),
 		GoroutineId:    big.NewInt(atomic.AddInt64(&ss.nextGoroutineId, 1)),
 		UnwindReporter: unwReporter,
