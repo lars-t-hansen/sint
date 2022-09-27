@@ -157,8 +157,7 @@
 
 (assert (rational? 1) "rational? #1")
 (assert (rational? 3.4) "rational? #2")
-;; Issue #29
-;;(assert-not (rational? *inf*) "rational? #3")
+(assert-not (rational? *inf*) "rational? #3")
 (assert-not (rational? #\a) "rational? #4")
 
 (assert (integer? 1) "integer? #1")

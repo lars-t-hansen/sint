@@ -76,10 +76,20 @@ Body:&Let{Exprs:[]Code{
 }, Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Lexical{Levels:0, Offset:0},
-Alternate:&Call{Exprs:[]Code{
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:inexact-float?")},
 &Lexical{Levels:1, Offset:0},
 }},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("infinite?")},
+&Lexical{Levels:1, Offset:0},
+}},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
 }},
 Name:"rational?"}}
 _, unwcode4 := c.EvalToplevel(code4)
