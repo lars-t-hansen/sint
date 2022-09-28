@@ -60,6 +60,14 @@
     (assert (eof-object? (peek-char p)) "peek-char 8")
     (assert (eof-object? (read-char p)) "peek-char 9")))
 
+(call-with-input-file "tests/foo2.txt"
+  (lambda (p)
+    (assert (string=? (read-line p) "foo") "read-line #1")
+    (assert (string=? (read-line p) "bar") "read-line #2")
+    (assert (string=? (read-line p) "baz") "read-line #3")
+    (assert (string=? (read-line p) "bam") "read-line #4")
+    (assert (eof-object? (read-line p)) "read-line #5")))
+    
 (call-with-input-file "tests/foo.txt"
   (lambda (p)
     (let ((x (read p)))

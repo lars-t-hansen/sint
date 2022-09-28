@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	. "sint/core"
+	"strings"
 )
 
 func initIoPrimitives(ctx *Scheme) {
@@ -23,6 +24,7 @@ func initIoPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "read", 0, true, primRead)
 	addPrimitive(ctx, "read-char", 0, true, primReadChar)
 	addPrimitive(ctx, "peek-char", 0, true, primPeekChar)
+	addPrimitive(ctx, "read-line", 0, true, primReadLine)
 	addPrimitive(ctx, "open-input-file", 1, false, primOpenInputFile)
 	addPrimitive(ctx, "close-input-port", 1, false, primCloseInputPort)
 	addPrimitive(ctx, "open-output-file", 1, false, primOpenOutputFile)
@@ -192,6 +194,36 @@ func primPeekChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	}
 	// TODO: Do we need to range check the value?
 	return &Char{Value: readv}, 1
+}
+
+// TODO: as for peek-char, reduce duplication
+func primReadLine(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
+	p, v, nv := getPort(ctx, a0, "read-line", CurrentInputPort, IsInputPort, IsTextPort)
+	if v != nil {
+		return v, nv
+	}
+	reader := p.AcquireInputStream()
+	var buf strings.Builder
+	var readv rune
+	var readErr error
+	for {
+		readv, _, readErr = reader.ReadRune()
+		if readErr != nil {
+			break
+		}
+		if readv == '\n' {
+			break
+		}
+		buf.WriteRune(readv)
+	}
+	p.ReleaseInputStream(reader)
+	if readErr == io.EOF {
+		return ctx.EofVal, 1
+	}
+	if readErr != nil {
+		return ctx.Error(readErr.Error())
+	}
+	return &Str{Value: buf.String()}, 1
 }
 
 func primEofObject(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
