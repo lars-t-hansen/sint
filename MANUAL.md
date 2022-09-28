@@ -157,3 +157,8 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 * `(symbol-has-value? symbol)` returns true iff there is a global variable with the name `symbol`
 * `(symbol-value symbol)` returns the value of the global variable with the name `symbol`.  It throws if there is no such variable.
 * `(doc <object>)` returns documentation about the object, normally as a list `(<tag> ...)` where the `<tag>` is a symbol denoting the class of the object (`procedure`, and so on), and the rest of the values depend on the object and the documentation available about it.  In the case when nothing interesting is known it returns `(datum <object>)`.
+
+## Input and output
+
+* `(for-each-line proc input)` applies proc to each line of the text input port `input`
+* `(filter-lines proc input)` applies proc to each line of the text input port `input`, returning a list of the lines for which `proc` returns a truthy answer

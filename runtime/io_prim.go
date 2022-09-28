@@ -196,7 +196,6 @@ func primPeekChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	return &Char{Value: readv}, 1
 }
 
-// TODO: as for peek-char, reduce duplication
 func primReadLine(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	p, v, nv := getPort(ctx, a0, "read-line", CurrentInputPort, IsInputPort, IsTextPort)
 	if v != nil {
@@ -208,10 +207,7 @@ func primReadLine(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	var readErr error
 	for {
 		readv, _, readErr = reader.ReadRune()
-		if readErr != nil {
-			break
-		}
-		if readv == '\n' {
+		if readErr != nil || readv == '\n' {
 			break
 		}
 		buf.WriteRune(readv)

@@ -462,4 +462,98 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 Name:"close-port"}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
+code22 := 
+&Setglobal{Name:c.Intern("for-each-line"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:2, Rest:false,
+Body:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("read-line")},
+&Lexical{Levels:0, Offset:1},
+}},
+}, Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eof-object?")},
+&Lexical{Levels:0, Offset:0},
+}},
+}},
+Consequent:&Begin{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:1, Offset:1},
+}},
+}},
+Alternate:&Quote{Value:c.UnspecifiedVal},
+}},
+Name:"for-each-line > loop"},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+}},
+Name:"for-each-line"}}}
+_, unwcode22 := c.EvalToplevel(code22)
+if unwcode22 != nil { panic(unwcode22.String()) }
+code23 := 
+&Setglobal{Name:c.Intern("filter-lines"), Rhs:&Letrec{Exprs:[]Code{
+&Lambda{
+Fixed:3, Rest:false,
+Body:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("read-line")},
+&Lexical{Levels:0, Offset:1},
+}},
+}, Body:&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eof-object?")},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("reverse")},
+&Lexical{Levels:1, Offset:2},
+}},
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+}},
+Consequent:&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:1, Offset:1},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("cons")},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:1, Offset:2},
+}},
+}},
+Alternate:&Call{Exprs:[]Code{
+&Lexical{Levels:2, Offset:0},
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:1, Offset:1},
+&Lexical{Levels:1, Offset:2},
+}},
+},
+}},
+Name:"filter-lines > loop"},
+}, Body:&Lambda{
+Fixed:2, Rest:false,
+Body:&Call{Exprs:[]Code{
+&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:0, Offset:0},
+&Lexical{Levels:0, Offset:1},
+&Quote{Value:c.NullVal},
+}},
+Name:"filter-lines"}}}
+_, unwcode23 := c.EvalToplevel(code23)
+if unwcode23 != nil { panic(unwcode23.String()) }
 }

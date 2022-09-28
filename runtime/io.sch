@@ -100,3 +100,29 @@
       (close-input-port p))
   (if (output-port? p)
       (close-output-port p)))
+
+(define for-each-line
+  (letrec ((loop
+            (lambda (proc input)
+              (let ((l (read-line input)))
+                (if (not (eof-object? l))
+                    (begin
+                      (proc l)
+                      (loop proc input)))))))
+    (lambda (proc input)
+      (loop proc input))))
+
+(define filter-lines
+  (letrec ((loop
+            (lambda (proc input lines)
+              (let ((l (read-line input)))
+                (cond ((eof-object? l)
+                       (reverse lines))
+                      ((proc l)
+                       (loop proc input (cons l lines)))
+                      (else
+                       (loop proc input lines)))))))
+    (lambda (proc input)
+      (loop proc input '()))))
+
+

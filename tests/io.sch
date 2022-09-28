@@ -86,5 +86,19 @@
       (write 'hi p)))
   (assert-not (output-port-open? p) "call-with-port / close-port #3"))
 
+(call-with-input-file "tests/foo2.txt"
+  (lambda (p)
+    (let ((n 0))
+      (for-each-line (lambda (l) (set! n (+ n (string-length l)))) p)
+      (assert (= n 12) "for-each-line"))))
+
+(call-with-input-file "tests/foo2.txt"
+  (lambda (p)
+    (assert (equal? (filter-lines (lambda (l)
+				    (char=? (string-ref l 0) #\b))
+				  p)
+		    '("bar" "baz" "bam"))
+	    "filter-lines")))
+
 (display "OK\n")
 
