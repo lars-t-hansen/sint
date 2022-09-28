@@ -12,10 +12,12 @@
   (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
 
 (define (rational? obj)
-  (or (sint:exact-integer? obj) (sint:inexact-float? obj)))
+  (or (sint:exact-integer? obj)
+      (and (sint:inexact-float? obj)
+           (not (infinite? obj)))))
 
 (define (integer? obj)
-  (sint:exact-integer? obj))
+  (or (sint:exact-integer? obj) (sint:inexact-integer? obj)))
   
 (define (real-part z)
   (if (not (number? z))

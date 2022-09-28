@@ -40,5 +40,5 @@ func primCurrentJiffy(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
 }
 
 func primJiffiesPerSecond(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
-	return big.NewInt(1000000), 1
+	return ctx.OneMM, 1
 }

@@ -76,10 +76,20 @@ Body:&Let{Exprs:[]Code{
 }, Body:&If{
 Test:&Lexical{Levels:0, Offset:0},
 Consequent:&Lexical{Levels:0, Offset:0},
-Alternate:&Call{Exprs:[]Code{
+Alternate:&If{
+Test:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:inexact-float?")},
 &Lexical{Levels:1, Offset:0},
 }},
+Consequent:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("not")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("infinite?")},
+&Lexical{Levels:1, Offset:0},
+}},
+}},
+Alternate:&Quote{Value:c.FalseVal},
+},
 }},
 Name:"rational?"}}
 _, unwcode4 := c.EvalToplevel(code4)
@@ -87,9 +97,18 @@ if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
 &Setglobal{Name:c.Intern("integer?"), Rhs:&Lambda{
 Fixed:1, Rest:false,
-Body:&Call{Exprs:[]Code{
+Body:&Let{Exprs:[]Code{
+&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:exact-integer?")},
 &Lexical{Levels:0, Offset:0},
+}},
+}, Body:&If{
+Test:&Lexical{Levels:0, Offset:0},
+Consequent:&Lexical{Levels:0, Offset:0},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("sint:inexact-integer?")},
+&Lexical{Levels:1, Offset:0},
+}},
 }},
 Name:"integer?"}}
 _, unwcode5 := c.EvalToplevel(code5)

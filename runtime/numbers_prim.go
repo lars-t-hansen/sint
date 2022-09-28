@@ -12,6 +12,7 @@ import (
 func initNumbersPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:inexact-float?", 1, false, primInexactFloatp)
 	addPrimitive(ctx, "sint:exact-integer?", 1, false, primExactIntegerp)
+	addPrimitive(ctx, "sint:inexact-integer?", 1, false, primInexactIntegerp)
 	addPrimitive(ctx, "finite?", 1, false, primFinitep)
 	addPrimitive(ctx, "infinite?", 1, false, primInfinitep)
 	addPrimitive(ctx, "+", 0, true, primAdd)
@@ -51,6 +52,16 @@ func primInexactFloatp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 
 func primExactIntegerp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	if _, ok := a0.(*big.Int); ok {
+		return ctx.TrueVal, 1
+	}
+	return ctx.FalseVal, 1
+}
+
+func primInexactIntegerp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	if _, ok := a0.(*big.Int); ok {
+		return ctx.TrueVal, 1
+	}
+	if fv, ok := a0.(*big.Float); ok && fv.IsInt() {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
