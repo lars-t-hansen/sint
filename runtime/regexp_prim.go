@@ -31,7 +31,7 @@ func primStringToRegexp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 
 func primRegexpToString(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	if re, ok := a0.(*Regexp); ok {
-		return &Str{Value: re.String()}, 1
+		return &Str{Value: re.Value.String()}, 1
 	}
 	return ctx.Error("regexp->string: Not a regular expression", a0)
 }
