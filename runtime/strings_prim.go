@@ -25,21 +25,21 @@ func initStringPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "sint:list->string", 1, false, primList2String)
 }
 
-func primStringp(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+func primStringp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	if _, ok := a0.(*Str); ok {
 		return ctx.TrueVal, 1
 	}
 	return ctx.FalseVal, 1
 }
 
-func primStringLength(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+func primStringLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	if s, ok := a0.(*Str); ok {
 		return big.NewInt(int64(len(s.Value))), 1
 	}
 	return ctx.Error("string-length: Not a string", a0)
 }
 
-func primStringRef(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+func primStringRef(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	if s, ok := a0.(*Str); ok {
 		if ix, ok := a1.(*big.Int); ok {
 			if ix.IsInt64() && ix.Int64() >= 0 && ix.Int64() < int64(len(s.Value)) {
@@ -58,7 +58,7 @@ func primStringRef(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	return ctx.Error("string-ref: Not a string", a0)
 }
 
-func primStringCompare(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+func primStringCompare(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	s0, ok0 := a0.(*Str)
 	if !ok0 {
 		return ctx.Error("sint:string-compare: not a string", a0)
@@ -124,7 +124,7 @@ func primSubstring(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 // TODO: Again, may be interesting to use a strings.Builder here for efficiency.
 // This might be different than for string-append.
 
-func primList2String(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
+func primList2String(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	s := ""
 	for {
 		if a0 == ctx.NullVal {
