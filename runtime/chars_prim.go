@@ -43,7 +43,6 @@ func primInt2Char(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	if n.IsInt64() {
 		k := n.Int64()
 		// TODO: Is this right?
-		// TODO: This is checkExactIntInRange and make-channel does the same thing.
 		if k >= 0 && k <= 0xDFFF {
 			return &Char{Value: rune(n.Int64())}, 1
 		}

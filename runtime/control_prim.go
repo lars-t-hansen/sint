@@ -160,7 +160,6 @@ func primReadTlsValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 	if ivErr != nil {
 		return ctx.SignalWrappedError(ivErr)
 	}
-	// TODO: This is again a "check exact int in range" pattern, seen many other places
 	if iv.IsInt64() {
 		n := iv.Int64()
 		if n >= 0 && n <= math.MaxInt32 {
@@ -175,7 +174,6 @@ func primWriteTlsValue(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	if ivErr != nil {
 		return ctx.SignalWrappedError(ivErr)
 	}
-	// TODO: This is again a "check exact int in range" pattern, seen many other places
 	if iv.IsInt64() {
 		n := iv.Int64()
 		if n >= 0 && n <= math.MaxInt32 {
