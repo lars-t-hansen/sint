@@ -55,44 +55,56 @@ func primChannelp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChannelSend(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Chan); ok {
-		ch.Ch <- a1
-		return ctx.UnspecifiedVal, 1
+	ch, err := checkChannel(ctx, a0, "channel-send")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("channel-send: not a channel", a0)
+	ch <- a1
+	return ctx.UnspecifiedVal, 1
 }
 
 func primChannelReceive(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Chan); ok {
-		v, ok := <-ch.Ch
-		if !ok {
-			ctx.MultiVals = []Val{ctx.FalseVal}
-			return ctx.UnspecifiedVal, 2
-		}
-		ctx.MultiVals = []Val{ctx.TrueVal}
-		return v, 2
+	ch, err := checkChannel(ctx, a0, "channel-receive")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("channel-receive: not a channel", a0)
+	v, ok := <-ch
+	if !ok {
+		ctx.MultiVals = []Val{ctx.FalseVal}
+		return ctx.UnspecifiedVal, 2
+	}
+	ctx.MultiVals = []Val{ctx.TrueVal}
+	return v, 2
 }
 
 func primChannelLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Chan); ok {
-		return big.NewInt(int64(len(ch.Ch))), 1
+	ch, err := checkChannel(ctx, a0, "channel-length")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("channel-length: not a channel", a0)
+	return big.NewInt(int64(len(ch))), 1
 }
 
 func primChannelCapacity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Chan); ok {
-		return big.NewInt(int64(cap(ch.Ch))), 1
+	ch, err := checkChannel(ctx, a0, "channel-capacity")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("channel-capacity: not a channel", a0)
+	return big.NewInt(int64(cap(ch))), 1
 }
 
 func primCloseChannel(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Chan); ok {
-		close(ch.Ch)
-		return ctx.UnspecifiedVal, 1
+	ch, err := checkChannel(ctx, a0, "close-channel")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("close-channel: not a channel", a0)
+	close(ch)
+	return ctx.UnspecifiedVal, 1
+}
+
+func checkChannel(ctx *Scheme, v Val, name string) (chan Val, *WrappedError) {
+	if ch, ok := v.(*Chan); ok {
+		return ch.Ch, nil
+	}
+	return nil, ctx.WrapError(name+": not a channel", v)
 }

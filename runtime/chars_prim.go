@@ -28,10 +28,11 @@ func primCharp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChar2Int(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ch, ok := a0.(*Char); ok {
-		return big.NewInt(int64(ch.Value)), 1
+	ch, err := checkChar(ctx, a0, "char->integer")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("char->integer: Not a character", a0)
+	return big.NewInt(int64(ch)), 1
 }
 
 func primInt2Char(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
@@ -105,14 +106,17 @@ func primCharLe(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func checkBothChars(ctx *Scheme, v0 Val, v1 Val, name string) (rune, rune, *WrappedError) {
-	c0, ok0 := v0.(*Char)
-	if !ok0 {
-		return 0, 0, ctx.WrapError(name+": not a character", v0)
+func checkChar(ctx *Scheme, v Val, name string) (rune, *WrappedError) {
+	if ch, ok := v.(*Char); ok {
+		return ch.Value, nil
 	}
-	c1, ok1 := v1.(*Char)
-	if !ok1 {
-		return 0, 0, ctx.WrapError(name+": not a character", v1)
+	return 0, ctx.WrapError(name+": not a character", v)
+}
+
+func checkBothChars(ctx *Scheme, v0 Val, v1 Val, name string) (c0 rune, c1 rune, err *WrappedError) {
+	c0, err = checkChar(ctx, v0, name)
+	if err == nil {
+		c1, err = checkChar(ctx, v1, name)
 	}
-	return c0.Value, c1.Value, nil
+	return
 }
