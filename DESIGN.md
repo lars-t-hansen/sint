@@ -113,3 +113,28 @@ Things that have helped (sometimes a lot):
 - do not create slices of values for calls to most primitive operations
 - do not use `evalExprs` when it can be avoided (eg for BEGIN)
 - do not use `append` to grow a slice if its size is known and it can be preallocated with `make`
+
+## FFI
+
+Some sketches:
+
+```
+(define regexp-find-all
+  (foreign-method :result '(slice->list byteslice->string)
+                  :receiver regexp
+                  :name "FindAll" 
+                  :args (string))) 
+```
+
+Perhaps a more limited thing is desirable
+
+```
+(define regexp-find-all
+  (regexp-method "FindAll" :parameters '(string) :results '((slice->list byteslice->string))))
+```
+
+where the parameters and results are type conversions, all of which need to be canned somehow:
+
+* `string` means Scheme string <-> Go string
+* `int`, `i32`, `i64` mean conversion from Scheme integer to the Go type, or from the Go type to an exact integer
+* 
