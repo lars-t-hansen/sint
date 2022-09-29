@@ -123,18 +123,19 @@ Some sketches:
   (foreign-method :result '(slice->list byteslice->string)
                   :receiver regexp
                   :name "FindAll" 
-                  :args (string))) 
+                  :args (string int))) 
 ```
 
 Perhaps a more limited thing is desirable
 
 ```
 (define regexp-find-all
-  (regexp-method "FindAll" :parameters '(string) :results '((slice->list byteslice->string))))
+  (regexp-method "FindAll" :parameters '(string int) :results '((slice->list byteslice->string))))
 ```
 
 where the parameters and results are type conversions, all of which need to be canned somehow:
 
 * `string` means Scheme string <-> Go string
 * `int`, `i32`, `i64` mean conversion from Scheme integer to the Go type, or from the Go type to an exact integer
-* 
+
+Note however that the *true* signature of FindAll is not (string, int) -> [][]byte, but ([]byte, int) -> [][]byte | nil, and this is the complexity to be handled.

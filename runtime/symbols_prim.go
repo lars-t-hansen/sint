@@ -59,7 +59,7 @@ func primString2Symbol(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	return ctx.Error("string->symbol: Not a string", a0)
 }
 
-func primGensym(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
+func primGensym(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
 	return ctx.Gensym("S"), 1
 }
 

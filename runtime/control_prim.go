@@ -51,65 +51,67 @@ func primProcedurep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primProcedureName(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if proc, ok := a0.(*Procedure); ok {
-		return &Str{Value: proc.Lam.Name}, 1
+	proc, err := checkProcedure(ctx, a0, "procedure-name")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("procedure-name: Not a procedure", a0)
+	return &Str{Value: proc.Lam.Name}, 1
 }
 
 func primProcedureArity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if proc, ok := a0.(*Procedure); ok {
-		if proc.Lam.Rest {
-			return big.NewFloat(float64(proc.Lam.Fixed)), 1
-		}
-		return big.NewInt(int64(proc.Lam.Fixed)), 1
+	proc, err := checkProcedure(ctx, a0, "procedure-arity")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("procedure-arity: Not a procedure", a0)
+	if proc.Lam.Rest {
+		return big.NewFloat(float64(proc.Lam.Fixed)), 1
+	}
+	return big.NewInt(int64(proc.Lam.Fixed)), 1
 }
 
 func primStringMap(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
+	p, pErr := checkProcedure(ctx, a0, "string-map")
+	if pErr != nil {
+		return ctx.SignalWrappedError(pErr)
+	}
+	s, sErr := checkString(ctx, a1, "string-map")
+	if sErr != nil {
+		return ctx.SignalWrappedError(sErr)
+	}
 	if len(rest) > 0 {
-		return ctx.Error("string-map: Only supported for one string for now")
-	}
-	p, pOk := a0.(*Procedure)
-	if !pOk {
-		return ctx.Error("string-map: Not a procedure", a0)
-	}
-	s, sOk := a1.(*Str)
-	if !sOk {
-		return ctx.Error("string-map: Not a string", a1)
+		return ctx.Error("string-map: Only supported for one string")
 	}
 	var callArgs [1]Val
 	result := ""
-	for _, ch := range s.Value {
+	for _, ch := range s {
 		callArgs[0] = &Char{Value: ch}
 		res, unw := ctx.Invoke(p, callArgs[:])
 		if unw != nil {
 			return unw, EvalUnwind
 		}
-		nch, ok := res[0].(*Char)
-		if !ok {
-			return ctx.Error("string-map: not a character", nch)
+		nch, nchErr := checkChar(ctx, res[0], "string-map")
+		if nchErr != nil {
+			return ctx.SignalWrappedError(nchErr)
 		}
-		result = result + string(nch.Value)
+		result = result + string(nch)
 	}
 	return &Str{Value: result}, 1
 }
 
 func primStringForEach(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
-	if len(rest) > 2 {
-		return ctx.Error("string-for-each: Only supported for one string for now")
+	p, pErr := checkProcedure(ctx, a0, "string-for-each")
+	if pErr != nil {
+		return ctx.SignalWrappedError(pErr)
 	}
-	p, pOk := a0.(*Procedure)
-	if !pOk {
-		return ctx.Error("string-for-each: Not a procedure: ", a0)
+	s, sErr := checkString(ctx, a1, "string-for-each")
+	if sErr != nil {
+		return ctx.SignalWrappedError(sErr)
 	}
-	s, sOk := a1.(*Str)
-	if !sOk {
-		return ctx.Error("string-for-each: Not a string: ", a1)
+	if len(rest) > 0 {
+		return ctx.Error("string-for-each: Only supported for one string")
 	}
 	var callArgs [1]Val
-	for _, ch := range s.Value {
+	for _, ch := range s {
 		callArgs[0] = &Char{Value: ch}
 		_, unw := ctx.Invoke(p, callArgs[:])
 		if unw != nil {
@@ -118,6 +120,7 @@ func primStringForEach(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	}
 	return ctx.UnspecifiedVal, 1
 }
+
 func primValues(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	if a0 == ctx.UndefinedVal {
 		return ctx.UnspecifiedVal, 0
@@ -185,14 +188,20 @@ func primUnwindHandler(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	// (sint:call-with-unwind-handler key thunk handler)
 	filterKey := a0
 	thunk := a1
-	thunkProc, thunkOk := thunk.(*Procedure)
-	if !thunkOk || thunkProc.Lam.Fixed != 0 {
-		return ctx.Error("sint:unwind-handler: not a thunk", thunk)
+	thunkProc, thunkErr := checkProcedure(ctx, thunk, "sint:unwind-handler")
+	if thunkErr != nil {
+		return ctx.SignalWrappedError(thunkErr)
+	}
+	if thunkProc.Lam.Fixed != 0 {
+		return ctx.Error("sint:unwind-handler: thunk requires too many arguments", thunk)
 	}
 	handler := a2
-	handlerProc, handlerOk := handler.(*Procedure)
-	if !handlerOk || handlerProc.Lam.Fixed != 2 {
-		return ctx.Error("sint:unwind-handler: not a handler", thunk)
+	handlerProc, handlerErr := checkProcedure(ctx, handler, "sint:unwind-handler")
+	if handlerErr != nil {
+		return ctx.SignalWrappedError(handlerErr)
+	}
+	if handlerProc.Lam.Fixed != 2 {
+		return ctx.Error("sint:unwind-handler: handler requires the wrong number of arguments", handler)
 	}
 	return ctx.InvokeWithUnwindHandler(filterKey, thunkProc, handlerProc)
 }
@@ -212,4 +221,11 @@ func primCompileToplevel(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 		return ctx.Error(err.Error())
 	}
 	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}, 1
+}
+
+func checkProcedure(ctx *Scheme, v Val, name string) (*Procedure, *WrappedError) {
+	if p, ok := v.(*Procedure); ok {
+		return p, nil
+	}
+	return nil, ctx.WrapError(name+": not a procedure", v)
 }

@@ -36,19 +36,19 @@ func primChar2Int(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primInt2Char(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	v := a0
-	if n, ok := v.(*big.Int); ok {
-		if !n.IsInt64() {
-			ctx.Error("char->integer: Integer outside character range", v)
-		}
+	n, nErr := checkExactInt(ctx, a0, "char->integer")
+	if nErr != nil {
+		return ctx.SignalWrappedError(nErr)
+	}
+	if n.IsInt64() {
 		k := n.Int64()
 		// TODO: Is this right?
-		if k < 0 || k > 0xDFFF {
-			return ctx.Error("char->integer: Integer outside character range", v)
+		// TODO: This is checkExactIntInRange and make-channel does the same thing.
+		if k >= 0 && k <= 0xDFFF {
+			return &Char{Value: rune(n.Int64())}, 1
 		}
-		return &Char{Value: rune(n.Int64())}, 1
 	}
-	return ctx.Error("char->integer: Not an exact integer", v)
+	return ctx.Error("char->integer: Integer outside character range", a0)
 }
 
 func primCharEq(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {

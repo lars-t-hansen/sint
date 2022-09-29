@@ -696,3 +696,10 @@ func isNumber(v Val) bool {
 	}
 	return false
 }
+
+func checkExactInt(ctx *Scheme, v Val, name string) (*big.Int, *WrappedError) {
+	if iv, ok := v.(*big.Int); ok {
+		return iv, nil
+	}
+	return nil, ctx.WrapError(name+": Not an exact integer", v)
+}

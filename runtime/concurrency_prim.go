@@ -38,6 +38,7 @@ func primGoroutineId(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
 func primMakeChannel(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	capacity := 0
 	if a0 != ctx.UndefinedVal {
+		// TODO: this is checkExactIntInRange, and integer->char does the same thing
 		iv, ok := a0.(*big.Int)
 		if !ok || !iv.IsInt64() || iv.Int64() < 0 || iv.Int64() > math.MaxInt {
 			return ctx.Error("make-channel: Invalid capacity", a0)
