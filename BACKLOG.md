@@ -6,7 +6,6 @@ All MVP backlog items are in the issue tracker.
 
 Also see many TODO comments in the source code.
 
-- regexes and string matching.  Syntax for literal regex could be #/.../ for example
 - implement `select`, at least in a limited form
 - vectors
 - bytevectors

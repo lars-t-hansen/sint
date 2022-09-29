@@ -4,6 +4,7 @@ package core
 
 import (
 	"fmt"
+	"regexp"
 	"sync"
 )
 
@@ -18,6 +19,7 @@ import (
 //   *Procedure,	// Procedure: lambda + environment
 //   *Char,			// Unicode character
 //   *Str,			// Immutable UTF-8 encoded Unicode code points
+//   *Regexp,       // Regular expression
 //   *Chan,			// Channel that can transmit any Val
 //   *Port,         // I/O port
 //   *UnwindPkg,    // Internal value that transmits unwind information
@@ -94,6 +96,14 @@ type Str struct {
 
 func (s *Str) String() string {
 	return fmt.Sprint("[string ", s.Value, "]")
+}
+
+type Regexp struct {
+	Value *regexp.Regexp
+}
+
+func (s *Regexp) String() string {
+	return fmt.Sprint("[regexp ", s.Value.String(), "]")
 }
 
 type Chan struct {

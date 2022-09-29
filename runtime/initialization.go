@@ -72,6 +72,7 @@ func initPrimitives(ctx *Scheme) {
 	initIoPrimitives(ctx)
 	initConcurrencyPrimitives(ctx)
 	initSystemPrimitives(ctx)
+	initRegexpPrimitives(ctx)
 }
 
 func addPrimitive(ctx *Scheme, name string, fixed int, rest bool, primop func(*Scheme, Val, Val, []Val) (Val, int)) {

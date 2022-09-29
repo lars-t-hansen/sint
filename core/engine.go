@@ -4,6 +4,7 @@ package core
 
 import (
 	"math/big"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -265,6 +266,11 @@ func (c *SharedScheme) Gensym(s string) *Symbol {
 
 func (c *Scheme) Gensym(s string) *Symbol {
 	return c.Shared.Gensym(s)
+}
+
+// s is assumed to be valid.  If constructing a regexp fails, this must panic.
+func (c *Scheme) DecodeRegExp(s string) *regexp.Regexp {
+	panic("DecodeRegExp not implemented")
 }
 
 func (c *Scheme) AllocateTlsKey() int32 {

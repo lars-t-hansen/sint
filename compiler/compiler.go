@@ -178,6 +178,8 @@ func (c *Compiler) compileExpr(v Val, env *cenv) (Code, error) {
 		return c.compileRef(e, env)
 	case *Str:
 		return &Quote{Value: e}, nil
+	case *Regexp:
+		return &Quote{Value: e}, nil
 	case *Cons:
 		llen, exprIsList := c.checkProperList(e)
 		if !exprIsList {

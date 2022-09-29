@@ -6,6 +6,7 @@ package runtime
 import (
 	"io"
 	"math/big"
+	"regexp"
 	. "sint/core"
 	"unicode/utf8"
 )
@@ -212,8 +213,7 @@ func (r *reader) read() (Val, error) {
 			return r.readHexNumber()
 		}
 		if d == '/' {
-			// TODO: Implement this
-			return nil, r.readError("No syntax for regular expressions yet")
+			return r.readRegExp()
 		}
 		if d == '\\' {
 			return r.readCharacter()
@@ -312,6 +312,18 @@ func (r *reader) readHexNumber() (Val, error) {
 	return nil, r.readError("Hex numbers not supported yet")
 }
 
+func (r *reader) readRegExp() (Val, error) {
+	s, err := r.readStringOrRegExp('/', "regular expression")
+	if err != nil {
+		return nil, err
+	}
+	re, err := regexp.Compile(s)
+	if err != nil {
+		return nil, r.readError("Bad regular expression: " + err.Error())
+	}
+	return &Regexp{Value: re}, nil
+}
+
 func (r *reader) readCharacter() (Val, error) {
 	e, _, err := r.rdr.ReadRune()
 	if err != nil {
@@ -356,26 +368,34 @@ func (r *reader) readCharacter() (Val, error) {
 	return &Char{Value: e}, nil
 }
 
-func (r *reader) readString() (*Str, error) {
+func (r *reader) readString() (Val, error) {
+	s, err := r.readStringOrRegExp('"', "string")
+	if err != nil {
+		return nil, err
+	}
+	return &Str{Value: s}, nil
+}
+
+func (r *reader) readStringOrRegExp(terminator rune, kind string) (string, error) {
 	s := ""
 	for {
 		c, _, err := r.rdr.ReadRune()
 		if err != nil {
 			if e := r.handleErrorIgnoreEOF(err); e != nil {
-				return nil, e
+				return "", e
 			}
-			return nil, r.readError("EOF in string")
+			return "", r.readError("EOF in " + kind)
 		}
-		if c == '"' {
-			return &Str{Value: s}, nil
+		if c == terminator {
+			return s, nil
 		}
 		if c == '\\' {
 			d, _, err := r.rdr.ReadRune()
 			if err != nil {
 				if e := r.handleErrorIgnoreEOF(err); e != nil {
-					return nil, e
+					return "", e
 				}
-				return nil, r.readError("EOF in string")
+				return "", r.readError("EOF in " + kind)
 			}
 			switch d {
 			case 'n':
@@ -387,8 +407,12 @@ func (r *reader) readString() (*Str, error) {
 			case '\\':
 				c = '\\'
 			default:
+				if d == terminator {
+					c = terminator
+					break
+				}
 				// TODO: \x, \u, probably others
-				return nil, r.readError("Unsupported escape sequence in string")
+				return "", r.readError("Unsupported escape sequence in " + kind)
 			}
 		}
 		// TODO: Check for invalid code point?

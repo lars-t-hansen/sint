@@ -162,3 +162,10 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 
 * `(for-each-line proc input)` applies proc to each line of the text input port `input`
 * `(filter-lines proc input)` applies proc to each line of the text input port `input`, returning a list of the lines for which `proc` returns a truthy answer
+
+## Regular expressions (evolving)
+
+* `#/.../` is literal and self-evaluating syntax for the regular expression `...`.  The syntax is as for strings, except that `/` has to be escaped rather than `"`
+* `(string->regexp string)` creates a regular expression from the string
+* `(regexp->string regexp)` returns the string that created the regular expression
+* `(regexp-find-all regexp string)` returns a list of all matches (according to the Go meaning of "All") of the regexp against the string

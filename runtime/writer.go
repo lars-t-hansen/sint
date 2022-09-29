@@ -57,6 +57,10 @@ func Write(v Val, quoted bool, w OutputStream) {
 		} else {
 			w.WriteString(x.Value)
 		}
+	case *Regexp:
+		w.WriteString("#/")
+		w.WriteString(x.Value.String())
+		w.WriteString("/")
 	case *Chan:
 		w.WriteString(fmt.Sprintf("#<channel %d>", cap(x.Ch)))
 	case *Port:
