@@ -128,9 +128,9 @@ func primNewline(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primWriteChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	c, ok := a0.(*Char)
-	if !ok {
-		return ctx.Error("write-char: not a character", a0)
+	c, cErr := checkChar(ctx, a0, "write-char")
+	if cErr != nil {
+		return ctx.SignalWrappedError(cErr)
 	}
 	p, v, nv := getPort(ctx, a1, "write-char", CurrentOutputPort, IsOutputPort, IsTextPort)
 	if v != nil {
@@ -138,7 +138,7 @@ func primWriteChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	}
 	{
 		writer := p.AcquireOutputStream()
-		writer.WriteRune(c.Value)
+		writer.WriteRune(c)
 		p.ReleaseOutputStream(writer)
 	}
 	return ctx.UnspecifiedVal, 1
@@ -281,29 +281,29 @@ func (f *SchemeFile) Close() {
 }
 
 func primOpenInputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	fn, fnOk := a0.(*Str)
-	if !fnOk {
-		return ctx.Error("open-input-file: file name must be a string", a0)
+	fn, fnErr := checkString(ctx, a0, "open-input-file")
+	if fnErr != nil {
+		return ctx.SignalWrappedError(fnErr)
 	}
-	input, inErr := os.Open(fn.Value)
+	input, inErr := os.Open(fn)
 	if inErr != nil {
-		return ctx.Error("open-input-file: can't open file: "+inErr.Error(), fn)
+		return ctx.Error("open-input-file: can't open file: "+inErr.Error(), a0)
 	}
 	f := &SchemeFile{handle: input, instream: bufio.NewReader(input)}
-	return NewInputPort(f, true, fn.Value), 1
+	return NewInputPort(f, true, fn), 1
 }
 
 func primOpenOutputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	fn, fnOk := a0.(*Str)
-	if !fnOk {
-		return ctx.Error("open-output-file: file name must be a string", a0)
+	fn, fnErr := checkString(ctx, a0, "open-output-file")
+	if fnErr != nil {
+		return ctx.SignalWrappedError(fnErr)
 	}
-	output, outErr := os.Create(fn.Value)
+	output, outErr := os.Create(fn)
 	if outErr != nil {
-		return ctx.Error("open-output-file: can't open file "+outErr.Error(), fn)
+		return ctx.Error("open-output-file: can't open file: "+outErr.Error(), a0)
 	}
 	f := &SchemeFile{handle: output, outstream: bufio.NewWriter(output)}
-	return NewOutputPort(f, true, fn.Value), 1
+	return NewOutputPort(f, true, fn), 1
 }
 
 func primCloseInputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {

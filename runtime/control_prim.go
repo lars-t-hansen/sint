@@ -156,29 +156,33 @@ func primNewTlsKey(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
 }
 
 func primReadTlsValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
-	if iv, ok := a0.(*big.Int); ok {
-		if iv.IsInt64() {
-			n := iv.Int64()
-			if n >= 0 && n <= math.MaxInt32 {
-				return ctx.GetTlsValue(int32(n)), 1
-			}
-		}
-		return ctx.UnspecifiedVal, 1
+	iv, ivErr := checkExactInt(ctx, a0, "sint:read-tls-value")
+	if ivErr != nil {
+		return ctx.SignalWrappedError(ivErr)
 	}
-	return ctx.Error("sint:read-tls-value: key must be exact integer", a0)
+	// TODO: This is again a "check exact int in range" pattern, seen many other places
+	if iv.IsInt64() {
+		n := iv.Int64()
+		if n >= 0 && n <= math.MaxInt32 {
+			return ctx.GetTlsValue(int32(n)), 1
+		}
+	}
+	return ctx.UnspecifiedVal, 1
 }
 
 func primWriteTlsValue(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
-	if iv, ok := a0.(*big.Int); ok {
-		if iv.IsInt64() {
-			n := iv.Int64()
-			if n >= 0 && n <= math.MaxInt32 {
-				ctx.SetTlsValue(int32(n), a1)
-			}
-		}
-		return ctx.UnspecifiedVal, 1
+	iv, ivErr := checkExactInt(ctx, a0, "sint:write-tls-value")
+	if ivErr != nil {
+		return ctx.SignalWrappedError(ivErr)
 	}
-	return ctx.Error("sint:write-tls-value: key must be exact integer", a0)
+	// TODO: This is again a "check exact int in range" pattern, seen many other places
+	if iv.IsInt64() {
+		n := iv.Int64()
+		if n >= 0 && n <= math.MaxInt32 {
+			ctx.SetTlsValue(int32(n), a1)
+		}
+	}
+	return ctx.UnspecifiedVal, 1
 }
 
 // The documentation for the unwinding primitives is in control.sch
