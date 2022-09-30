@@ -51,7 +51,7 @@ func primProcedurep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primProcedureName(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	proc, err := checkProcedure(ctx, a0, "procedure-name")
+	proc, err := ctx.CheckProcedure(a0, "procedure-name")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -59,7 +59,7 @@ func primProcedureName(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primProcedureArity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	proc, err := checkProcedure(ctx, a0, "procedure-arity")
+	proc, err := ctx.CheckProcedure(a0, "procedure-arity")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -70,11 +70,11 @@ func primProcedureArity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primStringMap(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
-	p, pErr := checkProcedure(ctx, a0, "string-map")
+	p, pErr := ctx.CheckProcedure(a0, "string-map")
 	if pErr != nil {
 		return ctx.SignalWrappedError(pErr)
 	}
-	s, sErr := checkString(ctx, a1, "string-map")
+	s, sErr := ctx.CheckString(a1, "string-map")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
@@ -89,7 +89,7 @@ func primStringMap(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 		if unw != nil {
 			return unw, EvalUnwind
 		}
-		nch, nchErr := checkChar(ctx, res[0], "string-map")
+		nch, nchErr := ctx.CheckChar(res[0], "string-map")
 		if nchErr != nil {
 			return ctx.SignalWrappedError(nchErr)
 		}
@@ -99,11 +99,11 @@ func primStringMap(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 }
 
 func primStringForEach(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
-	p, pErr := checkProcedure(ctx, a0, "string-for-each")
+	p, pErr := ctx.CheckProcedure(a0, "string-for-each")
 	if pErr != nil {
 		return ctx.SignalWrappedError(pErr)
 	}
-	s, sErr := checkString(ctx, a1, "string-for-each")
+	s, sErr := ctx.CheckString(a1, "string-for-each")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
@@ -156,7 +156,7 @@ func primNewTlsKey(ctx *Scheme, _, _ Val, rest []Val) (Val, int) {
 }
 
 func primReadTlsValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
-	iv, ivErr := checkExactInt(ctx, a0, "sint:read-tls-value")
+	iv, ivErr := ctx.CheckExactInt(a0, "sint:read-tls-value")
 	if ivErr != nil {
 		return ctx.SignalWrappedError(ivErr)
 	}
@@ -170,7 +170,7 @@ func primReadTlsValue(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 }
 
 func primWriteTlsValue(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
-	iv, ivErr := checkExactInt(ctx, a0, "sint:write-tls-value")
+	iv, ivErr := ctx.CheckExactInt(a0, "sint:write-tls-value")
 	if ivErr != nil {
 		return ctx.SignalWrappedError(ivErr)
 	}
@@ -190,7 +190,7 @@ func primUnwindHandler(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	// (sint:call-with-unwind-handler key thunk handler)
 	filterKey := a0
 	thunk := a1
-	thunkProc, thunkErr := checkProcedure(ctx, thunk, "sint:unwind-handler")
+	thunkProc, thunkErr := ctx.CheckProcedure(thunk, "sint:unwind-handler")
 	if thunkErr != nil {
 		return ctx.SignalWrappedError(thunkErr)
 	}
@@ -198,7 +198,7 @@ func primUnwindHandler(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 		return ctx.Error("sint:unwind-handler: thunk requires too many arguments", thunk)
 	}
 	handler := a2
-	handlerProc, handlerErr := checkProcedure(ctx, handler, "sint:unwind-handler")
+	handlerProc, handlerErr := ctx.CheckProcedure(handler, "sint:unwind-handler")
 	if handlerErr != nil {
 		return ctx.SignalWrappedError(handlerErr)
 	}
@@ -223,11 +223,4 @@ func primCompileToplevel(ctx *Scheme, a0, _ Val, rest []Val) (Val, int) {
 		return ctx.Error(err.Error())
 	}
 	return &Procedure{Lam: &Lambda{Fixed: 0, Rest: false, Body: prog}, Env: nil, Primop: nil}, 1
-}
-
-func checkProcedure(ctx *Scheme, v Val, name string) (*Procedure, *WrappedError) {
-	if p, ok := v.(*Procedure); ok {
-		return p, nil
-	}
-	return nil, ctx.WrapError(name+": not a procedure", v)
 }

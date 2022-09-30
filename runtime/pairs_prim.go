@@ -37,31 +37,35 @@ func primCons(_ *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 }
 
 func primCar(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if c, ok := a0.(*Cons); ok {
-		return c.Car, 1
+	c, err := ctx.CheckPair(a0, "car")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("car: Not a pair", a0)
+	return c.Car, 1
 }
 
 func primCdr(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if c, ok := a0.(*Cons); ok {
-		return c.Cdr, 1
+	c, err := ctx.CheckPair(a0, "cdr")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("cdr: Not a pair", a0)
+	return c.Cdr, 1
 }
 
 func primSetcar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if c, ok := a0.(*Cons); ok {
-		c.Car = a1
-		return ctx.UnspecifiedVal, 1
+	c, err := ctx.CheckPair(a0, "set-car!")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("set-car!: Not a pair", a0)
+	c.Car = a1
+	return ctx.UnspecifiedVal, 1
 }
 
 func primSetcdr(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if c, ok := a0.(*Cons); ok {
-		c.Cdr = a1
-		return ctx.UnspecifiedVal, 1
+	c, err := ctx.CheckPair(a0, "set-cdr!")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("set-cdr!: Not a pair", a0)
+	c.Cdr = a1
+	return ctx.UnspecifiedVal, 1
 }

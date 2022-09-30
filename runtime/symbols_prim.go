@@ -26,37 +26,41 @@ func primSymbolp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primSymbolHasValue(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if sym, ok := a0.(*Symbol); ok {
-		if sym.Value != ctx.UndefinedVal {
-			return ctx.TrueVal, 1
-		}
-		return ctx.FalseVal, 1
+	sym, symErr := ctx.CheckSymbol(a0, "symbol-has-value?")
+	if symErr != nil {
+		return ctx.SignalWrappedError(symErr)
 	}
-	return ctx.Error("symbol-has-value?: Not a symbol", a0)
+	if sym.Value != ctx.UndefinedVal {
+		return ctx.TrueVal, 1
+	}
+	return ctx.FalseVal, 1
 }
 
 func primSymbolValue(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if sym, ok := a0.(*Symbol); ok {
-		if sym.Value != ctx.UndefinedVal {
-			return sym.Value, 1
-		}
-		return ctx.Error("symbol-value: Has no value", a0)
+	sym, symErr := ctx.CheckSymbol(a0, "symbol-value")
+	if symErr != nil {
+		return ctx.SignalWrappedError(symErr)
 	}
-	return ctx.Error("symbol-value: Not a symbol", a0)
+	if sym.Value != ctx.UndefinedVal {
+		return sym.Value, 1
+	}
+	return ctx.Error("symbol-value: Symbol has no value", a0)
 }
 
 func primSymbol2String(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if s, ok := a0.(*Symbol); ok {
-		return &Str{Value: s.Name}, 1
+	sym, symErr := ctx.CheckSymbol(a0, "symbol->string")
+	if symErr != nil {
+		return ctx.SignalWrappedError(symErr)
 	}
-	return ctx.Error("symbol->string: Not a symbol", a0)
+	return &Str{Value: sym.Name}, 1
 }
 
 func primString2Symbol(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if s, ok := a0.(*Str); ok {
-		return ctx.Intern(s.Value), 1
+	s, sErr := ctx.CheckString(a0, "string->symbol")
+	if sErr != nil {
+		return ctx.SignalWrappedError(sErr)
 	}
-	return ctx.Error("string->symbol: Not a string", a0)
+	return ctx.Intern(s), 1
 }
 
 func primGensym(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
@@ -70,7 +74,7 @@ func primFilterGlobals(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	} else if s, ok := a0.(*Symbol); ok {
 		pattern = s.Name
 	} else {
-		return ctx.Error("filter-global-variables: Not a string", a0)
+		return ctx.Error("filter-global-variables: Not a string or symbol", a0)
 	}
 	syms := ctx.FindSymbolsByName(pattern)
 	l := ctx.NullVal

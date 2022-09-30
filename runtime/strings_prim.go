@@ -33,7 +33,7 @@ func primStringp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primStringLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	s, sErr := checkString(ctx, a0, "string-length")
+	s, sErr := ctx.CheckString(a0, "string-length")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
@@ -41,31 +41,29 @@ func primStringLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primStringRef(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	s, sErr := checkString(ctx, a0, "string-ref")
+	s, sErr := ctx.CheckString(a0, "string-ref")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
-	if ix, ok := a1.(*big.Int); ok {
-		if ix.IsInt64() && ix.Int64() >= 0 && ix.Int64() < int64(len(s)) {
-			ch, size := utf8.DecodeRuneInString(s[int(ix.Int64()):])
-			if ch == utf8.RuneError {
-				// This can happen when indexing into the middle of a char, for example.
-				return ctx.Error("string-ref: Invalid code point in string at index", a1)
-			}
-			ctx.MultiVals = []Val{big.NewInt(int64(size))}
-			return &Char{Value: ch}, 2
-		}
-		return ctx.Error("string-ref: Out of range", a1)
+	ix, ixErr := ctx.CheckExactIntInRange(a1, "string-ref", 0, int64(len(s)))
+	if ixErr != nil {
+		return ctx.SignalWrappedError(ixErr)
 	}
-	return ctx.Error("string-ref: Not an exact integer index", a1)
+	ch, size := utf8.DecodeRuneInString(s[int(ix):])
+	if ch == utf8.RuneError {
+		// This can happen when indexing into the middle of a char, for example.
+		return ctx.Error("string-ref: Invalid code point in string at index", a1)
+	}
+	ctx.MultiVals = []Val{big.NewInt(int64(size))}
+	return &Char{Value: ch}, 2
 }
 
 func primStringCompare(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	s0, sErr := checkString(ctx, a0, "sint:string-compare")
+	s0, sErr := ctx.CheckString(a0, "sint:string-compare")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
-	s1, sErr := checkString(ctx, a1, "sint:string-compare")
+	s1, sErr := ctx.CheckString(a1, "sint:string-compare")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
@@ -78,7 +76,7 @@ func primStringAppend(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	if a0 == ctx.UndefinedVal {
 		return &Str{Value: ""}, 1
 	}
-	str0, sErr := checkString(ctx, a0, "string-append")
+	str0, sErr := ctx.CheckString(a0, "string-append")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
@@ -86,13 +84,13 @@ func primStringAppend(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 		return a0, 1
 	}
 	s := str0
-	str1, sErr := checkString(ctx, a1, "string-append")
+	str1, sErr := ctx.CheckString(a1, "string-append")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
 	s = s + str1
 	for _, v := range rest {
-		str2, sErr := checkString(ctx, v, "string-append")
+		str2, sErr := ctx.CheckString(v, "string-append")
 		if sErr != nil {
 			return ctx.SignalWrappedError(sErr)
 		}
@@ -103,21 +101,19 @@ func primStringAppend(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 
 func primSubstring(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 	a2 := rest[0]
-	s0, sErr := checkString(ctx, a0, "string-append")
+	s0, sErr := ctx.CheckString(a0, "substring")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}
-	i1, i2, ok := bothInt(a1, a2)
-	if !ok {
-		return ctx.Error("substring: invalid indices", a1, a2)
+	i1, i1Err := ctx.CheckExactIntInRange(a1, "substring", 0, int64(len(s0)))
+	if i1Err != nil {
+		return ctx.SignalWrappedError(i1Err)
 	}
-	if i1.IsInt64() && i1.Int64() >= 0 && i1.Int64() <= int64(len(s0)) &&
-		i2.IsInt64() && i2.Int64() >= 0 && i2.Int64() <= int64(len(s0)) &&
-		i1.Int64() <= i2.Int64() {
-		return &Str{Value: s0[i1.Int64():i2.Int64()]}, 1
-	} else {
-		return ctx.Error("substring: indices out of range", a1, a2)
+	i2, i2Err := ctx.CheckExactIntInRange(a2, "substring", 0, int64(len(s0)))
+	if i2Err != nil {
+		return ctx.SignalWrappedError(i2Err)
 	}
+	return &Str{Value: s0[i1:i2]}, 1
 }
 
 // sint:list->string assumes the list is proper, but it does check that each value
@@ -140,11 +136,4 @@ func primList2String(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 		s = s + string(ch.Value)
 		a0 = c.Cdr
 	}
-}
-
-func checkString(ctx *Scheme, v Val, name string) (string, *WrappedError) {
-	if s, ok := v.(*Str); ok {
-		return s.Value, nil
-	}
-	return "", ctx.WrapError(name+": not a string", v)
 }

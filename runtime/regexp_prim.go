@@ -20,34 +20,38 @@ func primRegexpp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primStringToRegexp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if s, ok := a0.(*Str); ok {
-		if re, err := regexp.Compile(s.Value); err == nil {
-			return &Regexp{Value: re}, 1
-		}
-		return ctx.Error("string->regexp: Invalid regexp syntax", a0)
+	s, sErr := ctx.CheckString(a0, "string->regexp")
+	if sErr != nil {
+		return ctx.SignalWrappedError(sErr)
 	}
-	return ctx.Error("string->regexp: Not a string", a0)
+	if re, err := regexp.Compile(s); err == nil {
+		return &Regexp{Value: re}, 1
+	}
+	return ctx.Error("string->regexp: Invalid regexp syntax", a0)
 }
 
 func primRegexpToString(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if re, ok := a0.(*Regexp); ok {
-		return &Str{Value: re.Value.String()}, 1
+	re, reErr := ctx.CheckRegexp(a0, "regexp->string")
+	if reErr != nil {
+		return ctx.SignalWrappedError(reErr)
 	}
-	return ctx.Error("regexp->string: Not a regular expression", a0)
+	return &Str{Value: re.String()}, 1
 }
 
 func primRegexpFindAll(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if re, ok := a0.(*Regexp); ok {
-		if s, ok := a1.(*Str); ok {
-			results := re.Value.FindAll([]byte(s.Value), -1)
-			l := ctx.NullVal
-			for i := len(results) - 1; i >= 0; i-- {
-				r := results[i]
-				l = &Cons{Car: &Str{Value: string(r)}, Cdr: l}
-			}
-			return l, 1
-		}
-		return ctx.Error("regexp-find-all: Not a string", a1)
+	re, reErr := ctx.CheckRegexp(a0, "regexp-find-all")
+	if reErr != nil {
+		return ctx.SignalWrappedError(reErr)
 	}
-	return ctx.Error("regexp->string: Not a regular expression", a0)
+	s, sErr := ctx.CheckString(a1, "regexp-find-all")
+	if sErr != nil {
+		return ctx.SignalWrappedError(sErr)
+	}
+	results := re.FindAll([]byte(s), -1)
+	l := ctx.NullVal
+	for i := len(results) - 1; i >= 0; i-- {
+		r := results[i]
+		l = &Cons{Car: &Str{Value: string(r)}, Cdr: l}
+	}
+	return l, 1
 }

@@ -38,12 +38,11 @@ func primGoroutineId(ctx *Scheme, _, _ Val, _ []Val) (Val, int) {
 func primMakeChannel(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 	capacity := 0
 	if a0 != ctx.UndefinedVal {
-		// TODO: this is checkExactIntInRange, and integer->char does the same thing
-		iv, ok := a0.(*big.Int)
-		if !ok || !iv.IsInt64() || iv.Int64() < 0 || iv.Int64() > math.MaxInt {
-			return ctx.Error("make-channel: Invalid capacity", a0)
+		iv, ivErr := ctx.CheckExactIntInRange(a0, "make-channel", 0, math.MaxInt)
+		if ivErr != nil {
+			return ctx.SignalWrappedError(ivErr)
 		}
-		capacity = int(iv.Int64())
+		capacity = int(iv)
 	}
 	return &Chan{Ch: make(chan Val, capacity)}, 1
 }
@@ -56,7 +55,7 @@ func primChannelp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChannelSend(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	ch, err := checkChannel(ctx, a0, "channel-send")
+	ch, err := ctx.CheckChannel(a0, "channel-send")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -65,7 +64,7 @@ func primChannelSend(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 }
 
 func primChannelReceive(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	ch, err := checkChannel(ctx, a0, "channel-receive")
+	ch, err := ctx.CheckChannel(a0, "channel-receive")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -79,7 +78,7 @@ func primChannelReceive(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChannelLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	ch, err := checkChannel(ctx, a0, "channel-length")
+	ch, err := ctx.CheckChannel(a0, "channel-length")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -87,7 +86,7 @@ func primChannelLength(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChannelCapacity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	ch, err := checkChannel(ctx, a0, "channel-capacity")
+	ch, err := ctx.CheckChannel(a0, "channel-capacity")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -95,17 +94,10 @@ func primChannelCapacity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primCloseChannel(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	ch, err := checkChannel(ctx, a0, "close-channel")
+	ch, err := ctx.CheckChannel(a0, "close-channel")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
 	close(ch)
 	return ctx.UnspecifiedVal, 1
-}
-
-func checkChannel(ctx *Scheme, v Val, name string) (chan Val, *WrappedError) {
-	if ch, ok := v.(*Chan); ok {
-		return ch.Ch, nil
-	}
-	return nil, ctx.WrapError(name+": not a channel", v)
 }

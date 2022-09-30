@@ -764,3 +764,92 @@ func (c *Scheme) evalExprs(es []Code, env *lexenv) ([]Val, Val) {
 	}
 	return vs, nil
 }
+
+// These are utility functions for type checking.  If v is of the correct type then
+// return the native value nv and nil for the error; otherwise return a zero value
+// for the value and a non-nil value for the error.
+//
+// The main benefits of having these in the engine and not in the runtime are to
+// be able to attach them as methods to the Scheme, and to ensure uniform handling
+// and signalling.
+
+func (ctx *Scheme) CheckChannel(v Val, name string) (chan Val, *WrappedError) {
+	if ch, ok := v.(*Chan); ok {
+		return ch.Ch, nil
+	}
+	return nil, ctx.WrapError(name+": not a channel", v)
+}
+
+func (ctx *Scheme) CheckChar(v Val, name string) (rune, *WrappedError) {
+	if ch, ok := v.(*Char); ok {
+		return ch.Value, nil
+	}
+	return 0, ctx.WrapError(name+": not a character", v)
+}
+
+func (ctx *Scheme) CheckExactInt(v Val, name string) (*big.Int, *WrappedError) {
+	if iv, ok := v.(*big.Int); ok {
+		return iv, nil
+	}
+	return nil, ctx.WrapError(name+": Not an exact integer", v)
+}
+
+func (ctx *Scheme) CheckExactIntInRange(v Val, name string, min, max int64) (int64, *WrappedError) {
+	if iv, ok := v.(*big.Int); ok {
+		if iv.IsInt64() {
+			k := iv.Int64()
+			if k >= min && k <= max {
+				return k, nil
+			}
+		}
+		return 0, ctx.WrapError(name+": Out of range", v)
+	}
+	return 0, ctx.WrapError(name+": Not an exact integer", v)
+}
+
+func (ctx *Scheme) CheckNumber(v Val, name string) (iv *big.Int, fv *big.Float, err *WrappedError) {
+	ok := true
+	if iv, ok = v.(*big.Int); ok {
+		return
+	}
+	if fv, ok = v.(*big.Float); ok {
+		return
+	}
+	err = ctx.WrapError(name+": Not a number", v)
+	return
+}
+
+func (ctx *Scheme) CheckPair(v Val, name string) (*Cons, *WrappedError) {
+	if c, ok := v.(*Cons); ok {
+		return c, nil
+	}
+	return nil, ctx.WrapError(name+": not a pair", v)
+}
+
+func (ctx *Scheme) CheckProcedure(v Val, name string) (*Procedure, *WrappedError) {
+	if p, ok := v.(*Procedure); ok {
+		return p, nil
+	}
+	return nil, ctx.WrapError(name+": not a procedure", v)
+}
+
+func (ctx *Scheme) CheckRegexp(v Val, name string) (*regexp.Regexp, *WrappedError) {
+	if re, ok := v.(*Regexp); ok {
+		return re.Value, nil
+	}
+	return nil, ctx.WrapError(name+": Not a regular expression", v)
+}
+
+func (ctx *Scheme) CheckString(v Val, name string) (string, *WrappedError) {
+	if s, ok := v.(*Str); ok {
+		return s.Value, nil
+	}
+	return "", ctx.WrapError(name+": not a string", v)
+}
+
+func (ctx *Scheme) CheckSymbol(v Val, name string) (*Symbol, *WrappedError) {
+	if sym, ok := v.(*Symbol); ok {
+		return sym, nil
+	}
+	return nil, ctx.WrapError(name+": not a symbol", v)
+}

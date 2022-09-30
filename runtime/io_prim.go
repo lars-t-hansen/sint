@@ -128,7 +128,7 @@ func primNewline(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primWriteChar(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	c, cErr := checkChar(ctx, a0, "write-char")
+	c, cErr := ctx.CheckChar(a0, "write-char")
 	if cErr != nil {
 		return ctx.SignalWrappedError(cErr)
 	}
@@ -281,7 +281,7 @@ func (f *SchemeFile) Close() {
 }
 
 func primOpenInputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	fn, fnErr := checkString(ctx, a0, "open-input-file")
+	fn, fnErr := ctx.CheckString(a0, "open-input-file")
 	if fnErr != nil {
 		return ctx.SignalWrappedError(fnErr)
 	}
@@ -294,7 +294,7 @@ func primOpenInputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primOpenOutputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	fn, fnErr := checkString(ctx, a0, "open-output-file")
+	fn, fnErr := ctx.CheckString(a0, "open-output-file")
 	if fnErr != nil {
 		return ctx.SignalWrappedError(fnErr)
 	}

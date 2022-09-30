@@ -68,29 +68,25 @@ func primInexactIntegerp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primFinitep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if _, ok := a0.(*big.Int); ok {
-		return ctx.TrueVal, 1
+	_, fv, err := ctx.CheckNumber(a0, "finite?")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	if fv, ok := a0.(*big.Float); ok {
-		if fv.IsInf() {
-			return ctx.FalseVal, 1
-		}
-		return ctx.TrueVal, 1
+	if fv != nil && fv.IsInf() {
+		return ctx.FalseVal, 1
 	}
-	return ctx.Error("finite?: Not a number", a0)
+	return ctx.TrueVal, 1
 }
 
 func primInfinitep(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if _, ok := a0.(*big.Int); ok {
-		return ctx.FalseVal, 1
+	_, fv, err := ctx.CheckNumber(a0, "infinite?")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	if fv, ok := a0.(*big.Float); ok {
-		if fv.IsInf() {
-			return ctx.TrueVal, 1
-		}
-		return ctx.FalseVal, 1
+	if fv != nil && fv.IsInf() {
+		return ctx.TrueVal, 1
 	}
-	return ctx.Error("infinite?: Not a number", a0)
+	return ctx.FalseVal, 1
 }
 
 func primAdd(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
@@ -695,11 +691,4 @@ func isNumber(v Val) bool {
 		return true
 	}
 	return false
-}
-
-func checkExactInt(ctx *Scheme, v Val, name string) (*big.Int, *WrappedError) {
-	if iv, ok := v.(*big.Int); ok {
-		return iv, nil
-	}
-	return nil, ctx.WrapError(name+": Not an exact integer", v)
 }

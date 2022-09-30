@@ -11,7 +11,7 @@ func initExceptionsPrimitives(ctx *Scheme) {
 }
 
 func primReportError(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	s, sErr := checkString(ctx, a0, "sint:report-error")
+	s, sErr := ctx.CheckString(a0, "sint:report-error")
 	if sErr != nil {
 		return ctx.SignalWrappedError(sErr)
 	}

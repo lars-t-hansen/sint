@@ -28,7 +28,7 @@ func primCharp(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primChar2Int(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	ch, err := checkChar(ctx, a0, "char->integer")
+	ch, err := ctx.CheckChar(a0, "char->integer")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -36,18 +36,12 @@ func primChar2Int(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primInt2Char(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	n, nErr := checkExactInt(ctx, a0, "char->integer")
+	// TODO: Is this the right range?  I tend to doubt it.
+	n, nErr := ctx.CheckExactIntInRange(a0, "char->integer", 0, 0xDFFF)
 	if nErr != nil {
 		return ctx.SignalWrappedError(nErr)
 	}
-	if n.IsInt64() {
-		k := n.Int64()
-		// TODO: Is this right?
-		if k >= 0 && k <= 0xDFFF {
-			return &Char{Value: rune(n.Int64())}, 1
-		}
-	}
-	return ctx.Error("char->integer: Integer outside character range", a0)
+	return &Char{Value: rune(n)}, 1
 }
 
 func primCharEq(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
@@ -105,17 +99,10 @@ func primCharLe(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 	return ctx.FalseVal, 1
 }
 
-func checkChar(ctx *Scheme, v Val, name string) (rune, *WrappedError) {
-	if ch, ok := v.(*Char); ok {
-		return ch.Value, nil
-	}
-	return 0, ctx.WrapError(name+": not a character", v)
-}
-
 func checkBothChars(ctx *Scheme, v0 Val, v1 Val, name string) (c0 rune, c1 rune, err *WrappedError) {
-	c0, err = checkChar(ctx, v0, name)
+	c0, err = ctx.CheckChar(v0, name)
 	if err == nil {
-		c1, err = checkChar(ctx, v1, name)
+		c1, err = ctx.CheckChar(v1, name)
 	}
 	return
 }
