@@ -826,6 +826,24 @@ func (ctx *Scheme) CheckPair(v Val, name string) (*Cons, *WrappedError) {
 	return nil, ctx.WrapError(name+": not a pair", v)
 }
 
+func (ctx *Scheme) CheckPort(v Val, name string, flags PortFlags) (*Port, *WrappedError) {
+	port, portOk := v.(*Port)
+	if !portOk {
+		return nil, ctx.WrapError(name+": not a port", v)
+	}
+	if flags != 0 {
+		direction := "input"
+		if flags == IsOutputPort {
+			direction = "output"
+		}
+		f := port.Flags()
+		if (f & flags) == 0 {
+			return nil, ctx.WrapError(name+": not an "+direction+" port", port)
+		}
+	}
+	return port, nil
+}
+
 func (ctx *Scheme) CheckProcedure(v Val, name string) (*Procedure, *WrappedError) {
 	if p, ok := v.(*Procedure); ok {
 		return p, nil

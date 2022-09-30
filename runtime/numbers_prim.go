@@ -677,18 +677,11 @@ func bothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, 
 }
 
 func checkNumber(ctx *Scheme, v Val, s string) (Val, int) {
-	if !isNumber(v) {
-		return ctx.Error(s+": Not a number", v)
-	}
-	return v, 1
-}
-
-func isNumber(v Val) bool {
 	if _, ok := v.(*big.Int); ok {
-		return true
+		return v, 1
 	}
 	if _, ok := v.(*big.Float); ok {
-		return true
+		return v, 1
 	}
-	return false
+	return ctx.Error(s+": Not a number", v)
 }

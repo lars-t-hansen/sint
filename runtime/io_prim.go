@@ -46,6 +46,7 @@ func init() {
 // If the `v` value is not nil then (v, nv) is an error return and `port` should be ignored.
 
 func getPort(ctx *Scheme, maybePort Val, name string, tlsKey int32, direction PortFlags, ty PortFlags) (port *Port, v Val, nv int) {
+	// TODO: Integrate this with ctx.CheckPort somehow
 	ok := true
 	if maybePort != ctx.UndefinedVal {
 		if port, ok = maybePort.(*Port); ok {
@@ -307,13 +308,9 @@ func primOpenOutputFile(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primCloseInputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	port, portOk := a0.(*Port)
-	if !portOk {
-		return ctx.Error("close-input-port: not a port", a0)
-	}
-	f := port.Flags()
-	if (f & IsInputPort) == 0 {
-		return ctx.Error("close-input-port: not an input port", port)
+	port, portErr := ctx.CheckPort(a0, "close-input-port", IsInputPort)
+	if portErr != nil {
+		return ctx.SignalWrappedError(portErr)
 	}
 	s := port.AcquireInputStream() // The port is now locked
 	if (port.RacyFlags() & IsClosedPort) == 0 {
@@ -325,13 +322,9 @@ func primCloseInputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primCloseOutputPort(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	port, portOk := a0.(*Port)
-	if !portOk {
-		return ctx.Error("close-output-port: not a port", a0)
-	}
-	f := port.Flags()
-	if (f & IsOutputPort) == 0 {
-		return ctx.Error("close-output-port: not an output port", port)
+	port, portErr := ctx.CheckPort(a0, "close-output-port", IsOutputPort)
+	if portErr != nil {
+		return ctx.SignalWrappedError(portErr)
 	}
 	s := port.AcquireOutputStream() // The port is now locked
 	if (port.RacyFlags() & IsClosedPort) == 0 {
