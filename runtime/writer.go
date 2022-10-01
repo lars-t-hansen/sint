@@ -13,25 +13,24 @@ type OutputStream interface {
 }
 
 // Returns nil on error, otherwise a string Val
-func NumberToString(v Val, radix int) Val {
-	if iv, ok := v.(*big.Int); ok {
+func NumberToString(iv *big.Int, fv *big.Float, radix int) Val {
+	if iv != nil {
 		return &Str{Value: iv.Text(radix)}
 	}
-	if fv, ok := v.(*big.Float); ok {
-		// We ignore the radix here
-		s := fv.String()
-		if !strings.ContainsAny(s, "eE.") {
-			s = s + ".0"
-		}
-		return &Str{Value: s}
+	// We ignore the radix here
+	s := fv.String()
+	if !strings.ContainsAny(s, "eE.") {
+		s = s + ".0"
 	}
-	return nil
+	return &Str{Value: s}
 }
 
 func Write(v Val, quoted bool, w OutputStream) {
 	switch x := v.(type) {
-	case *big.Int, *big.Float:
-		w.WriteString(NumberToString(v, 10).(*Str).Value)
+	case *big.Int:
+		w.WriteString(NumberToString(x, nil, 10).(*Str).Value)
+	case *big.Float:
+		w.WriteString(NumberToString(nil, x, 10).(*Str).Value)
 	case *Char:
 		if quoted {
 			switch x.Value {

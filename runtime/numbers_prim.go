@@ -184,21 +184,23 @@ func primDiv(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 }
 
 func primQuotient(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if ia, ib, ok := bothInt(a0, a1); ok {
-		var z big.Int
-		z.Quo(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a0, a1, "quotient")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("quotient: numbers must be exact integers", a0, a1)
+	var z big.Int
+	z.Quo(ia, ib)
+	return &z, 1
 }
 
 func primRemainder(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if ia, ib, ok := bothInt(a0, a1); ok {
-		var z big.Int
-		z.Rem(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a0, a1, "remainder")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("remainder: numbers must be exact integers", a0, a1)
+	var z big.Int
+	z.Rem(ia, ib)
+	return &z, 1
 }
 
 func primLess(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
@@ -333,11 +335,11 @@ func primNumber2String(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 			return ctx.Error("number->string: Bad radix", a1)
 		}
 	}
-	v := NumberToString(a0, radix)
-	if v == nil {
-		return ctx.Error("number->string: Not a number", a0)
+	iv, fv, err := ctx.CheckNumber(a0, "number->string")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return v, 1
+	return NumberToString(iv, fv, radix), 1
 }
 
 func primString2Number(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
@@ -363,41 +365,44 @@ func primString2Number(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
 }
 
 func primInexact(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if iv, ok := a0.(*big.Int); ok {
+	iv, _, err := ctx.CheckNumber(a0, "inexact")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if iv != nil {
 		var n big.Float
 		n.SetInt(iv)
 		return &n, 1
 	}
-	if _, ok := a0.(*big.Float); ok {
-		return a0, 1
-	}
-	return ctx.Error("inexact: Not a number", a0)
+	return a0, 1
 }
 
 func primExact(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if _, ok := a0.(*big.Int); ok {
+	iv, fv, err := ctx.CheckNumber(a0, "exact")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if iv != nil {
 		return a0, 1
 	}
-	if fv, ok := a0.(*big.Float); ok {
-		iv, _ := fv.Int(nil)
-		if iv == nil {
-			return ctx.Error("exact: Infinity can't be converted to exact", a0)
-		}
-		return iv, 1
+	iv, _ = fv.Int(nil)
+	if iv == nil {
+		return ctx.Error("exact: Infinity can't be converted to exact", a0)
 	}
-	return ctx.Error("exact: Not a number", a0)
+	return iv, 1
 }
 
 func primAbs(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if iv, ok := a0.(*big.Int); ok {
+	iv, fv, err := ctx.CheckNumber(a0, "abs")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	if iv != nil {
 		var r big.Int
 		return r.Abs(iv), 1
 	}
-	if fv, ok := a0.(*big.Float); ok {
-		var r big.Float
-		return r.Abs(fv), 1
-	}
-	return ctx.Error("abs: Not a number", a0)
+	var r big.Float
+	return r.Abs(fv), 1
 }
 
 func primSqrt(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
@@ -523,30 +528,32 @@ func primBitwiseXor(ctx *Scheme, a0, a1 Val, rest []Val) (Val, int) {
 }
 
 func primBitwiseAndNot(ctx *Scheme, a0, a1 Val, _ []Val) (Val, int) {
-	if ia, ib, ok := bothInt(a0, a1); ok {
-		var z big.Int
-		z.AndNot(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a0, a1, "bitwise-and-not")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("bitwise-and-not: Numbers must be exact integers", a0, a1)
+	var z big.Int
+	z.AndNot(ia, ib)
+	return &z, 1
 }
 
 func primBitwiseNot(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	if ia, ok := a0.(*big.Int); ok {
-		var z big.Int
-		z.Not(ia)
-		return &z, 1
+	i0, err := ctx.CheckExactInt(a0, "bitwise-not")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("bitwise-not: Not an exact integer", a0)
+	var z big.Int
+	z.Not(i0)
+	return &z, 1
 }
 
 func add2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
+	if ia, ib, ok := testBothInt(a, b); ok {
 		var z big.Int
 		z.Add(ia, ib)
 		return &z, 1
 	}
-	fa, fb, err := bothFloat(ctx, a, b, "+")
+	fa, fb, err := coerceBothFloat(ctx, a, b, "+")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -556,12 +563,12 @@ func add2(ctx *Scheme, a Val, b Val) (Val, int) {
 }
 
 func sub2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
+	if ia, ib, ok := testBothInt(a, b); ok {
 		var z big.Int
 		z.Sub(ia, ib)
 		return &z, 1
 	}
-	fa, fb, err := bothFloat(ctx, a, b, "+")
+	fa, fb, err := coerceBothFloat(ctx, a, b, "+")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -571,12 +578,12 @@ func sub2(ctx *Scheme, a Val, b Val) (Val, int) {
 }
 
 func mul2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
+	if ia, ib, ok := testBothInt(a, b); ok {
 		var z big.Int
 		z.Mul(ia, ib)
 		return &z, 1
 	}
-	fa, fb, err := bothFloat(ctx, a, b, "*")
+	fa, fb, err := coerceBothFloat(ctx, a, b, "*")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -588,7 +595,7 @@ func mul2(ctx *Scheme, a Val, b Val) (Val, int) {
 var fzero *big.Float = big.NewFloat(0)
 
 func div2(ctx *Scheme, a Val, b Val) (Val, int) {
-	fa, fb, err := bothFloat(ctx, a, b, "/")
+	fa, fb, err := coerceBothFloat(ctx, a, b, "/")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
@@ -601,10 +608,10 @@ func div2(ctx *Scheme, a Val, b Val) (Val, int) {
 }
 
 func cmp2(ctx *Scheme, a Val, b Val, name string) (int, *WrappedError) {
-	if ia, ib, ok := bothInt(a, b); ok {
+	if ia, ib, ok := testBothInt(a, b); ok {
 		return ia.Cmp(ib), nil
 	}
-	fa, fb, err := bothFloat(ctx, a, b, name)
+	fa, fb, err := coerceBothFloat(ctx, a, b, name)
 	if err != nil {
 		return 0, err
 	}
@@ -612,33 +619,36 @@ func cmp2(ctx *Scheme, a Val, b Val, name string) (int, *WrappedError) {
 }
 
 func and2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
-		var z big.Int
-		z.And(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a, b, "bitwise-and")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("bitwise-and: numbers must be exact integers", a, b)
+	var z big.Int
+	z.And(ia, ib)
+	return &z, 1
 }
 
 func or2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
-		var z big.Int
-		z.Or(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a, b, "bitwise-or")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("bitwise-or: numbers must be exact integers", a, b)
+	var z big.Int
+	z.Or(ia, ib)
+	return &z, 1
 }
 
 func xor2(ctx *Scheme, a Val, b Val) (Val, int) {
-	if ia, ib, ok := bothInt(a, b); ok {
-		var z big.Int
-		z.Xor(ia, ib)
-		return &z, 1
+	ia, ib, err := ctx.CheckExactInts(a, b, "bitwise-xor")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	return ctx.Error("bitwise-xor: numbers must be exact integers", a, b)
+	var z big.Int
+	z.Xor(ia, ib)
+	return &z, 1
 }
 
-func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
+func testBothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
 	if ia, ok := a.(*big.Int); ok {
 		if ib, ok := b.(*big.Int); ok {
 			return ia, ib, true
@@ -648,40 +658,31 @@ func bothInt(a Val, b Val) (*big.Int, *big.Int, bool) {
 }
 
 // Coerce both values to float and return them
-func bothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, *WrappedError) {
-	if fa, ok := a.(*big.Float); ok {
-		if fb, ok := b.(*big.Float); ok {
-			return fa, fb, nil
-		}
-		if ib, ok := b.(*big.Int); ok {
-			var fb big.Float
-			fb.SetInt(ib)
-			return fa, &fb, nil
-		}
-		return nil, nil, ctx.WrapError(name+": Not a number", b)
+func coerceBothFloat(ctx *Scheme, a Val, b Val, name string) (*big.Float, *big.Float, *WrappedError) {
+	ia, ib, fa, fb, err := ctx.CheckNumbers(a, b, name)
+	if err != nil {
+		return nil, nil, err
 	}
-	if ia, ok := a.(*big.Int); ok {
-		var fa big.Float
-		fa.SetInt(ia)
-		if fb, ok := b.(*big.Float); ok {
-			return &fa, fb, nil
-		}
-		if ib, ok := b.(*big.Int); ok {
-			var fb big.Float
+	if fa != nil {
+		if fb == nil {
+			fb = new(big.Float)
 			fb.SetInt(ib)
-			return &fa, &fb, nil
 		}
-		return nil, nil, ctx.WrapError(name+": Not a number", b)
+		return fa, fb, nil
 	}
-	return nil, nil, ctx.WrapError(name+": Not a number", a)
+	fa = new(big.Float)
+	fa.SetInt(ia)
+	if fb == nil {
+		fb = new(big.Float)
+		fb.SetInt(ib)
+	}
+	return fa, fb, nil
 }
 
 func checkNumber(ctx *Scheme, v Val, s string) (Val, int) {
-	if _, ok := v.(*big.Int); ok {
-		return v, 1
+	_, _, err := ctx.CheckNumber(v, s)
+	if err != nil {
+		return ctx.SignalWrappedError(err)
 	}
-	if _, ok := v.(*big.Float); ok {
-		return v, 1
-	}
-	return ctx.Error(s+": Not a number", v)
+	return v, 1
 }

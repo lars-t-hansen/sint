@@ -794,6 +794,14 @@ func (ctx *Scheme) CheckExactInt(v Val, name string) (*big.Int, *WrappedError) {
 	return nil, ctx.WrapError(name+": Not an exact integer", v)
 }
 
+func (ctx *Scheme) CheckExactInts(v0 Val, v1 Val, name string) (i0 *big.Int, i1 *big.Int, err *WrappedError) {
+	i0, err = ctx.CheckExactInt(v0, name)
+	if err == nil {
+		i1, err = ctx.CheckExactInt(v1, name)
+	}
+	return
+}
+
 func (ctx *Scheme) CheckExactIntInRange(v Val, name string, min, max int64) (int64, *WrappedError) {
 	if iv, ok := v.(*big.Int); ok {
 		if iv.IsInt64() {
@@ -816,6 +824,14 @@ func (ctx *Scheme) CheckNumber(v Val, name string) (iv *big.Int, fv *big.Float, 
 		return
 	}
 	err = ctx.WrapError(name+": Not a number", v)
+	return
+}
+
+func (ctx *Scheme) CheckNumbers(v0, v1 Val, s string) (i0, i1 *big.Int, f0, f1 *big.Float, err *WrappedError) {
+	i0, f0, err = ctx.CheckNumber(v0, s)
+	if err == nil {
+		i1, f1, err = ctx.CheckNumber(v1, s)
+	}
 	return
 }
 
