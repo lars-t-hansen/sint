@@ -24,7 +24,7 @@ Also see many TODO comments in the source code.
   hard-to-determine times.
 - Go FFI.  Note plugins as a way of loading code dynamically, but nice also to be able to link in user code statically.
 - "source" function on functions
-- lots of documentation: variable names, function names, function comments, doc strings, ...
+- lots of documentation: variable names, function names, ...
 - inexact complexes
 - compiled code can probably use init() to register an init callback that will be invoked by initCompiledCode, so that the latter need not be updated every time we add a new file
 

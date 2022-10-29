@@ -83,11 +83,12 @@ func (c *Apply) String() string {
 }
 
 type Lambda struct {
-	Fixed int
-	Rest  bool
-	Body  Code
-	Name  string
-	// TODO: Documentation: this should carry the doc string and the source code
+	Fixed     int
+	Rest      bool
+	Body      Code
+	Name      string
+	Docstring string
+	// TODO: Documentation: this should carry the the source code
 	// TODO: Documentation: This should carry the names of locals in the rib
 }
 

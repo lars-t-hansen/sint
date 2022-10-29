@@ -454,13 +454,19 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) (Code, error) {
 	if !ok {
 		return c.reportError("lambda: Illegal form: " + l.String())
 	}
+	var doc string
+	if llen > 3 {
+		if s, ok := car(cddr(l)).(*Str); ok {
+			doc = s.Value
+		}
+	}
 	bodyExpr := c.wrapBodyList(cddr(l))
 	newEnv := &cenv{link: env, names: formals, doc: env.doc + " > [lambda]"}
 	compiledBodyExpr, err := c.compileExpr(bodyExpr, newEnv)
 	if err != nil {
 		return nil, err
 	}
-	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr, Name: env.doc}, nil
+	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr, Name: env.doc, Docstring: doc}, nil
 }
 
 func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {

@@ -237,7 +237,8 @@ Body:&Begin{Exprs:[]Code{
 }},
 }},
 }},
-Name:"list-sort!"}}}
+Name:"list-sort!",
+Docstring:"Given a binary predicate `<?` and a list `xs`, sort the `xs` in-place and return the new list."}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 

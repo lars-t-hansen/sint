@@ -47,6 +47,9 @@ func emit(expr Code, w *bufio.Writer) {
 		if e.Name != "" {
 			fmt.Fprintf(w, ",\nName:%q", e.Name)
 		}
+		if e.Docstring != "" {
+			fmt.Fprintf(w, ",\nDocstring:%q", e.Docstring)
+		}
 		w.WriteString("}")
 	case *Let:
 		w.WriteString("&Let{Exprs:")

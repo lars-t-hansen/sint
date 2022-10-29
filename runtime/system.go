@@ -178,6 +178,10 @@ Name:"doc >  > args"},
 }},
 &Quote{Value:c.Intern("...")},
 }},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("procedure-docstring")},
+&Lexical{Levels:1, Offset:0},
+}},
 }}},
 Alternate:&If{
 Test:&If{
