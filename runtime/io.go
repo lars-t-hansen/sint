@@ -64,7 +64,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-Name:"input-port?"}}
+Name:"input-port?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -91,7 +92,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-Name:"output-port?"}}
+Name:"output-port?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -118,7 +120,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-Name:"textual-port?"}}
+Name:"textual-port?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode11 := c.EvalToplevel(code11)
 if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
@@ -145,7 +148,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.FalseVal},
 },
-Name:"binary-port?"}}
+Name:"binary-port?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode12 := c.EvalToplevel(code12)
 if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
@@ -179,7 +183,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"input-port-open?"}}
+Name:"input-port-open?",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 code14 := 
@@ -213,7 +218,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"output-port-open?"}}
+Name:"output-port-open?",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}}}
 _, unwcode14 := c.EvalToplevel(code14)
 if unwcode14 != nil { panic(unwcode14.String()) }
 code15 := 
@@ -240,7 +246,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"current-input-port"},
+Name:"current-input-port",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}},
 }}}
 _, unwcode15 := c.EvalToplevel(code15)
 if unwcode15 != nil { panic(unwcode15.String()) }
@@ -268,7 +275,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"current-output-port"},
+Name:"current-output-port",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}},
 }}}
 _, unwcode16 := c.EvalToplevel(code16)
 if unwcode16 != nil { panic(unwcode16.String()) }
@@ -296,7 +304,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"current-error-port"},
+Name:"current-error-port",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}},
 }}}
 _, unwcode17 := c.EvalToplevel(code17)
 if unwcode17 != nil { panic(unwcode17.String()) }
@@ -313,23 +322,27 @@ Body:&Let{Exprs:[]Code{
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Quote{Value:c.TrueVal},
-Name:"call-with-input-file > "},
+Name:"call-with-input-file > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:1},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-input-file > "},
+Name:"call-with-input-file > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-input-port")},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-input-file > "},
+Name:"call-with-input-file > ",
+Signature:c.NullVal},
 }}},
-Name:"call-with-input-file"}}
+Name:"call-with-input-file",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("proc"), Cdr:c.NullVal}}}}
 _, unwcode18 := c.EvalToplevel(code18)
 if unwcode18 != nil { panic(unwcode18.String()) }
 code19 := 
@@ -345,23 +358,27 @@ Body:&Let{Exprs:[]Code{
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Quote{Value:c.TrueVal},
-Name:"call-with-output-file > "},
+Name:"call-with-output-file > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:1},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-output-file > "},
+Name:"call-with-output-file > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-output-port")},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-output-file > "},
+Name:"call-with-output-file > ",
+Signature:c.NullVal},
 }}},
-Name:"call-with-output-file"}}
+Name:"call-with-output-file",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("proc"), Cdr:c.NullVal}}}}
 _, unwcode19 := c.EvalToplevel(code19)
 if unwcode19 != nil { panic(unwcode19.String()) }
 code20 := 
@@ -388,24 +405,28 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Quote{Value:c.TrueVal},
-Name:"call-with-port > "},
+Name:"call-with-port > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-port > "},
+Name:"call-with-port > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("close-port")},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"call-with-port > "},
+Name:"call-with-port > ",
+Signature:c.NullVal},
 }},
 }},
-Name:"call-with-port"}}
+Name:"call-with-port",
+Signature:&Cons{Car:c.Intern("port"), Cdr:&Cons{Car:c.Intern("proc"), Cdr:c.NullVal}}}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
@@ -459,7 +480,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 }},
-Name:"close-port"}}
+Name:"close-port",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
 code22 := 
@@ -492,7 +514,8 @@ Consequent:&Begin{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
-Name:"for-each-line > loop"},
+Name:"for-each-line > loop",
+Signature:&Cons{Car:c.Intern("proc"), Cdr:&Cons{Car:c.Intern("input"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -500,7 +523,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"for-each-line"}}}
+Name:"for-each-line",
+Signature:&Cons{Car:c.Intern("proc"), Cdr:&Cons{Car:c.Intern("input"), Cdr:c.NullVal}}}}}
 _, unwcode22 := c.EvalToplevel(code22)
 if unwcode22 != nil { panic(unwcode22.String()) }
 code23 := 
@@ -544,7 +568,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 }},
-Name:"filter-lines > loop"},
+Name:"filter-lines > loop",
+Signature:&Cons{Car:c.Intern("proc"), Cdr:&Cons{Car:c.Intern("input"), Cdr:&Cons{Car:c.Intern("lines"), Cdr:c.NullVal}}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -553,7 +578,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 &Quote{Value:c.NullVal},
 }},
-Name:"filter-lines"}}}
+Name:"filter-lines",
+Signature:&Cons{Car:c.Intern("proc"), Cdr:&Cons{Car:c.Intern("input"), Cdr:c.NullVal}}}}}
 _, unwcode23 := c.EvalToplevel(code23)
 if unwcode23 != nil { panic(unwcode23.String()) }
 }

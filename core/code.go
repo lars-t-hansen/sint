@@ -88,8 +88,8 @@ type Lambda struct {
 	Body      Code
 	Name      string
 	Docstring string
+	Signature Val // possibly non-proper list of parameter names
 	// TODO: Documentation: this should carry the the source code
-	// TODO: Documentation: This should carry the names of locals in the rib
 }
 
 func (c *Lambda) String() string {

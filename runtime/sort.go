@@ -95,7 +95,8 @@ Alternate:&Let{Exprs:[]Code{
 },
 },
 },
-Name:"list-sort! > list-merge!"},
+Name:"list-sort! > list-merge!",
+Signature:&Cons{Car:c.Intern("<?"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:&Cons{Car:c.Intern("ys"), Cdr:&Cons{Car:c.Intern("tl"), Cdr:c.NullVal}}}}},
 &Lambda{
 Fixed:4, Rest:false,
 Body:&If{
@@ -159,7 +160,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:2},
 &Lexical{Levels:1, Offset:3},
 }},
-Name:"list-sort! > build-sorted! > [lambda]"},
+Name:"list-sort! > build-sorted! > [lambda]",
+Signature:c.NullVal},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -187,7 +189,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:1},
 &Lexical{Levels:2, Offset:3},
 }},
-Name:"list-sort! > build-sorted! > [lambda] > [lambda]"},
+Name:"list-sort! > build-sorted! > [lambda] > [lambda]",
+Signature:c.NullVal},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -212,15 +215,18 @@ Body:&Begin{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-Name:"list-sort! > build-sorted! > [lambda] > [lambda]"},
+Name:"list-sort! > build-sorted! > [lambda] > [lambda]",
+Signature:&Cons{Car:c.Intern("bs"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}},
 }},
 },
-Name:"list-sort! > build-sorted! > [lambda]"},
+Name:"list-sort! > build-sorted! > [lambda]",
+Signature:&Cons{Car:c.Intern("as"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}},
 }},
 },
 },
 },
-Name:"list-sort! > build-sorted!"},
+Name:"list-sort! > build-sorted!",
+Signature:&Cons{Car:c.Intern("n"), Cdr:&Cons{Car:c.Intern("<?"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:&Cons{Car:c.Intern("tmp"), Cdr:c.NullVal}}}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -238,7 +244,8 @@ Body:&Begin{Exprs:[]Code{
 }},
 }},
 Name:"list-sort!",
-Docstring:"Given a binary predicate `<?` and a list `xs`, sort the `xs` in-place and return the new list."}}}
+Docstring:"Given a binary predicate `<?` and a list `xs`, sort the `xs` in-place and return the new list.",
+Signature:&Cons{Car:c.Intern("<?"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -293,7 +300,9 @@ Alternate:&Quote{Value:c.FalseVal},
 }},
 }},
 }},
-Name:"list-sorted?"}}
+Name:"list-sorted?",
+Docstring:"Return #t iff the list `xs` are sorted according to the binary predicate `<?`.",
+Signature:&Cons{Car:c.Intern("<?"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }

@@ -37,10 +37,13 @@
                                   '())
                               (cons (string-append "p" (number->string (exact k)))
                                     (args (- k 1)))))))
-           (list 'procedure
-                 (procedure-name obj)
-                 (list 'lambda (args (procedure-arity obj)) '...)
-                 (procedure-docstring obj))))
+           (let ((sig (if (eq? (unspecified) (procedure-signature obj))
+                          (args (procedure-arity obj))
+                          (procedure-signature obj))))
+             (list 'procedure
+                   (procedure-name obj)
+                   (list 'lambda sig '...)
+                   (procedure-docstring obj)))))
         ((and (symbol? obj) (symbol-has-value? obj))
          (list 'symbol obj (symbol-value obj)))
         (else

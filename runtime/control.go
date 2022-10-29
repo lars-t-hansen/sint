@@ -17,7 +17,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"eval"}}
+Name:"eval",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -131,7 +132,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }}},
 },
 },
-Name:"apply > build-apply-args"},
+Name:"apply > build-apply-args",
+Signature:&Cons{Car:c.Intern("fst"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -159,7 +161,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"apply"}}}
+Name:"apply",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("x"), Cdr:c.Intern("rest")}}}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -205,7 +208,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"call-with-values"}}
+Name:"call-with-values",
+Signature:&Cons{Car:c.Intern("thunk"), Cdr:&Cons{Car:c.Intern("receiver"), Cdr:c.NullVal}}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -220,7 +224,8 @@ Test:&Call{Exprs:[]Code{
 Consequent:&Lambda{
 Fixed:1, Rest:false,
 Body:&Lexical{Levels:0, Offset:0},
-Name:"make-parameter >  > conv"},
+Name:"make-parameter >  > conv",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}},
 Alternate:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("car")},
 &Lexical{Levels:0, Offset:1},
@@ -244,7 +249,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}},
-Name:"make-parameter"}}
+Name:"make-parameter",
+Signature:&Cons{Car:c.Intern("init"), Cdr:c.Intern("rest")}}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -286,8 +292,10 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"sint:make-parameter-function > "},
-Name:"sint:make-parameter-function"}}
+Name:"sint:make-parameter-function > ",
+Signature:c.Intern("args")},
+Name:"sint:make-parameter-function",
+Signature:&Cons{Car:c.Intern("key"), Cdr:&Cons{Car:c.Intern("conv"), Cdr:c.NullVal}}}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -349,9 +357,11 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"call-with-current-continuation >  > [lambda] > [lambda]"},
+Name:"call-with-current-continuation >  > [lambda] > [lambda]",
+Signature:c.Intern("vs")},
 }},
-Name:"call-with-current-continuation >  > [lambda]"},
+Name:"call-with-current-continuation >  > [lambda]",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -362,9 +372,11 @@ Body:&Begin{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"call-with-current-continuation >  > [lambda]"},
+Name:"call-with-current-continuation >  > [lambda]",
+Signature:c.Intern("vs")},
 }},
-Name:"call-with-current-continuation > "},
+Name:"call-with-current-continuation > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -372,9 +384,11 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("values")},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"call-with-current-continuation > "},
+Name:"call-with-current-continuation > ",
+Signature:&Cons{Car:c.Intern("k"), Cdr:&Cons{Car:c.Intern("vs"), Cdr:c.NullVal}}},
 }}},
-Name:"call-with-current-continuation"}}
+Name:"call-with-current-continuation",
+Signature:&Cons{Car:c.Intern("proc"), Cdr:c.NullVal}}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -411,9 +425,11 @@ Body:&Begin{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"dynamic-wind >  > [lambda]"},
+Name:"dynamic-wind >  > [lambda]",
+Signature:c.Intern("vs")},
 }},
-Name:"dynamic-wind > "},
+Name:"dynamic-wind > ",
+Signature:c.NullVal},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -433,10 +449,12 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-Name:"dynamic-wind > "},
+Name:"dynamic-wind > ",
+Signature:&Cons{Car:c.Intern("key"), Cdr:&Cons{Car:c.Intern("vs"), Cdr:c.NullVal}}},
 }}},
 }},
-Name:"dynamic-wind"}}
+Name:"dynamic-wind",
+Signature:&Cons{Car:c.Intern("before"), Cdr:&Cons{Car:c.Intern("during"), Cdr:&Cons{Car:c.Intern("after"), Cdr:c.NullVal}}}}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
@@ -468,7 +486,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-Name:"map > map1"},
+Name:"map > map1",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:c.NullVal}}},
 &Lambda{
 Fixed:3, Rest:false,
 Body:&If{
@@ -513,7 +532,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-Name:"map > map2"},
+Name:"map > map2",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:&Cons{Car:c.Intern("l1"), Cdr:c.NullVal}}}},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -545,7 +565,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-Name:"map > mapn"},
+Name:"map > mapn",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("ls"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&If{
@@ -586,7 +607,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"map"}}}
+Name:"map",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:c.Intern("rest")}}}}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -619,7 +641,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 },
-Name:"for-each > each1"},
+Name:"for-each > each1",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:c.NullVal}}},
 &Lambda{
 Fixed:3, Rest:false,
 Body:&If{
@@ -665,7 +688,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 },
-Name:"for-each > each2"},
+Name:"for-each > each2",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:&Cons{Car:c.Intern("l1"), Cdr:c.NullVal}}}},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -698,7 +722,8 @@ Alternate:&Begin{Exprs:[]Code{
 }},
 }},
 },
-Name:"for-each > eachn"},
+Name:"for-each > eachn",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("ls"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&If{
@@ -739,7 +764,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"for-each"}}}
+Name:"for-each",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:&Cons{Car:c.Intern("l0"), Cdr:c.Intern("rest")}}}}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -774,7 +800,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"every? > loop"},
+Name:"every? > loop",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -782,7 +809,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"every?"}}}
+Name:"every?",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}}}}
 _, unwcode11 := c.EvalToplevel(code11)
 if unwcode11 != nil { panic(unwcode11.String()) }
 code12 := 
@@ -814,7 +842,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"some? > loop"},
+Name:"some? > loop",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -822,7 +851,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"some?"}}}
+Name:"some?",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}}}}
 _, unwcode12 := c.EvalToplevel(code12)
 if unwcode12 != nil { panic(unwcode12.String()) }
 code13 := 
@@ -868,7 +898,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"filter > loop"},
+Name:"filter > loop",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -876,7 +907,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"filter"}}}
+Name:"filter",
+Signature:&Cons{Car:c.Intern("p"), Cdr:&Cons{Car:c.Intern("l"), Cdr:c.NullVal}}}}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 }

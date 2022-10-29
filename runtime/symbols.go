@@ -27,7 +27,8 @@ Consequent:&Call{Exprs:[]Code{
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
-Name:"symbol=? > check"},
+Name:"symbol=? > check",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&If{
@@ -68,7 +69,8 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 }},
 },
-Name:"symbol=? > loop"},
+Name:"symbol=? > loop",
+Signature:&Cons{Car:c.Intern("sa"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -102,7 +104,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 }},
 }},
-Name:"symbol=?"}}}
+Name:"symbol=?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("xs")}}}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -124,7 +127,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 }},
-Name:"apropos >  > xs"},
+Name:"apropos >  > xs",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.NullVal}}},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("filter-global-variables")},
 &Lexical{Levels:0, Offset:0},
@@ -143,10 +147,12 @@ Body:&Begin{Exprs:[]Code{
 &Global{Name:c.Intern("newline")},
 }},
 }},
-Name:"apropos > "},
+Name:"apropos > ",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}},
 &Lexical{Levels:0, Offset:0},
 }}},
-Name:"apropos"}}
+Name:"apropos",
+Signature:&Cons{Car:c.Intern("pattern"), Cdr:c.NullVal}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 }

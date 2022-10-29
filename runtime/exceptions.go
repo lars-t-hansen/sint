@@ -30,7 +30,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:1},
 }},
 },
-Name:"error"}}
+Name:"error",
+Signature:&Cons{Car:c.Intern("msg"), Cdr:c.Intern("irritants")}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

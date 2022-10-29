@@ -15,7 +15,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("sint:list->string")},
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"string"}}
+Name:"string",
+Signature:c.Intern("cs")}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -41,7 +42,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 }},
 }}},
-Name:"make-string"}}
+Name:"make-string",
+Signature:&Cons{Car:c.Intern("k"), Cdr:c.Intern("rest")}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -78,7 +80,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 },
-Name:"string=? > loop"},
+Name:"string=? > loop",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -90,7 +93,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-Name:"string=?"}}}
+Name:"string=?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("rest")}}}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -130,7 +134,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 },
-Name:"string<? > loop"},
+Name:"string<? > loop",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -142,7 +147,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-Name:"string<?"}}}
+Name:"string<?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("rest")}}}}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -182,7 +188,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 },
-Name:"string<=? > loop"},
+Name:"string<=? > loop",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -194,7 +201,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-Name:"string<=?"}}}
+Name:"string<=?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("rest")}}}}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -234,7 +242,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 },
-Name:"string>? > loop"},
+Name:"string>? > loop",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -246,7 +255,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-Name:"string>?"}}}
+Name:"string>?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("rest")}}}}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -286,7 +296,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 },
-Name:"string>=? > loop"},
+Name:"string>=? > loop",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("rest"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -298,7 +309,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:2},
 }},
 }},
-Name:"string>=?"}}}
+Name:"string>=?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.Intern("rest")}}}}}
 _, unwcode7 := c.EvalToplevel(code7)
 if unwcode7 != nil { panic(unwcode7.String()) }
 code8 := 
@@ -324,7 +336,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:2},
 &Lexical{Levels:1, Offset:3},
 }},
-Name:"string->list > loop > [lambda]"},
+Name:"string->list > loop > [lambda]",
+Signature:c.NullVal},
 &Lambda{
 Fixed:2, Rest:false,
 Body:&Let{Exprs:[]Code{
@@ -358,10 +371,12 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 }}},
-Name:"string->list > loop > [lambda]"},
+Name:"string->list > loop > [lambda]",
+Signature:&Cons{Car:c.Intern("ch"), Cdr:&Cons{Car:c.Intern("sz"), Cdr:c.NullVal}}},
 }},
 },
-Name:"string->list > loop"},
+Name:"string->list > loop",
+Signature:&Cons{Car:c.Intern("first"), Cdr:&Cons{Car:c.Intern("last"), Cdr:&Cons{Car:c.Intern("s"), Cdr:&Cons{Car:c.Intern("i"), Cdr:c.NullVal}}}}},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Begin{Exprs:[]Code{
@@ -419,7 +434,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Quote{Value:big.NewInt(0)},
 }},
 }},
-Name:"string->list"}}}
+Name:"string->list",
+Signature:&Cons{Car:c.Intern("s"), Cdr:c.Intern("rest")}}}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
@@ -479,7 +495,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-Name:"string-copy"}}
+Name:"string-copy",
+Signature:&Cons{Car:c.Intern("s"), Cdr:c.Intern("rest")}}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -506,7 +523,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"list->string"}}
+Name:"list->string",
+Signature:&Cons{Car:c.Intern("cs"), Cdr:c.NullVal}}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 }

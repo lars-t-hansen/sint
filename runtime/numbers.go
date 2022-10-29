@@ -24,7 +24,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }},
 }},
-Name:"number?"}}
+Name:"number?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -43,7 +44,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }},
 }},
-Name:"complex?"}}
+Name:"complex?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -62,7 +64,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }},
 }},
-Name:"real?"}}
+Name:"real?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 code4 := 
@@ -91,7 +94,8 @@ Consequent:&Call{Exprs:[]Code{
 Alternate:&Quote{Value:c.FalseVal},
 },
 }},
-Name:"rational?"}}
+Name:"rational?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode4 := c.EvalToplevel(code4)
 if unwcode4 != nil { panic(unwcode4.String()) }
 code5 := 
@@ -110,7 +114,8 @@ Alternate:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }},
 }},
-Name:"integer?"}}
+Name:"integer?",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode5 := c.EvalToplevel(code5)
 if unwcode5 != nil { panic(unwcode5.String()) }
 code6 := 
@@ -134,7 +139,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"real-part"}}
+Name:"real-part",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode6 := c.EvalToplevel(code6)
 if unwcode6 != nil { panic(unwcode6.String()) }
 code7 := 
@@ -158,7 +164,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Quote{Value:big.NewInt(0)},
 }},
-Name:"imag-part"}}
+Name:"imag-part",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode7 := c.EvalToplevel(code7)
 if unwcode7 != nil { panic(unwcode7.String()) }
 code8 := 
@@ -185,7 +192,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"exact?"}}
+Name:"exact?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode8 := c.EvalToplevel(code8)
 if unwcode8 != nil { panic(unwcode8.String()) }
 code9 := 
@@ -212,7 +220,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"inexact?"}}
+Name:"inexact?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode9 := c.EvalToplevel(code9)
 if unwcode9 != nil { panic(unwcode9.String()) }
 code10 := 
@@ -239,7 +248,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 &Lexical{Levels:0, Offset:0},
 }},
 }},
-Name:"exact-integer?"}}
+Name:"exact-integer?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode10 := c.EvalToplevel(code10)
 if unwcode10 != nil { panic(unwcode10.String()) }
 code11 := 
@@ -258,7 +268,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"square"}}
+Name:"square",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode13 := c.EvalToplevel(code13)
 if unwcode13 != nil { panic(unwcode13.String()) }
 code14 := 
@@ -282,7 +293,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 },
 &Quote{Value:c.FalseVal},
 }},
-Name:"nan?"}}
+Name:"nan?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode14 := c.EvalToplevel(code14)
 if unwcode14 != nil { panic(unwcode14.String()) }
 code15 := 
@@ -293,7 +305,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }},
-Name:"zero?"}}
+Name:"zero?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode15 := c.EvalToplevel(code15)
 if unwcode15 != nil { panic(unwcode15.String()) }
 code16 := 
@@ -304,7 +317,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }},
-Name:"positive?"}}
+Name:"positive?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode16 := c.EvalToplevel(code16)
 if unwcode16 != nil { panic(unwcode16.String()) }
 code17 := 
@@ -315,7 +329,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Quote{Value:big.NewInt(0)},
 }},
-Name:"negative?"}}
+Name:"negative?",
+Signature:&Cons{Car:c.Intern("z"), Cdr:c.NullVal}}}
 _, unwcode17 := c.EvalToplevel(code17)
 if unwcode17 != nil { panic(unwcode17.String()) }
 code18 := 
@@ -349,7 +364,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"odd?"}}
+Name:"odd?",
+Signature:&Cons{Car:c.Intern("n"), Cdr:c.NullVal}}}
 _, unwcode18 := c.EvalToplevel(code18)
 if unwcode18 != nil { panic(unwcode18.String()) }
 code19 := 
@@ -380,7 +396,8 @@ Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
 }},
 }},
-Name:"even?"}}
+Name:"even?",
+Signature:&Cons{Car:c.Intern("n"), Cdr:c.NullVal}}}
 _, unwcode19 := c.EvalToplevel(code19)
 if unwcode19 != nil { panic(unwcode19.String()) }
 code20 := 
@@ -440,7 +457,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }}},
 },
-Name:"max > loop"},
+Name:"max > loop",
+Signature:&Cons{Car:c.Intern("isInexact"), Cdr:&Cons{Car:c.Intern("max"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}}},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -452,7 +470,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"max"}}}
+Name:"max",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.Intern("xs")}}}}
 _, unwcode20 := c.EvalToplevel(code20)
 if unwcode20 != nil { panic(unwcode20.String()) }
 code21 := 
@@ -512,7 +531,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }}},
 },
-Name:"min > loop"},
+Name:"min > loop",
+Signature:&Cons{Car:c.Intern("isInexact"), Cdr:&Cons{Car:c.Intern("min"), Cdr:&Cons{Car:c.Intern("xs"), Cdr:c.NullVal}}}},
 }, Body:&Lambda{
 Fixed:1, Rest:true,
 Body:&Call{Exprs:[]Code{
@@ -524,7 +544,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:0, Offset:1},
 }},
-Name:"min"}}}
+Name:"min",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.Intern("xs")}}}}
 _, unwcode21 := c.EvalToplevel(code21)
 if unwcode21 != nil { panic(unwcode21.String()) }
 code22 := 
@@ -570,7 +591,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"expt > expt"},
+Name:"expt > expt",
+Signature:&Cons{Car:c.Intern("x"), Cdr:&Cons{Car:c.Intern("y"), Cdr:c.NullVal}}},
 }, Body:&Lambda{
 Fixed:2, Rest:false,
 Body:&Begin{Exprs:[]Code{
@@ -642,7 +664,8 @@ Alternate:&Call{Exprs:[]Code{
 },
 },
 }},
-Name:"expt"}}}
+Name:"expt",
+Signature:&Cons{Car:c.Intern("x"), Cdr:&Cons{Car:c.Intern("y"), Cdr:c.NullVal}}}}}
 _, unwcode22 := c.EvalToplevel(code22)
 if unwcode22 != nil { panic(unwcode22.String()) }
 }

@@ -49,7 +49,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:0},
 &Lexical{Levels:0, Offset:0},
 }},
-Name:"make-generator >  > .G1001.GO > [lambda]"},
+Name:"make-generator >  > .G1001.GO > [lambda]",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}},
 }},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("channel-send")},
@@ -61,13 +62,15 @@ Name:"make-generator >  > .G1001.GO > [lambda]"},
 &Lexical{Levels:1, Offset:0},
 }},
 }},
-Name:"make-generator >  > .G1001.GO"},
+Name:"make-generator >  > .G1001.GO",
+Signature:c.NullVal},
 }, Body:&Lambda{
 Fixed:0, Rest:false,
 Body:&Call{Exprs:[]Code{
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"make-generator > "}},
+Name:"make-generator > ",
+Signature:c.NullVal}},
 }},
 &Lambda{
 Fixed:0, Rest:false,
@@ -75,10 +78,13 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("channel-receive")},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"make-generator > "},
+Name:"make-generator > ",
+Signature:c.NullVal},
 }}},
 }},
-Name:"make-generator"}}
+Name:"make-generator",
+Docstring:"make-generator takes a procedure `p` of one argument, and optionally a value `end`, and returns a\nthunk, the generator.  The generator is invoked to obtain the values yielded by `p`.  `p` will be\ncalled once with a a function of one argument that is used by `p` to yield its values.  Once `p`\nreturns, the value `end` is yielded by the generator once, followed by a stream of #!unspecified.\n\n`p` is run on a concurrent thread, and care should be taken by both `p` and the consumer when\nupdating shared state.  The communication channel is unbuffered, so `p` and the consumer run\nsomewhat in lockstep, but they are not synchronized: `p` is working on the next item while the\nconsumer is processing the previous one.\n",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.Intern("rest")}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }

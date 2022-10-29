@@ -50,6 +50,12 @@ func emit(expr Code, w *bufio.Writer) {
 		if e.Docstring != "" {
 			fmt.Fprintf(w, ",\nDocstring:%q", e.Docstring)
 		}
+		if _, ok := e.Signature.(*Unspecified); ok {
+			// nothing
+		} else {
+			fmt.Fprintf(w, ",\nSignature:")
+			emitDatum(e.Signature, w)
+		}
 		w.WriteString("}")
 	case *Let:
 		w.WriteString("&Let{Exprs:")

@@ -16,7 +16,8 @@ Body:&Call{Exprs:[]Code{
 &Quote{Value:c.Intern("sint")},
 &Quote{Value:c.Intern("sint-0.1")},
 }},
-Name:"features"}}
+Name:"features",
+Signature:c.NullVal}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 code2 := 
@@ -45,7 +46,8 @@ Body:&Call{Exprs:[]Code{
 &Global{Name:c.Intern("eval")},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"load > loop > [lambda]"},
+Name:"load > loop > [lambda]",
+Signature:c.NullVal},
 &Lambda{
 Fixed:0, Rest:true,
 Body:&If{
@@ -86,12 +88,14 @@ Body:&Begin{Exprs:[]Code{
 &Global{Name:c.Intern("newline")},
 }},
 }},
-Name:"load > loop > [lambda] > [lambda]"},
+Name:"load > loop > [lambda] > [lambda]",
+Signature:&Cons{Car:c.Intern("x"), Cdr:c.NullVal}},
 &Lexical{Levels:0, Offset:0},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 },
-Name:"load > loop > [lambda]"},
+Name:"load > loop > [lambda]",
+Signature:c.Intern("results")},
 }},
 &Call{Exprs:[]Code{
 &Lexical{Levels:2, Offset:0},
@@ -100,7 +104,8 @@ Name:"load > loop > [lambda]"},
 }},
 Alternate:&Quote{Value:c.UnspecifiedVal},
 }},
-Name:"load > loop"},
+Name:"load > loop",
+Signature:&Cons{Car:c.Intern("p"), Cdr:c.NullVal}},
 }, Body:&Lambda{
 Fixed:1, Rest:false,
 Body:&Call{Exprs:[]Code{
@@ -108,7 +113,8 @@ Body:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Lexical{Levels:1, Offset:0},
 }},
-Name:"load"}}}
+Name:"load",
+Signature:&Cons{Car:c.Intern("fn"), Cdr:c.NullVal}}}}
 _, unwcode2 := c.EvalToplevel(code2)
 if unwcode2 != nil { panic(unwcode2.String()) }
 code3 := 
@@ -158,31 +164,50 @@ Alternate:&Call{Exprs:[]Code{
 }},
 }},
 },
-Name:"doc >  > args"},
-}, Body:&Call{Exprs:[]Code{
-&Global{Name:c.Intern("list")},
-&Quote{Value:c.Intern("procedure")},
+Name:"doc >  > args",
+Signature:&Cons{Car:c.Intern("k"), Cdr:c.NullVal}},
+}, Body:&Let{Exprs:[]Code{
+&If{
+Test:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("eq?")},
 &Call{Exprs:[]Code{
-&Global{Name:c.Intern("procedure-name")},
-&Lexical{Levels:1, Offset:0},
+&Global{Name:c.Intern("unspecified")},
 }},
 &Call{Exprs:[]Code{
-&Global{Name:c.Intern("list")},
-&Quote{Value:c.Intern("lambda")},
-&Call{Exprs:[]Code{
+&Global{Name:c.Intern("procedure-signature")},
+&Lexical{Levels:1, Offset:0},
+}},
+}},
+Consequent:&Call{Exprs:[]Code{
 &Lexical{Levels:0, Offset:0},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("procedure-arity")},
 &Lexical{Levels:1, Offset:0},
 }},
 }},
+Alternate:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("procedure-signature")},
+&Lexical{Levels:1, Offset:0},
+}},
+},
+}, Body:&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list")},
+&Quote{Value:c.Intern("procedure")},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("procedure-name")},
+&Lexical{Levels:2, Offset:0},
+}},
+&Call{Exprs:[]Code{
+&Global{Name:c.Intern("list")},
+&Quote{Value:c.Intern("lambda")},
+&Lexical{Levels:0, Offset:0},
 &Quote{Value:c.Intern("...")},
 }},
 &Call{Exprs:[]Code{
 &Global{Name:c.Intern("procedure-docstring")},
-&Lexical{Levels:1, Offset:0},
+&Lexical{Levels:2, Offset:0},
 }},
-}}},
+}}}},
 Alternate:&If{
 Test:&If{
 Test:&Call{Exprs:[]Code{
@@ -211,7 +236,8 @@ Alternate:&Call{Exprs:[]Code{
 }},
 },
 },
-Name:"doc"}}
+Name:"doc",
+Signature:&Cons{Car:c.Intern("obj"), Cdr:c.NullVal}}}
 _, unwcode3 := c.EvalToplevel(code3)
 if unwcode3 != nil { panic(unwcode3.String()) }
 }

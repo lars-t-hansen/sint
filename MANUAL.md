@@ -155,6 +155,7 @@ Bitwise operations are interpreted as if on two's complement integers; the argum
 * `(procedure-name proc)` returns the name of the procedure as a string, derived from the source code
 * `(procedure-arity proc)` returns the arity of the procedure as a number.  The number denotes the number of fixed arguments of the procedure; it is inexact iff the procedure accepts rest arguments.
 * `(procedure-docstring proc)` returns the docstring of the procedure if it has one (a string appearing as the first but not last body expression of a lambda), otherwise the empty string
+* `(procedure-signature proc)` returns a possibly improper list with the formal names of the procedure as used in the source code, or #!unspecified if there is no information
 * `(symbol-has-value? symbol)` returns true iff there is a global variable with the name `symbol`
 * `(symbol-value symbol)` returns the value of the global variable with the name `symbol`.  It throws if there is no such variable.
 * `(doc <object>)` returns documentation about the object, normally as a list `(<tag> ...)` where the `<tag>` is a symbol denoting the class of the object (`procedure`, and so on), and the rest of the values depend on the object and the documentation available about it.  In the case when nothing interesting is known it returns `(datum <object>)`.

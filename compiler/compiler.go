@@ -72,7 +72,7 @@ func (c *Compiler) CompileToplevel(v Val) (Code, error) {
 	var compiled Code
 	var err error
 	if exprIsList && length >= 3 && car(v) == c.s.DefineSym {
-		compiled, err = c.compileToplevelDefinition(v)
+		compiled, err = c.compileToplevelDefinition(v, length)
 	} else {
 		compiled, err = c.compileExpr(v, &cenv{doc: ""})
 	}
@@ -115,7 +115,7 @@ func (c *Compiler) reportError(msg string) (Code, error) {
 	return nil, &CompilerError{msg}
 }
 
-func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
+func (c *Compiler) compileToplevelDefinition(v Val, length int) (Code, error) {
 	nameOrSignature := cadr(v)
 	// (define x v)
 	if globName, ok := nameOrSignature.(*Symbol); ok {
@@ -130,16 +130,26 @@ func (c *Compiler) compileToplevelDefinition(v Val) (Code, error) {
 	}
 	// (define (f arg ... . arg) body ...)
 	if fixed, rest, globName, formals, ok := c.checkDefinitionSignature(nameOrSignature); ok {
+		signature := c.shallowCopyKnownGoodSignature(cdr(cadr(v)))
+		var doc string
+		if length > 3 {
+			if s, ok := car(cddr(v)).(*Str); ok {
+				doc = s.Value
+			}
+		}
 		body := c.wrapBodyList(cddr(v))
 		bodyc, err := c.compileExpr(body, &cenv{names: formals, doc: globName.Name + " > "})
 		if err != nil {
 			return nil, err
 		}
 		lam := &Lambda{
-			Fixed: fixed,
-			Rest:  rest,
-			Body:  bodyc,
-			Name:  globName.Name}
+			Fixed:     fixed,
+			Rest:      rest,
+			Body:      bodyc,
+			Name:      globName.Name,
+			Docstring: doc,
+			Signature: signature,
+		}
 		return &Setglobal{
 			Name: globName,
 			Rhs:  lam,
@@ -454,6 +464,7 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) (Code, error) {
 	if !ok {
 		return c.reportError("lambda: Illegal form: " + l.String())
 	}
+	signature := c.shallowCopyKnownGoodSignature(cadr(l))
 	var doc string
 	if llen > 3 {
 		if s, ok := car(cddr(l)).(*Str); ok {
@@ -466,7 +477,7 @@ func (c *Compiler) compileLambda(l Val, llen int, env *cenv) (Code, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr, Name: env.doc, Docstring: doc}, nil
+	return &Lambda{Fixed: fixed, Rest: rest, Body: compiledBodyExpr, Name: env.doc, Docstring: doc, Signature: signature}, nil
 }
 
 func (c *Compiler) compileLet(l Val, llen int, env *cenv) (Code, error) {
@@ -776,6 +787,13 @@ func (c *Compiler) collectNamesFromSignature(sig Val) (fixed int, rest bool, nam
 	}
 	ok = true
 	return
+}
+
+func (c *Compiler) shallowCopyKnownGoodSignature(sig Val) Val {
+	if cell, cellIsCons := sig.(*Cons); cellIsCons {
+		return &Cons{Car: cell.Car, Cdr: c.shallowCopyKnownGoodSignature(cell.Cdr)}
+	}
+	return sig
 }
 
 func (c *Compiler) checkProperList(v Val) (int, bool) {

@@ -15,6 +15,7 @@ func initControlPrimitives(ctx *Scheme) {
 	addPrimitive(ctx, "procedure?", 1, false, primProcedurep)
 	addPrimitive(ctx, "procedure-name", 1, false, primProcedureName)
 	addPrimitive(ctx, "procedure-docstring", 1, false, primProcedureDocstring)
+	addPrimitive(ctx, "procedure-signature", 1, false, primProcedureSignature)
 	addPrimitive(ctx, "procedure-arity", 1, false, primProcedureArity)
 	addPrimitive(ctx, "string-map", 2, true, primStringMap)
 	addPrimitive(ctx, "string-for-each", 2, true, primStringForEach)
@@ -60,11 +61,19 @@ func primProcedureName(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
 }
 
 func primProcedureDocstring(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
-	proc, err := ctx.CheckProcedure(a0, "procedure-name")
+	proc, err := ctx.CheckProcedure(a0, "procedure-docstring")
 	if err != nil {
 		return ctx.SignalWrappedError(err)
 	}
 	return &Str{Value: proc.Lam.Docstring}, 1
+}
+
+func primProcedureSignature(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {
+	proc, err := ctx.CheckProcedure(a0, "procedure-signature")
+	if err != nil {
+		return ctx.SignalWrappedError(err)
+	}
+	return proc.Lam.Signature, 1
 }
 
 func primProcedureArity(ctx *Scheme, a0, _ Val, _ []Val) (Val, int) {

@@ -84,7 +84,8 @@ Alternate:&Quote{Value:c.FalseVal},
 },
 }},
 }},
-Name:"equal?"}}
+Name:"equal?",
+Signature:&Cons{Car:c.Intern("a"), Cdr:&Cons{Car:c.Intern("b"), Cdr:c.NullVal}}}}
 _, unwcode1 := c.EvalToplevel(code1)
 if unwcode1 != nil { panic(unwcode1.String()) }
 }
