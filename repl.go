@@ -86,6 +86,7 @@ func main() {
 			panic("Bad 'eval' command, at least one expression argument required")
 		}
 		_, stdout, _ := runtime.StandardInitialization(engine)
+		loadInitFile(engine, comp, stdout)
 		for _, ex := range args[1:] {
 			err := evalExpr(engine, comp, ex, stdout)
 			if err != nil {
@@ -111,6 +112,7 @@ func main() {
 			pprof.StartCPUProfile(f)
 			defer pprof.StopCPUProfile()
 		}
+		loadInitFile(engine, comp, stdout)
 		for _, fn := range args[1:] {
 			err := loadFile(engine, comp, fn, stdout)
 			if err != nil {
@@ -127,6 +129,7 @@ func main() {
 		fmt.Print(HelpText)
 	case "repl":
 		stdin, stdout, stderr := runtime.StandardInitialization(engine)
+		loadInitFile(engine, comp, stdout)
 		enterRepl(engine, comp, stdin, stdout, stderr)
 	default:
 		panic("Bad verb '" + args[0] + "', try `sint help`")
@@ -138,6 +141,25 @@ func main() {
 		}
 		pprof.WriteHeapProfile(f)
 		f.Close()
+	}
+}
+
+func loadInitFile(engine *core.Scheme, comp *compiler.Compiler, stdout runtime.OutputStream) {
+	homedir := os.Getenv("HOME")
+	if homedir == "" {
+		return
+	}
+	initFn := homedir + "/.sint"
+	err := loadFile(engine, comp, initFn, stdout)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return
+		}
+		if unw, ok := err.(*core.UnwindPkg); ok {
+			reportUnwinding(engine, unw)
+			os.Exit(1)
+		}
+		panic(err)
 	}
 }
 
@@ -212,7 +234,7 @@ func evalExpr(engine *core.Scheme, comp *compiler.Compiler, expr string, stdout 
 func loadFile(engine *core.Scheme, comp *compiler.Compiler, fn string, stdout runtime.OutputStream) error {
 	input, inErr := os.Open(fn)
 	if inErr != nil {
-		panic(inErr)
+		return inErr
 	}
 	sourceReader := bufio.NewReader(input)
 	for {
