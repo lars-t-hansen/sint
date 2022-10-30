@@ -495,10 +495,10 @@ again:
 var charTable [128]byte
 
 const (
-	kInitial    = 1
-	kSubsequent = 2
-	kSpace      = 4
-	kAlphabetic = 8
+	kInitial = 1 << iota
+	kSubsequent
+	kSpace
+	kAlphabetic
 )
 
 func init() {

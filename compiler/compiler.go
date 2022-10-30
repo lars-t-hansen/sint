@@ -516,9 +516,9 @@ func (c *Compiler) compileLetStarValues(l Val, llen int, env *cenv) (Code, error
 type LetKind int
 
 const (
-	kLet LetKind = iota
-	kLetrec
-	kLetStar
+	kLet     LetKind = 0
+	kLetrec  LetKind = 1
+	kLetStar LetKind = 2
 )
 
 var letNames []string = []string{"let", "letrec", "let*"}

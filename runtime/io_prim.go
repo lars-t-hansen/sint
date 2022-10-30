@@ -34,10 +34,10 @@ func initIoPrimitives(ctx *Scheme) {
 var portDiagnostics map[int]string = make(map[int]string)
 
 func init() {
-	portDiagnostics[IsBinaryPort] = "binary"
-	portDiagnostics[IsTextPort] = "textual"
-	portDiagnostics[IsInputPort] = "input"
-	portDiagnostics[IsOutputPort] = "output"
+	portDiagnostics[int(IsBinaryPort)] = "binary"
+	portDiagnostics[int(IsTextPort)] = "textual"
+	portDiagnostics[int(IsInputPort)] = "input"
+	portDiagnostics[int(IsOutputPort)] = "output"
 }
 
 // If maybePort is not undefined it must be a port, otherwise get the port parameter at
