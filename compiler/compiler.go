@@ -100,9 +100,11 @@ type cenv struct {
 func lookup(env *cenv, s *Symbol) (int, int, bool) {
 	levels := 0
 	for env != nil {
-		for offset := 0; offset < len(env.names); offset++ {
-			if env.names[offset] == s {
-				return levels, offset, true
+		// This searches from the end to accomodate let*, which may add
+		// duplicated names and wants to always find the last one.
+		for offset := len(env.names); offset > 0; offset-- {
+			if env.names[offset-1] == s {
+				return levels, offset - 1, true
 			}
 		}
 		levels++
@@ -526,7 +528,7 @@ func (c *Compiler) compileLetOrLetrecOrLetStar(l Val, llen int, env *cenv, kind 
 	if llen < 3 {
 		return c.reportError(name + ": Illegal form: " + l.String())
 	}
-	names, inits, bindingsAreOk := c.checkLetBindings(cadr(l))
+	names, inits, bindingsAreOk := c.checkLetBindings(cadr(l), kind)
 	if !bindingsAreOk {
 		return c.reportError(name + ": Illegal form: " + l.String())
 	}
@@ -732,7 +734,7 @@ func (c *Compiler) checkLambdaSignature(sig Val) (fixed int, rest bool, formals 
 	return
 }
 
-func (c *Compiler) checkLetBindings(bindings Val) (names []*Symbol, inits []Val, ok bool) {
+func (c *Compiler) checkLetBindings(bindings Val, kind LetKind) (names []*Symbol, inits []Val, ok bool) {
 	_, bindingsIsList := c.checkProperList(bindings)
 	if !bindingsIsList {
 		return
@@ -753,7 +755,7 @@ func (c *Compiler) checkLetBindings(bindings Val) (names []*Symbol, inits []Val,
 		inits = append(inits, bindingExpr)
 		bindings = cdr(bindings)
 	}
-	if !c.namesAreUnique(names) {
+	if kind != kLetStar && !c.namesAreUnique(names) {
 		return
 	}
 	ok = true
