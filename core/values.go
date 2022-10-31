@@ -121,11 +121,11 @@ func (s *Chan) String() string {
 type PortFlags int32
 
 const (
-	IsInputPort  PortFlags = 1
-	IsOutputPort PortFlags = 2
-	IsTextPort   PortFlags = 4
-	IsBinaryPort PortFlags = 8
-	IsClosedPort PortFlags = 16
+	IsInputPort = PortFlags(1 << iota)
+	IsOutputPort
+	IsTextPort
+	IsBinaryPort
+	IsClosedPort
 )
 
 type ClosableInputStream interface {
