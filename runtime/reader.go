@@ -309,7 +309,27 @@ func (r *reader) canReadRightParen() (bool, error) {
 
 // Leading #x has been consumed
 func (r *reader) readHexNumber() (Val, error) {
-	return nil, r.readError("Hex numbers not supported yet")
+	s := ""
+	for {
+		d, _, err := r.rdr.ReadRune()
+		if err != nil {
+			if e := r.handleErrorIgnoreEOF(err); e != nil {
+				return nil, e
+			}
+			break
+		}
+		if isSymbolSubsequent(d) {
+			s = s + string(d)
+		} else {
+			r.rdr.UnreadRune()
+			break
+		}
+	}
+	var i big.Int
+	if _, ok := i.SetString(s, 16); ok {
+		return &i, nil
+	}
+	return nil, r.readError("Bad hex number: " + s)
 }
 
 func (r *reader) readRegExp() (Val, error) {
